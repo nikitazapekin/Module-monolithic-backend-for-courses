@@ -9,6 +9,8 @@ export class EventStoreFactory {
            // case 'mongo':
              //   return null
       //          return MongoEventStoreModule.register()
+    //  case 'eventstore': return new EventStoreDbAdapter();
+
             case 'kafka':
                 return KafkaEventStoreModule.register()
             case 'esdb':

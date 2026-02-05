@@ -282,7 +282,7 @@ export const testPostgresConnection = async (): Promise<boolean> => {
     return PostgresDatabase.testConnection();
 };
 
-export const createPostgresMigration = PostgresDatabase.createMigration;
+// export const createPostgresMigration = PostgresDatabase.createMigration;
 
 // Экспортируем хардкодную конфигурацию для использования в других местах
 export const getHardcodedDbConfig = (): TypeOrmModuleOptions => {

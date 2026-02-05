@@ -17,7 +17,7 @@ import { TodoModule } from '@modules/todo/todo.module';
     }),
     LoggerModule,
     DataBaseModule,
-  // EventStoreFactory.createEventStore('mongo'),
+ // EventStoreFactory.createEventStore('mongo'),
   TodoModule,
     AuthModule,
     UserModule,

@@ -10,6 +10,7 @@ import { QueryHandler } from "./application/query-handlers";
 import { AuthController } from "./interfaces/auth.controller";
 import { AuthModule } from "@modules/auth/auth.module";
 import { UserFacade } from "./application/facades/user.facades.service";
+import { TodoModule } from "@modules/todo/todo.module";
 
 @Module({
     imports: [
@@ -17,6 +18,7 @@ import { UserFacade } from "./application/facades/user.facades.service";
             UserTypeOrmEntity
         ]),
         CqrsModule,
+         TodoModule,
         forwardRef(() => AuthModule),
     ],
     controllers: [
