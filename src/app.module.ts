@@ -4,10 +4,9 @@ import { AppService } from './app.service';
 import { DataBaseModule } from '@infra/database/database.module';
 import { ConfigModule } from '@nestjs/config';
 import { LoggerModule } from '@infra/logger/logger.module';
-import { EventStoreFactory } from '@infra/event-store/event-store.factory';
+ 
 import { AuthModule } from '@modules/auth/auth.module';
-import { ProductModule } from '@modules/product/product.module';
-import { UserModule } from '@modules/user/user.module';
+ 
 import { TodoModule } from '@modules/todo/todo.module';
 
 @Module({
@@ -17,11 +16,10 @@ import { TodoModule } from '@modules/todo/todo.module';
     }),
     LoggerModule,
     DataBaseModule,
- // EventStoreFactory.createEventStore('mongo'),
-  TodoModule,
+    
+    TodoModule,
     AuthModule,
-    UserModule,
-  //  ProductModule
+ 
   ],
   controllers: [AppController],
   providers: [AppService],
