@@ -9,6 +9,8 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ResposneInterceptor())
   app.useGlobalFilters(new AllExceptionsFilter())
   
-  await app.listen(process.env.PORT ?? 3000);
+    await app.listen( 3000);
+
+//  await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

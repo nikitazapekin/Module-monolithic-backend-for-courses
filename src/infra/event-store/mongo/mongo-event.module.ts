@@ -7,8 +7,11 @@ import { EventSchema } from "@infra/schemas/event.schema";
 @Global()
 @Module({})
 export class MongoEventStoreModule {
+    static register(): any {
+
+    /*  
     static register(): DynamicModule {
-        return {
+       return {
             module: MongoEventStoreModule,
             imports: [
                 ConfigModule,
@@ -32,6 +35,7 @@ export class MongoEventStoreModule {
                 },
             ],
             exports: ['IEventStore'],
-        }
+        } 
+        */
     }
 }

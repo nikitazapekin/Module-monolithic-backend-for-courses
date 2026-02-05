@@ -11,8 +11,11 @@ export type StoredEvent = {
 }
 
 @Injectable()
-export class MongoEventStore implements IEventStore {
+export class MongoEventStore  {
 
+/* 
+@Injectable()
+export class MongoEventStore implements IEventStore {
     constructor(
         @InjectModel('Event') private readonly eventModel: Model<StoredEvent>
     ) {}
@@ -38,6 +41,6 @@ export class MongoEventStore implements IEventStore {
         type: doc.type,
         payload: doc.payload,
         timestamp: doc.timestamp,
-      }))
-    }
+      })) */
+ //  }
 }

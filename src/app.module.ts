@@ -8,6 +8,7 @@ import { EventStoreFactory } from '@infra/event-store/event-store.factory';
 import { AuthModule } from '@modules/auth/auth.module';
 import { ProductModule } from '@modules/product/product.module';
 import { UserModule } from '@modules/user/user.module';
+import { TodoModule } from '@modules/todo/todo.module';
 
 @Module({
   imports: [
@@ -16,10 +17,11 @@ import { UserModule } from '@modules/user/user.module';
     }),
     LoggerModule,
     DataBaseModule,
-    EventStoreFactory.createEventStore('mongo'),
+  // EventStoreFactory.createEventStore('mongo'),
+  TodoModule,
     AuthModule,
     UserModule,
-    ProductModule
+  //  ProductModule
   ],
   controllers: [AppController],
   providers: [AppService],

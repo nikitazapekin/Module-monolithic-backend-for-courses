@@ -13,7 +13,9 @@ import { DatabaseFactory } from "./database.config";
                 ConfigService,
             ],
             useFactory: (configService: ConfigService) => {
-                const dbType: string = configService.get<string>('DB_TYPE') || 'sqlite'
+            //    const dbType: string = configService.get<string>('DB_TYPE') || 'sqlite'
+
+             const dbType: string  ='postgres'
                 return DatabaseFactory.createDatabaseConnection(dbType, configService)
             }
         }),

@@ -6,8 +6,9 @@ import { EventStoreDbStoreModule } from "./eventstore/eventstore-event.module";
 export class EventStoreFactory {
     static createEventStore(provider: string): DynamicModule {
         switch (provider) {
-            case 'mongo':
-                return MongoEventStoreModule.register()
+           // case 'mongo':
+             //   return null
+      //          return MongoEventStoreModule.register()
             case 'kafka':
                 return KafkaEventStoreModule.register()
             case 'esdb':

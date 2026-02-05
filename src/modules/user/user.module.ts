@@ -39,3 +39,26 @@ import { UserFacade } from "./application/facades/user.facades.service";
     ]
 })
 export class UserModule {}
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+ 
