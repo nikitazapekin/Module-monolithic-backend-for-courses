@@ -1,14 +1,15 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { RegisterUserCommand } from '../commands';
-import { AuthService } from '@modules/autht/auth.service';
+//import { AuthService } from '@modules/autht/auth.service';
 
 @CommandHandler(RegisterUserCommand)
 export class RegisterUserHandler
   implements ICommandHandler<RegisterUserCommand>
 {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: any) {}
 
   async execute(command: RegisterUserCommand): Promise<any> {
-    return this.authService.register(command.name, command.email);
+   // return this.authService.register(command.name, command.email);
+   return ""
   }
 }

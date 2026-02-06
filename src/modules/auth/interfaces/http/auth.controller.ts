@@ -1,3 +1,4 @@
+// src/modules/auth/interfaces/http/auth.controller.ts
 import {
   Controller,
   Post,
@@ -8,19 +9,25 @@ import {
   Get,
   Headers,
   BadRequestException,
+  Res,
+  Req,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { Response, Request } from 'express';
 import { AuthService } from '../../application/services/auth.service';
 import { LoginDto } from '../../application/dtos/login.dto';
 import { RegisterDto } from '../../application/dtos/register.dto';
-import { RefreshTokenDto } from '../../application/dtos/refresh-token.dto';
-import { AuthResponseDto } from '../../application/dtos/auth-response.dto';
+import { AuthResponseDto, AuthResponseWithRefreshDto } from '../../application/dtos/auth-response.dto';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
+import { ConfigService } from '@nestjs/config';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Post('register')
   @ApiOperation({ summary: 'Регистрация нового пользователя' })
@@ -29,16 +36,19 @@ export class AuthController {
     description: 'Пользователь успешно зарегистрирован',
     type: AuthResponseDto,
   })
-  @ApiResponse({
-    status: HttpStatus.CONFLICT,
-    description: 'Пользователь с таким email уже существует',
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Невалидные данные',
-  })
-  async register(@Body() registerDto: RegisterDto): Promise<AuthResponseDto> {
-    return this.authService.register(registerDto);
+  async register(
+    @Body() registerDto: RegisterDto,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<AuthResponseDto> {
+    const authResponse = await this.authService.register(registerDto) as AuthResponseWithRefreshDto;
+    
+    // Устанавливаем refresh token в cookie
+    this.setRefreshTokenCookie(response, authResponse.refreshToken);
+    
+    // Создаем ответ без refresh token
+    const { refreshToken, ...responseWithoutRefresh } = authResponse;
+    
+    return responseWithoutRefresh;
   }
 
   @Post('login')
@@ -49,12 +59,19 @@ export class AuthController {
     description: 'Успешный вход',
     type: AuthResponseDto,
   })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'Неверные учетные данные',
-  })
-  async login(@Body() loginDto: LoginDto): Promise<AuthResponseDto> {
-    return this.authService.login(loginDto);
+  async login(
+    @Body() loginDto: LoginDto,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<AuthResponseDto> {
+    const authResponse = await this.authService.login(loginDto) as AuthResponseWithRefreshDto;
+    
+    // Устанавливаем refresh token в cookie
+    this.setRefreshTokenCookie(response, authResponse.refreshToken);
+    
+    // Создаем ответ без refresh token
+    const { refreshToken, ...responseWithoutRefresh } = authResponse;
+    
+    return responseWithoutRefresh;
   }
 
   @Post('refresh')
@@ -65,82 +82,49 @@ export class AuthController {
     description: 'Токен успешно обновлен',
     type: AuthResponseDto,
   })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'Невалидный refresh токен',
-  })
-  async refresh(@Body() refreshTokenDto: RefreshTokenDto): Promise<AuthResponseDto> {
-    return this.authService.refreshToken(refreshTokenDto.refreshToken);
-  }
-
-  @Post('logout')
-  @UseGuards(JwtAuthGuard)
-  @HttpCode(HttpStatus.OK)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Выход из системы' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Успешный выход',
-  })
-  async logout(@Headers('authorization') authHeader: string): Promise<{ success: boolean }> {
-    // Извлекаем userId из токена
-    const token = authHeader?.replace('Bearer ', '');
-    if (!token) {
-      throw new BadRequestException('No token provided');
-    }
-
-    // В реальном приложении здесь нужно извлечь userId из токена
-    // или использовать @User() декоратор
-    return this.authService.logout('user-id-from-token');
-  }
-
-  @Post('validate')
-  @ApiOperation({ summary: 'Проверка валидности токена' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Токен валиден',
-    schema: {
-      type: 'object',
-      properties: {
-        isValid: { type: 'boolean' },
-        expiresAt: { type: 'string', format: 'date-time' },
-        userId: { type: 'string' },
-        email: { type: 'string' },
-        role: { type: 'string', enum: ['client', 'admin'] },
-      },
-    },
-  })
-  async validate(@Body('token') token: string): Promise<any> {
-    const result = await this.authService.validateToken(token);
+  async refresh(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<AuthResponseDto> {
+  
+    const refreshToken = request.cookies['refresh-token'];
     
-    if (!result.isValid) {
-      return { isValid: false };
+    if (!refreshToken) {
+      throw new BadRequestException('Refresh token is required');
     }
+    
+    const authResponse = await this.authService.refreshToken(refreshToken) as AuthResponseWithRefreshDto;
+     
+    this.setRefreshTokenCookie(response, authResponse.refreshToken);
+     
+    const { refreshToken: newRefreshToken, ...responseWithoutRefresh } = authResponse;
+    
+    return responseWithoutRefresh;
+  }
+ 
 
-    // Дополнительная информация о токене
-    const decoded = result.payload;
-    return {
-      isValid: true,
-      expiresAt: new Date(decoded.exp * 1000),
-      userId: decoded.sub,
-      email: decoded.email,
-      role: decoded.role,
-    };
+  private setRefreshTokenCookie(response: Response, refreshToken: string): void {
+    const isProduction = this.configService.get('NODE_ENV') === 'production';
+    
+    response.cookie('refresh-token', refreshToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'strict' : 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,  
+      path: '/',
+      ...(isProduction && { domain: this.configService.get('COOKIE_DOMAIN') }),
+    });
   }
 
-  @Get('profile')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Получение профиля текущего пользователя' })
-  async getProfile(@Headers('authorization') authHeader: string): Promise<any> {
-    // В реальном приложении используйте @User() декоратор
-    const token = authHeader?.replace('Bearer ', '');
-    if (!token) {
-      throw new BadRequestException('No token provided');
-    }
-
-    // Здесь нужно извлечь userId из токена
-    // Для демонстрации используем заглушку
-    return this.authService.getProfile('user-id-from-token');
+  private clearRefreshTokenCookie(response: Response): void {
+    const isProduction = this.configService.get('NODE_ENV') === 'production';
+    
+    response.clearCookie('refresh-token', {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'strict' : 'lax',
+      path: '/',
+      ...(isProduction && { domain: this.configService.get('COOKIE_DOMAIN') }),
+    });
   }
 }

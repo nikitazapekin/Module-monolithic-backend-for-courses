@@ -56,45 +56,46 @@ export class JwtService {
     }
   }
 
-  async createAuthResponse(
-    userId: string,
-    email: string,
-    role: UserRole,
-    client?: Client,
-    admin?: Admin,
-  ): Promise<AuthResponseDto> {
-    const payload = {
-      sub: userId,
-      email,
-      role,
-    };
+// В методе createAuthResponse можно оставить возвращение refreshToken для внутреннего использования
+async createAuthResponse(
+  userId: string,
+  email: string,
+  role: UserRole,
+  client?: Client,
+  admin?: Admin,
+): Promise<AuthResponseDto & { refreshToken: string }> {  
+  const payload = {
+    sub: userId,
+    email,
+    role,
+  };
 
-    const [accessToken, refreshToken] = await Promise.all([
-      this.generateAccessToken(payload),
-      this.generateRefreshToken(payload),
-    ]);
+  const [accessToken, refreshToken] = await Promise.all([
+    this.generateAccessToken(payload),
+    this.generateRefreshToken(payload),
+  ]);
 
-    const decoded = this.nestJwtService.decode(accessToken) as any;
-    const expiresIn = decoded ? new Date(decoded.exp * 1000) : new Date(Date.now() + 15 * 60 * 1000);
+  const decoded = this.nestJwtService.decode(accessToken) as any;
+  const expiresIn = decoded ? new Date(decoded.exp * 1000) : new Date(Date.now() + 15 * 60 * 1000);
 
-    let fullName = '';
-    if (role === UserRole.CLIENT && client) {
-      fullName = client.getFullName();
-    } else if (role === UserRole.ADMIN && admin) {
-      fullName = admin.getFullName();
-    }
-
-    return {
-      accessToken,
-      refreshToken,
-      expiresIn,
-      tokenType: 'Bearer',
-      userId,
-      email,
-      role,
-      fullName,
-    };
+  let fullName = '';
+  if (role === UserRole.CLIENT && client) {
+    fullName = client.getFullName();
+  } else if (role === UserRole.ADMIN && admin) {
+    fullName = admin.getFullName();
   }
+
+  return {
+    accessToken,
+    refreshToken, 
+    expiresIn,
+    tokenType: 'Bearer',
+    userId,
+    email,
+    role,
+    fullName,
+  };
+}
 
   isTokenExpired(token: string): boolean {
     try {
