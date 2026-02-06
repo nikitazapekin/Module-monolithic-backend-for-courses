@@ -35,8 +35,7 @@ export class AdminOrmEntity {
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  // One-to-One обратная связь
+ 
   @OneToOne(() => AuditoryOrmEntity, auditory => auditory.admin)
   auditory: AuditoryOrmEntity;
 }

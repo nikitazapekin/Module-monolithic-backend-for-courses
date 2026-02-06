@@ -20,7 +20,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    // Находим пользователя
+ 
     const auditory = await this.authRepository.findAuditoryById(payload.sub);
     
     if (!auditory) {
@@ -30,8 +30,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!auditory.isActive) {
       throw new Error('User is deactivated');
     }
-
-    // Получаем профиль
+ 
     let profile: any;
     if (auditory.role === UserRole.CLIENT) {
       profile = await this.authRepository.findClientByAuditoryId(auditory.id);

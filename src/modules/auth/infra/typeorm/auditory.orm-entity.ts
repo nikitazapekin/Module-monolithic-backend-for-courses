@@ -37,8 +37,7 @@ export class AuditoryOrmEntity {
 
   @Column({ type: 'timestamp', nullable: true })
   refreshTokenExpires: Date;
-
-  // One-to-One отношения
+ 
   @OneToOne(() => ClientOrmEntity, client => client.auditory, { cascade: true })
   @JoinColumn()
   client: ClientOrmEntity;

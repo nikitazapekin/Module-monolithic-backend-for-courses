@@ -17,26 +17,22 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
-    // Проверяем, существует ли пользователь с таким email
+    
     const existingUser = await this.authRepository.findAuditoryByEmail(registerDto.email);
     if (existingUser) {
       throw new ConflictException('User with this email already exists');
     }
-
-    // Хешируем пароль
+ 
     const hashedPassword = await this.jwtService.hashPassword(registerDto.password);
-
-    // Создаем auditory
+ 
     const auditory = new Auditory(
       registerDto.email,
       hashedPassword,
       registerDto.role || UserRole.CLIENT
     );
-
-    // Сохраняем auditory
+ 
     const savedAuditory = await this.authRepository.saveAuditory(auditory);
-
-    // Создаем профиль в зависимости от роли
+ 
     if (savedAuditory.role === UserRole.CLIENT) {
       const client = new Client(
         savedAuditory.id,
@@ -55,20 +51,19 @@ export class AuthService {
         registerDto.lastName,
         registerDto.phone,
         registerDto.country,
-        ['read', 'write'], // Дефолтные права для админа
+        ['read', 'write'],  
         registerDto.middleName,
         registerDto.description
       );
       await this.authRepository.saveAdmin(admin);
     }
 
-    // Получаем полные данные для ответа
+     
     const fullAuditory = await this.authRepository.findAuditoryById(savedAuditory.id);
     if (!fullAuditory) {
       throw new Error('Failed to retrieve created user');
     }
-
-    // Получаем профиль
+ 
     let client: Client | null;
     let admin: Admin | null;
 
@@ -79,7 +74,7 @@ export class AuthService {
       admin = await this.authRepository.findAdminByAuditoryId(fullAuditory.id);
     }
 
-    // Создаем токены
+   
     return this.jwtService.createAuthResponse(
       fullAuditory.id,
       fullAuditory.email,
@@ -90,18 +85,16 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto): Promise<AuthResponseDto> {
-    // Находим пользователя
+    
     const auditory = await this.authRepository.findAuditoryByEmail(loginDto.email);
     if (!auditory) {
       throw new UnauthorizedException('Invalid credentials');
     }
-
-    // Проверяем активность
+ 
     if (!auditory.isActive) {
       throw new UnauthorizedException('Account is deactivated');
     }
-
-    // Проверяем пароль
+ 
     const isPasswordValid = await this.jwtService.comparePasswords(
       loginDto.password,
       auditory.password
@@ -110,14 +103,12 @@ export class AuthService {
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
-
-    // Обновляем время последнего входа
+ 
     auditory.markAsLoggedIn();
     await this.authRepository.updateAuditory(auditory.id, {
       lastLoginAt: auditory.lastLoginAt,
     });
-
-    // Получаем профиль
+ 
     let client: Client | null;
     let admin: Admin | null;
 
@@ -126,8 +117,7 @@ export class AuthService {
     } else {
       admin = await this.authRepository.findAdminByAuditoryId(auditory.id);
     }
-
-    // Создаем токены
+ 
     return this.jwtService.createAuthResponse(
       auditory.id,
       auditory.email,
@@ -147,14 +137,12 @@ export class AuthService {
     if (!payload) {
       throw new UnauthorizedException('Invalid refresh token');
     }
-
-    // Находим пользователя
+ 
     const auditory = await this.authRepository.findAuditoryById(payload.sub);
     if (!auditory || !auditory.isActive) {
       throw new UnauthorizedException('User not found or inactive');
     }
-
-    // Получаем профиль
+ 
     let client: Client | null;
     let admin: Admin | null;
 
@@ -175,8 +163,7 @@ export class AuthService {
   }
 
   async logout(userId: string): Promise<{ success: boolean }> {
-    // В реальном приложении здесь можно инвалидировать токен
-    // или сохранить его в черный список
+  
     return { success: true };
   }
 
@@ -184,19 +171,16 @@ export class AuthService {
     if (!accessToken) {
       return { isValid: false };
     }
-
-    // Проверяем истечение срока
+ 
     if (this.jwtService.isTokenExpired(accessToken)) {
       return { isValid: false };
     }
-
-    // Верифицируем токен
+ 
     const payload = await this.jwtService.verifyToken(accessToken);
     if (!payload) {
       return { isValid: false };
     }
-
-    // Проверяем существование пользователя
+ 
     const auditory = await this.authRepository.findAuditoryById(payload.sub);
     if (!auditory || !auditory.isActive) {
       return { isValid: false };
