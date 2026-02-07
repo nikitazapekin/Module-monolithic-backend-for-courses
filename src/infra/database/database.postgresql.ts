@@ -19,7 +19,7 @@ export class PostgresDatabase {
             password: 'Belorus2010', // Ваш пароль из тестового подключения
             database: 'platform',
             synchronize: true,
-            logging: true,
+            logging: false,   //логи
             retryAttempts: 3,
             retryDelay: 3000,
             autoLoadEntities: true,

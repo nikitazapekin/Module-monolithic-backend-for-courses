@@ -63,6 +63,8 @@ export class AuthController {
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) response: Response,
   ): Promise<AuthResponseDto> {
+
+    console.log("LOGIN", loginDto)
     const authResponse = await this.authService.login(loginDto) as AuthResponseWithRefreshDto;
     
     // Устанавливаем refresh token в cookie

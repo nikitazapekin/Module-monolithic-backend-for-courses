@@ -13,6 +13,11 @@ export class CourseRepository implements ICourseRepository {
   ) {}
 
   async create(course: Course): Promise<Course> {
+
+        console.log('AdminId repository:', course.adminId); 
+
+
+
     const entity = this.toCourseOrmEntity(course);
     const saved = await this.courseRepository.save(entity);
     return this.toCourseDomain(saved);
@@ -137,6 +142,7 @@ export class CourseRepository implements ICourseRepository {
     entity.logo = course.logo;
     entity.status = course.status;
     entity.adminId = course.adminId;
+    
     entity.createdAt = course.createdAt;
     entity.updatedAt = course.updatedAt;
     entity.publishedAt = course.publishedAt!;

@@ -25,6 +25,7 @@ export class CourseService {
     if (exists) {
       throw new ConflictException('Course with this title already exists');
     }
+    console.log("ADMIIN IN SERVICES", adminId)
 
     const course = new Course(
       createCourseDto.title,
@@ -34,6 +35,7 @@ export class CourseService {
       createCourseDto.tags || [],
       createCourseDto.logo,
       adminId,
+      
       createCourseDto.status || 'draft'
     );
 

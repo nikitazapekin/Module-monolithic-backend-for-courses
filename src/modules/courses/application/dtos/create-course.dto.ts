@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty, IsArray, IsOptional, IsEnum } from 'class-validator';
-import { CourseStatus } from '../../domain/entities/course.entity';
+import { CourseStatusDto } from './course-status.enum';
 
 export class CreateCourseDto {
   @ApiProperty({
@@ -8,7 +8,7 @@ export class CreateCourseDto {
     example: 'Основы TypeScript',
   })
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Title is required' })
   title: string;
 
   @ApiProperty({
@@ -16,7 +16,7 @@ export class CreateCourseDto {
     example: 'Подробный курс по основам TypeScript для начинающих',
   })
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Description is required' })
   description: string;
 
   @ApiProperty({
@@ -24,7 +24,7 @@ export class CreateCourseDto {
     example: 'online',
   })
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Type is required' })
   type: string;
 
   @ApiProperty({
@@ -32,27 +32,36 @@ export class CreateCourseDto {
     example: 'ru',
   })
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Language is required' })
   language: string;
 
   @ApiProperty({
     description: 'Теги курса',
     example: ['programming', 'typescript', 'beginner'],
     type: [String],
+    required: false,
   })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
-  tags?: string[];
+  tags?: string[] = [];
 
   @ApiProperty({
     description: 'URL логотипа курса',
     example: 'https://example.com/logo.png',
   })
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Logo is required' })
   logo: string;
- 
+
+  @ApiProperty({
+    description: 'Статус курса',
+    enum: CourseStatusDto,
+    example: CourseStatusDto.DRAFT,
+    required: false,
+    default: CourseStatusDto.DRAFT,
+  })
+  @IsEnum(CourseStatusDto)
   @IsOptional()
-  status?: CourseStatus;
+  status?: CourseStatusDto = CourseStatusDto.DRAFT;
 }
