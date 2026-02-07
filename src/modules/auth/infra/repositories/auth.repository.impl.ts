@@ -19,8 +19,7 @@ export class AuthRepository implements IAuthRepository {
     @InjectRepository(AdminOrmEntity)
     private readonly adminRepository: Repository<AdminOrmEntity>,
   ) {}
-
-  // Auditory методы
+ 
   async findAuditoryByEmail(email: string): Promise<Auditory | null> {
     const entity = await this.auditoryRepository.findOne({
       where: { email: email.toLowerCase() },

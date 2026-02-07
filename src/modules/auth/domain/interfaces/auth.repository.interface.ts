@@ -3,19 +3,18 @@ import { Client } from '../entities/client.entity';
 import { Admin } from '../entities/admin.entity';
 
 export interface IAuthRepository {
- 
   findAuditoryByEmail(email: string): Promise<Auditory | null>;
   findAuditoryById(id: string): Promise<Auditory | null>;
   saveAuditory(auditory: Auditory): Promise<Auditory>;
   updateAuditory(id: string, updates: Partial<Auditory>): Promise<boolean>;
- 
+
   findClientByAuditoryId(auditoryId: string): Promise<Client | null>;
   saveClient(client: Client): Promise<Client>;
   updateClient(id: string, updates: Partial<Client>): Promise<boolean>;
-  
+
   findAdminByAuditoryId(auditoryId: string): Promise<Admin | null>;
   saveAdmin(admin: Admin): Promise<Admin>;
   updateAdmin(id: string, updates: Partial<Admin>): Promise<boolean>;
-  
+
   deactivateUser(auditoryId: string): Promise<boolean>;
 }

@@ -1,5 +1,6 @@
-import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne } from 'typeorm';
+import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, OneToMany } from 'typeorm';
 import { AuditoryOrmEntity } from './auditory.orm-entity';
+import { CourseOrmEntity } from '@modules/courses/infra/typeorm/course.orm-entity';
 
 @Entity('admins')
 export class AdminOrmEntity {
@@ -38,4 +39,8 @@ export class AdminOrmEntity {
  
   @OneToOne(() => AuditoryOrmEntity, auditory => auditory.admin)
   auditory: AuditoryOrmEntity;
+
+
+    @OneToMany(() => CourseOrmEntity, course => course.admin)
+  courses: CourseOrmEntity[];
 }

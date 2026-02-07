@@ -8,6 +8,7 @@ import { LoggerModule } from '@infra/logger/logger.module';
 import { AuthModule } from '@modules/auth/auth.module';
  
 import { TodoModule } from '@modules/todo/todo.module';
+import { CoursesModule } from '@modules/courses/courses.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { TodoModule } from '@modules/todo/todo.module';
     
     TodoModule,
     AuthModule,
+    CoursesModule
  
   ],
   controllers: [AppController],

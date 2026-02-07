@@ -32,8 +32,7 @@ export class ClientOrmEntity {
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  // One-to-One обратная связь
+ 
   @OneToOne(() => AuditoryOrmEntity, auditory => auditory.client)
   auditory: AuditoryOrmEntity;
 }
