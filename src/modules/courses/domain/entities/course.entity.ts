@@ -22,20 +22,20 @@ export class Course {
     tags: string[],
     logo: string,
     adminId: string,
-    status: CourseStatus = 'draft'
+    status: CourseStatus = 'draft',
   ) {
     this.id = this.generateId();
     this.title = title.trim();
     this.description = description.trim();
     this.type = type.trim();
     this.language = language.trim();
-    this.tags = tags.map(tag => tag.trim());
+    this.tags = tags.map((tag) => tag.trim());
     this.logo = logo.trim();
     this.adminId = adminId;
     this.status = status;
     this.createdAt = new Date();
     this.updatedAt = new Date();
-    
+
     if (status === 'published') {
       this.publishedAt = new Date();
     }
@@ -46,7 +46,7 @@ export class Course {
     if (data.description) this.description = data.description.trim();
     if (data.type) this.type = data.type.trim();
     if (data.language) this.language = data.language.trim();
-    if (data.tags) this.tags = data.tags.map(tag => tag.trim());
+    if (data.tags) this.tags = data.tags.map((tag) => tag.trim());
     if (data.logo) this.logo = data.logo.trim();
     if (data.status) {
       this.status = data.status;
@@ -54,7 +54,7 @@ export class Course {
         this.publishedAt = new Date();
       }
     }
-    
+
     this.updatedAt = new Date();
   }
 
@@ -85,7 +85,7 @@ export class Course {
 
   public removeTag(tag: string): void {
     const trimmedTag = tag.trim();
-    this.tags = this.tags.filter(t => t !== trimmedTag);
+    this.tags = this.tags.filter((t) => t !== trimmedTag);
     this.updatedAt = new Date();
   }
 

@@ -5,9 +5,11 @@ import {
   CreateDateColumn, 
   UpdateDateColumn, 
   ManyToOne,
-  JoinColumn 
+  JoinColumn, 
+  OneToOne
 } from 'typeorm';
 import { AdminOrmEntity } from '@modules/auth/infra/typeorm/admin.orm-entity';
+import { CourseMapOrmEntity } from '@modules/map/infra/typeorm/course-map.orm-entity';
 
 @Entity('courses')
 export class CourseOrmEntity {
@@ -54,6 +56,15 @@ export class CourseOrmEntity {
   @ManyToOne(() => AdminOrmEntity, admin => admin.courses)
   @JoinColumn({ name: 'adminId' })
   admin: AdminOrmEntity;
+
+
+
+
+
+  @OneToOne(() => CourseMapOrmEntity, map => map.course)
+@JoinColumn()
+map: CourseMapOrmEntity;
+
 }
 
 // Обновляем AdminOrmEntity для связи один-ко-многим:

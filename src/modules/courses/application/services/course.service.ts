@@ -11,12 +11,15 @@ import { Course, CourseStatus } from '../../domain/entities/course.entity';
 import { CreateCourseDto } from '../dtos/create-course.dto';
 import { UpdateCourseDto } from '../dtos/update-course.dto';
 import { CourseResponseDto } from '../dtos/course-response.dto';
+import { CourseMapService } from '@modules/map/application/services/course-map.service';
 
 @Injectable()
 export class CourseService {
   constructor(
     @Inject('ICourseRepository')
     private readonly courseRepository: ICourseRepository,
+      private readonly courseMapService: CourseMapService,
+      
   ) {}
 
   async createCourse(createCourseDto: CreateCourseDto, adminId: string): Promise<CourseResponseDto> {
@@ -40,6 +43,27 @@ export class CourseService {
     );
 
     const createdCourse = await this.courseRepository.create(course);
+
+
+
+
+
+
+
+     try {
+      await this.courseMapService.createCourseMap({
+        courseId: createdCourse.id,
+        width: 800,
+        height: 600,
+        backgroundColor: '#ffffff',
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: 'cover'
+      });
+    } catch (error) {
+ 
+      console.error('Failed to create course map:', error);
+    }
+
     return this.toResponseDto(createdCourse);
   }
 

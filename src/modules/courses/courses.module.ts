@@ -6,10 +6,13 @@ import { CourseFacade } from './application/facades/course.facade';
 import { CourseRepository } from './infra/repositories/course.repository.impl';
 import { CourseOrmEntity } from './infra/typeorm/course.orm-entity';
 import { AdminOrmEntity } from '../auth/infra/typeorm/admin.orm-entity';
+import { MapModule } from '@modules/map/map.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([CourseOrmEntity, AdminOrmEntity]),
+
+    MapModule
   ],
   controllers: [CourseController],
   providers: [

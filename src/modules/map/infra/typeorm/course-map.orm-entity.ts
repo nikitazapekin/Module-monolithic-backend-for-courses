@@ -1,0 +1,63 @@
+import { 
+  Entity, 
+  PrimaryColumn, 
+  Column, 
+  CreateDateColumn, 
+  UpdateDateColumn,
+  OneToMany,
+  JoinColumn,
+  ManyToOne 
+} from 'typeorm';
+import { CourseOrmEntity } from '@modules/courses/infra/typeorm/course.orm-entity';
+import { MapElementOrmEntity } from './map-element.orm-entity';
+
+@Entity('course_maps')
+export class CourseMapOrmEntity {
+  @PrimaryColumn()
+  id: string;
+
+  @Column()
+  courseId: string;
+
+  @Column('int')
+  width: number;
+
+  @Column('int')
+  height: number;
+
+  @Column({ default: '#ffffff' })
+  backgroundColor: string;
+
+  @Column('text', { nullable: true })
+  backgroundImage?: string; // Base64 encoded
+
+  @Column({ default: 'no-repeat' })
+  backgroundRepeat: string;
+
+  @Column({ default: 'cover' })
+  backgroundSize: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  // Связь один-к-одному с курсом
+  @ManyToOne(() => CourseOrmEntity, course => course.map)
+  @JoinColumn({ name: 'courseId' })
+  course: CourseOrmEntity;
+
+  // Связь один-ко-многим с элементами карты
+  @OneToMany(() => MapElementOrmEntity, element => element.courseMap, {
+    cascade: true,
+    onDelete: 'CASCADE'
+  })
+  elements: MapElementOrmEntity[];
+}
+
+// Обновляем CourseOrmEntity для связи один-к-одному:
+// В course.orm-entity.ts добавляем:
+// @OneToOne(() => CourseMapOrmEntity, map => map.course)
+// @JoinColumn()
+// map: CourseMapOrmEntity;

@@ -9,6 +9,7 @@ import { AuthModule } from '@modules/auth/auth.module';
  
 import { TodoModule } from '@modules/todo/todo.module';
 import { CoursesModule } from '@modules/courses/courses.module';
+import { MapModule } from '@modules/map/map.module';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { CoursesModule } from '@modules/courses/courses.module';
     
     TodoModule,
     AuthModule,
-    CoursesModule
+    CoursesModule, 
+   // MapModule
  
   ],
   controllers: [AppController],
