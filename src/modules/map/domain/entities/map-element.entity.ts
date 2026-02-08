@@ -1,7 +1,7 @@
 import { MapElementType, PositioningType } from './map-element-types.enum';
 
 export class MapElement {
-  public id: string;
+ public id: string;
   public type: MapElementType;
   public courseMapId: string;
   public title?: string;
@@ -54,9 +54,15 @@ export class MapElement {
     height?: number,
     isActive?: boolean,
     stars?: number,
-    breakpoints?: Record<string, any>
+    breakpoints?: Record<string, any>,
+    id?: string 
   ) {
-    this.id = this.generateId();
+  if (id) {
+      this.id = id;
+    } else {
+      this.id = this.generateId();
+    }
+    // this.id = this.generateId();
     this.type = type;
     this.courseMapId = courseMapId;
     this.title = title;

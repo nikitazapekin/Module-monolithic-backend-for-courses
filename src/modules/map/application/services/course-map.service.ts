@@ -14,6 +14,7 @@ import { CreateMapElementDto } from '../dtos/create-map-element.dto';
 import { CourseMapResponseDto } from '../dtos/course-map-response.dto';
 import { MapElementDto } from '../dtos/map-element.dto';
 import { MapElementType } from '@modules/map/infra/typeorm/map-element-types.enum';
+import { elementAt } from 'rxjs';
 
 @Injectable()
 export class CourseMapService {
@@ -69,31 +70,77 @@ export class CourseMapService {
     }
     return this.toResponseDto(courseMap);
   }
-
-  async updateCourseMap(id: string, updateDto: UpdateCourseMapDto): Promise<CourseMapResponseDto> {
-    const courseMap = await this.courseMapRepository.findById(id);
-    if (!courseMap) {
-      throw new NotFoundException('Course map not found');
-    }
-
-    courseMap.update({
-      width: updateDto.width,
-      height: updateDto.height,
-      backgroundColor: updateDto.backgroundColor,
-      backgroundImage: updateDto.backgroundImage,
-      backgroundRepeat: updateDto.backgroundRepeat,
-      backgroundSize: updateDto.backgroundSize,
-    });
-
-    const updated = await this.courseMapRepository.update(id, courseMap);
-    if (!updated) {
-      throw new BadRequestException('Failed to update course map');
-    }
-
-    const updatedMap = await this.courseMapRepository.findById(id);
-    return this.toResponseDto(updatedMap!);
+async updateCourseMap(id: string, updateDto: UpdateCourseMapDto): Promise<CourseMapResponseDto> {
+  const courseMap = await this.courseMapRepository.findById(id);
+  if (!courseMap) {
+    throw new NotFoundException('Course map not found');
   }
 
+  // Обновляем настройки карты
+  courseMap.update({
+    width: updateDto.width,
+    height: updateDto.height,
+    backgroundColor: updateDto.backgroundColor,
+    backgroundImage: updateDto.backgroundImage,
+    backgroundRepeat: updateDto.backgroundRepeat,
+    backgroundSize: updateDto.backgroundSize,
+  });
+
+  // Если есть элементы в updateDto, обрабатываем их
+  if (updateDto.elements && updateDto.elements.length > 0) {
+    console.log(`🔄 Синхронизация элементов: ${updateDto.elements.length} элементов`);
+    await this.synchronizeMapElements(id, updateDto.elements);
+  }
+
+  const updated = await this.courseMapRepository.update(id, courseMap);
+  if (!updated) {
+    throw new BadRequestException('Failed to update course map');
+  }
+
+  const updatedMap = await this.courseMapRepository.findById(id);
+  return this.toResponseDto(updatedMap!);
+}
+
+private async synchronizeMapElements(mapId: string, newElements: CreateMapElementDto[]): Promise<void> {
+  // Получаем текущие элементы
+  const existingElements = await this.courseMapRepository.findElementsByMapId(mapId);
+  
+  console.log(`📊 До: ${existingElements.length} элементов, После: ${newElements.length} элементов`);
+
+  // Создаем мапы для быстрого поиска
+  const existingElementsMap = new Map<string, MapElement>();
+  existingElements.forEach(el => existingElementsMap.set(el.id, el));
+  
+  // Для новых элементов проверяем, есть ли ID в DTO
+  for (const newElDto of newElements) {
+    const elementWithId = newElDto as any;
+    
+    if (!elementWithId.id) {
+      // Если ID нет - создаем новый элемент
+      console.log('🆕 Создание нового элемента без ID');
+      const element = this.createMapElementFromDto(newElDto, mapId);
+      await this.courseMapRepository.createElement(element);
+    } else if (existingElementsMap.has(elementWithId.id)) {
+      // Если ID есть и элемент существует - обновляем
+      console.log(`🔄 Обновление существующего элемента: ${elementWithId.id}`);
+      await this.courseMapRepository.updateElement(elementWithId.id, newElDto);
+      existingElementsMap.delete(elementWithId.id); // Убираем из списка существующих
+    } else {
+      // Если ID есть, но элемент не существует - создаем с этим ID
+      console.log(`➕ Создание нового элемента с заданным ID: ${elementWithId.id}`);
+      const element = this.createMapElementFromDto(newElDto, mapId);
+      await this.courseMapRepository.createElement(element);
+    }
+  }
+
+  // Удаляем элементы, которые остались в existingElementsMap (не были обновлены)
+  for (const [elementId, element] of existingElementsMap) {
+    console.log(`🗑️ Удаление элемента: ${elementId}`);
+    await this.courseMapRepository.deleteElement(elementId);
+  }
+
+  console.log('✅ Синхронизация элементов завершена');
+}
   async deleteCourseMap(id: string): Promise<{ success: boolean }> {
     const courseMap = await this.courseMapRepository.findById(id);
     if (!courseMap) {
@@ -116,6 +163,9 @@ export class CourseMapService {
 
     const element = this.createMapElementFromDto(elementDto, mapId);
     const createdElement = await this.courseMapRepository.createElement(element);
+
+
+    console.log("CREATED", createdElement)
     return this.toElementDto(createdElement);
   }
 
@@ -162,42 +212,51 @@ export class CourseMapService {
     return this.toElementDto(updatedElement!);
   }
 
-  async deleteMapElement(elementId: string): Promise<{ success: boolean }> {
+   async deleteMapElement(elementId: string): Promise<{ success: boolean }> {
+    console.log("Удаление элемента:", elementId);
+    
     const element = await this.courseMapRepository.findElementById(elementId);
     if (!element) {
-      throw new NotFoundException('Map element not found');
+      // Если элемент не найден, все равно возвращаем успех
+      console.warn(`Элемент ${elementId} не найден при удалении`);
+      return { success: true };
     }
 
     const deleted = await this.courseMapRepository.deleteElement(elementId);
     return { success: deleted };
   }
 
-  private createMapElementFromDto(dto: CreateMapElementDto, courseMapId: string): MapElement {
-    return new MapElement(
-      dto.type as MapElementType,
-      courseMapId,
-      dto.positionX,
-      dto.positionY,
-      dto.positioning,
-      dto.offsetX,
-      dto.offsetY,
-      dto.rotation || 0,
-      dto.title,
-      dto.text,
-      dto.color,
-      dto.imageUrl,
-      dto.emoji,
-      dto.fontSize,
-      dto.fontFamily,
-      dto.fontWeight,
-      dto.fontStyle,
-      dto.width,
-      dto.height,
-      dto.isActive,
-      dto.stars,
-      dto.breakpoints
-    );
-  }
+private createMapElementFromDto(dto: CreateMapElementDto, courseMapId: string): MapElement {
+  // Пробуем получить ID из DTO (если он есть)
+  const elementWithId = dto as any;
+  const id = elementWithId.id;
+  
+  return new MapElement(
+    dto.type as MapElementType,
+    courseMapId,
+    dto.positionX,
+    dto.positionY,
+    dto.positioning,
+    dto.offsetX,
+    dto.offsetY,
+    dto.rotation || 0,
+    dto.title,
+    dto.text,
+    dto.color,
+    dto.imageUrl,
+    dto.emoji,
+    dto.fontSize,
+    dto.fontFamily,
+    dto.fontWeight,
+    dto.fontStyle,
+    dto.width,
+    dto.height,
+    dto.isActive,
+    dto.stars,
+    dto.breakpoints,
+    id  
+  );
+}
 
   private toResponseDto(courseMap: CourseMap): CourseMapResponseDto {
     const elements = courseMap.elements.map(element => this.toElementDto(element));
@@ -216,33 +275,32 @@ export class CourseMapService {
       updatedAt: courseMap.updatedAt,
     };
   }
-
-  private toElementDto(element: MapElement): MapElementDto {
-    return {
-      id: element.id,
-      type: element.type,
-      title: element.title,
-      text: element.text,
-      color: element.color,
-      imageUrl: element.imageUrl,
-      emoji: element.emoji,
-      fontSize: element.fontSize,
-      fontFamily: element.fontFamily,
-      fontWeight: element.fontWeight,
-      fontStyle: element.fontStyle,
-      positionX: element.positionX,
-      positionY: element.positionY,
-      positioning: element.positioning,
-      offsetX: element.offsetX,
-      offsetY: element.offsetY,
-      width: element.width,
-      height: element.height,
-      rotation: element.rotation,
-      isActive: element.isActive,
-      stars: element.stars,
-      breakpoints: element.breakpoints,
-      createdAt: element.createdAt,
-      updatedAt: element.updatedAt,
-    };
-  }
+private toElementDto(element: MapElement): MapElementDto {
+  return {
+    id: element.id, // Теперь element.id гарантированно существует
+    type: element.type,
+    title: element.title,
+    text: element.text,
+    color: element.color,
+    imageUrl: element.imageUrl,
+    emoji: element.emoji,
+    fontSize: element.fontSize,
+    fontFamily: element.fontFamily,
+    fontWeight: element.fontWeight,
+    fontStyle: element.fontStyle,
+    positionX: element.positionX,
+    positionY: element.positionY,
+    positioning: element.positioning,
+    offsetX: element.offsetX,
+    offsetY: element.offsetY,
+    width: element.width,
+    height: element.height,
+    rotation: element.rotation,
+    isActive: element.isActive,
+    stars: element.stars,
+    breakpoints: element.breakpoints,
+    createdAt: element.createdAt,
+    updatedAt: element.updatedAt,
+  };
+}
 }

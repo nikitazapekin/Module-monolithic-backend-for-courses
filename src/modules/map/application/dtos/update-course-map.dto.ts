@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, IsOptional, IsIn } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsIn, IsArray, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { CreateMapElementDto } from './create-map-element.dto';
 import { PartialType } from '@nestjs/swagger';
 import { CreateCourseMapDto } from './create-course-map.dto';
 
@@ -58,4 +60,15 @@ export class UpdateCourseMapDto extends PartialType(CreateCourseMapDto) {
   @IsIn(['cover', 'contain', 'auto'])
   @IsOptional()
   backgroundSize?: string;
+
+  @ApiProperty({
+    description: 'Элементы карты',
+    type: [CreateMapElementDto],
+    required: false,
+  })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateMapElementDto)
+  @IsOptional()
+  elements?: CreateMapElementDto[];
 }

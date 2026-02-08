@@ -40,35 +40,54 @@ export class CourseMapRepository implements ICourseMapRepository {
     return entity ? this.toCourseMapDomain(entity) : null;
   }
 
-  async update(id: string, updates: Partial<CourseMap>): Promise<boolean> {
-  /*   const result = await this.courseMapRepository.update(id, {
-      ...updates,
-      updatedAt: new Date(),
-    });
-    return result.affected > 0; */
-
-    return true
+ async update(id: string, updates: Partial<CourseMap>): Promise<boolean> {
+  const entity = await this.courseMapRepository.findOne({
+    where: { id }
+  });
+  
+  if (!entity) {
+    return false;
   }
+  
+  Object.assign(entity, updates);
+  entity.updatedAt = new Date();
+  
+  await this.courseMapRepository.save(entity);
+  return true;
+}
 
-  async delete(id: string): Promise<boolean> {
-/*     const result = await this.courseMapRepository.delete(id);
-    return result.affected > 0; */
-    return false
-  }
+async delete(id: string): Promise<boolean> {
+  const result = await this.courseMapRepository.delete(id);
+  return result.affected! > 0;
+}
 
-  // MapElement methods
-  async createElement(element: MapElement): Promise<MapElement> {
+
+
+async createElement(element: MapElement): Promise<MapElement> {
+  try {
     const entity = this.toMapElementOrmEntity(element);
+    
+    // Если у элемента нет ID - TypeORM сгенерирует его
+    // Если ID есть - используем его
+    
+    console.log('Создание элемента с ID:', element.id);
+    
     const saved = await this.mapElementRepository.save(entity);
+    console.log('Элемент сохранен в БД с ID:', saved.id);
+    
     return this.toMapElementDomain(saved);
+  } catch (error) {
+    console.error('Error creating element:', error);
+    throw error;
   }
-
+}
   async findElementById(elementId: string): Promise<MapElement | null> {
     const entity = await this.mapElementRepository.findOne({
       where: { id: elementId }
     });
     return entity ? this.toMapElementDomain(entity) : null;
   }
+
 
   async findElementsByMapId(mapId: string): Promise<MapElement[]> {
     const entities = await this.mapElementRepository.find({
@@ -85,31 +104,31 @@ export class CourseMapRepository implements ICourseMapRepository {
     });
     return entities.map(entity => this.toMapElementDomain(entity));
   }
-
-  async updateElement(elementId: string, updates: Partial<MapElement>): Promise<boolean> {
-   /*  const result = await this.mapElementRepository.update(elementId, {
-      ...updates,
-      updatedAt: new Date(),
-    });
-    return result.affected > 0; */
-
-    return false
+async updateElement(elementId: string, updates: Partial<MapElement>): Promise<boolean> {
+  const entity = await this.mapElementRepository.findOne({
+    where: { id: elementId }
+  });
+  
+  if (!entity) {
+    return false;
   }
+  
+  Object.assign(entity, updates);
+  entity.updatedAt = new Date();
+  
+  await this.mapElementRepository.save(entity);
+  return true;
+}
+async deleteElement(elementId: string): Promise<boolean> {
+  const result = await this.mapElementRepository.delete(elementId);
+  return result.affected! > 0;
+}
 
-  async deleteElement(elementId: string): Promise<boolean> {
- /*    const result = await this.mapElementRepository.delete(elementId);
-    return result.affected > 0; */
-
-       return false
-  }
-
-  async deleteElementsByMapId(mapId: string): Promise<boolean> {
- /*    const result = await this.mapElementRepository.delete({ courseMapId: mapId });
-    return result.affected > 0; */
-
-    return false
-  }
-
+ 
+async deleteElementsByMapId(mapId: string): Promise<boolean> {
+  const result = await this.mapElementRepository.delete({ courseMapId: mapId });
+  return result.affected! > 0;
+}
   // Преобразования Domain ↔ ORM
   private toCourseMapDomain(entity: CourseMapOrmEntity): CourseMap {
     const courseMap = new CourseMap(
@@ -151,62 +170,66 @@ export class CourseMapRepository implements ICourseMapRepository {
     
     return entity;
   }
+private toMapElementDomain(entity: MapElementOrmEntity): MapElement {
+  return new MapElement(
+    entity.type,
+    entity.courseMapId,
+    entity.positionX,
+    entity.positionY,
+    entity.positioning,
+    entity.offsetX,
+    entity.offsetY,
+    entity.rotation,
+    entity.title,
+    entity.text,
+    entity.color,
+    entity.imageUrl,
+    entity.emoji,
+    entity.fontSize,
+    entity.fontFamily,
+    entity.fontWeight,
+    entity.fontStyle,
+    entity.width,
+    entity.height,
+    entity.isActive,
+    entity.stars,
+    entity.breakpoints,
+    entity.id  
+  );
+}
 
-  private toMapElementDomain(entity: MapElementOrmEntity): MapElement {
-    return new MapElement(
-      entity.type,
-      entity.courseMapId,
-      entity.positionX,
-      entity.positionY,
-      entity.positioning,
-      entity.offsetX,
-      entity.offsetY,
-      entity.rotation,
-      entity.title,
-      entity.text,
-      entity.color,
-      entity.imageUrl,
-      entity.emoji,
-      entity.fontSize,
-      entity.fontFamily,
-      entity.fontWeight,
-      entity.fontStyle,
-      entity.width,
-      entity.height,
-      entity.isActive,
-      entity.stars,
-      entity.breakpoints
-    );
-  }
 
-  private toMapElementOrmEntity(element: MapElement): MapElementOrmEntity {
-    const entity = new MapElementOrmEntity();
-    entity.id = element.id;
-    entity.type = element.type;
-    entity.courseMapId = element.courseMapId;
-    entity.title = element.title;
-    entity.text = element.text;
-    entity.color = element.color;
-    entity.imageUrl = element.imageUrl;
-    entity.emoji = element.emoji;
-    entity.fontSize = element.fontSize;
-    entity.fontFamily = element.fontFamily;
-    entity.fontWeight = element.fontWeight;
-    entity.fontStyle = element.fontStyle;
-    entity.positionX = element.positionX;
-    entity.positionY = element.positionY;
-    entity.positioning = element.positioning;
-    entity.offsetX = element.offsetX;
-    entity.offsetY = element.offsetY;
-    entity.width = element.width;
-    entity.height = element.height;
-    entity.rotation = element.rotation;
-    entity.isActive = element.isActive;
-    entity.stars = element.stars;
-    entity.breakpoints = element.breakpoints;
-    entity.createdAt = element.createdAt;
-    entity.updatedAt = element.updatedAt;
-    
-    return entity;
-  }
+private toMapElementOrmEntity(element: MapElement): MapElementOrmEntity {
+  const entity = new MapElementOrmEntity();
+  
+  // ID обязателен, поэтому просто присваиваем
+  entity.id = element.id;
+  
+  entity.type = element.type;
+  entity.courseMapId = element.courseMapId;
+  entity.title = element.title;
+  entity.text = element.text;
+  entity.color = element.color;
+  entity.imageUrl = element.imageUrl;
+  entity.emoji = element.emoji;
+  entity.fontSize = element.fontSize;
+  entity.fontFamily = element.fontFamily;
+  entity.fontWeight = element.fontWeight;
+  entity.fontStyle = element.fontStyle;
+  entity.positionX = element.positionX || 0;
+  entity.positionY = element.positionY || 0;
+  entity.positioning = element.positioning || 'free';
+  entity.offsetX = element.offsetX || 0;
+  entity.offsetY = element.offsetY || 0;
+  entity.width = element.width;
+  entity.height = element.height;
+  entity.rotation = element.rotation || 0;
+  entity.isActive = element.isActive;
+  entity.stars = element.stars;
+  entity.breakpoints = element.breakpoints;
+  entity.createdAt = element.createdAt || new Date();
+  entity.updatedAt = element.updatedAt || new Date();
+  
+  return entity;
+}
 }
