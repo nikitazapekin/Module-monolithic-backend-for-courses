@@ -7,12 +7,17 @@ import { CourseRepository } from './infra/repositories/course.repository.impl';
 import { CourseOrmEntity } from './infra/typeorm/course.orm-entity';
 import { AdminOrmEntity } from '../auth/infra/typeorm/admin.orm-entity';
 import { MapModule } from '@modules/map/map.module';
+import { LessonModule } from '@modules/lesson/lesson.module';
+import { CheckpointModule } from '@modules/checkpoint/checkpoint.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([CourseOrmEntity, AdminOrmEntity]),
 
-    MapModule
+    MapModule , 
+ 
+
+    
   ],
   controllers: [CourseController],
   providers: [

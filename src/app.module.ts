@@ -9,8 +9,9 @@ import { AuthModule } from '@modules/auth/auth.module';
  
 import { TodoModule } from '@modules/todo/todo.module';
 import { CoursesModule } from '@modules/courses/courses.module';
-import { MapModule } from '@modules/map/map.module';
-
+import { LessonModule } from '@modules/lesson/lesson.module';
+import { CheckpointModule } from '@modules/checkpoint/checkpoint.module';
+ 
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -22,7 +23,11 @@ import { MapModule } from '@modules/map/map.module';
     TodoModule,
     AuthModule,
     CoursesModule, 
-   // MapModule
+ 
+
+     LessonModule,
+    CheckpointModule,
+ 
  
   ],
   controllers: [AppController],

@@ -15,12 +15,20 @@ import { CourseMapResponseDto } from '../dtos/course-map-response.dto';
 import { MapElementDto } from '../dtos/map-element.dto';
 import { MapElementType } from '@modules/map/infra/typeorm/map-element-types.enum';
 import { elementAt } from 'rxjs';
+import { ILessonRepository } from '@modules/lesson/domain/interfaces/lesson.repository.interface';
+import { ICheckpointRepository } from '@modules/checkpoint/domain/interfaces/checkpoint.repository.interface';
 
 @Injectable()
 export class CourseMapService {
   constructor(
     @Inject('ICourseMapRepository')
     private readonly courseMapRepository: ICourseMapRepository,
+
+
+     @Inject('ILessonRepository')
+  private readonly lessonRepository: ILessonRepository,
+  @Inject('ICheckpointRepository')
+  private readonly checkpointRepository: ICheckpointRepository,
   ) {}
 
   async createCourseMap(createDto: CreateCourseMapDto): Promise<CourseMapResponseDto> {
@@ -211,7 +219,7 @@ private async synchronizeMapElements(mapId: string, newElements: CreateMapElemen
     const updatedElement = await this.courseMapRepository.findElementById(elementId);
     return this.toElementDto(updatedElement!);
   }
-
+/* 
    async deleteMapElement(elementId: string): Promise<{ success: boolean }> {
     console.log("Удаление элемента:", elementId);
     
@@ -225,7 +233,28 @@ private async synchronizeMapElements(mapId: string, newElements: CreateMapElemen
     const deleted = await this.courseMapRepository.deleteElement(elementId);
     return { success: deleted };
   }
+ */
 
+
+  async deleteMapElement(elementId: string): Promise<{ success: boolean }> {
+  console.log("Удаление элемента:", elementId);
+  
+  const element = await this.courseMapRepository.findElementById(elementId);
+  if (!element) {
+    console.warn(`Элемент ${elementId} не найден при удалении`);
+    return { success: true };
+  }
+
+  // Удаляем связанные сущности
+  if (element.type === MapElementType.LESSON) {
+    await this.lessonRepository.deleteByMapElementId(elementId);
+  } else if (element.type === MapElementType.CHECKPOINT) {
+    await this.checkpointRepository.deleteByMapElementId(elementId);
+  }
+
+  const deleted = await this.courseMapRepository.deleteElement(elementId);
+  return { success: deleted };
+}
 private createMapElementFromDto(dto: CreateMapElementDto, courseMapId: string): MapElement {
   // Пробуем получить ID из DTO (если он есть)
   const elementWithId = dto as any;
