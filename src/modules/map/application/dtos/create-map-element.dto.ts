@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, IsOptional, IsIn, IsBoolean } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsIn, IsBoolean, IsEnum } from 'class-validator';
 import { MapElementType, PositioningType } from '../../domain/entities/map-element-types.enum';
+import { CheckpointType } from '@modules/checkpoint/domain/entities/checkpoint.entity';
 
 export class CreateMapElementDto {
   @ApiProperty({
@@ -180,4 +181,79 @@ export class CreateMapElementDto {
   })
   @IsOptional()
   breakpoints?: Record<string, any>;
+
+  // Дополнительные поля для уроков
+  @ApiProperty({
+    description: 'Содержимое урока (для type: lesson)',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  content?: string;
+
+  @ApiProperty({
+    description: 'Длительность урока в минутах (для type: lesson)',
+    required: false,
+  })
+  @IsNumber()
+  @IsOptional()
+  duration?: number;
+
+  @ApiProperty({
+    description: 'Порядковый номер урока (для type: lesson)',
+    required: false,
+  })
+  @IsNumber()
+  @IsOptional()
+  orderIndex?: number;
+
+  @ApiProperty({
+    description: 'Опубликован ли урок (для type: lesson)',
+    required: false,
+  })
+  @IsBoolean()
+  @IsOptional()
+  published?: boolean;
+
+  // Дополнительные поля для контрольных точек
+  @ApiProperty({
+    description: 'Тип контрольной точки (для type: checkpoint)',
+    enum: CheckpointType,
+    required: false,
+  })
+  @IsEnum(CheckpointType)
+  @IsOptional()
+  checkpointType?: CheckpointType;
+
+  @ApiProperty({
+    description: 'Проходной балл (для type: checkpoint)',
+    required: false,
+  })
+  @IsNumber()
+  @IsOptional()
+  passingScore?: number;
+
+  @ApiProperty({
+    description: 'Максимальное количество попыток (для type: checkpoint)',
+    required: false,
+  })
+  @IsNumber()
+  @IsOptional()
+  maxAttempts?: number;
+
+  @ApiProperty({
+    description: 'Лимит времени в минутах (для type: checkpoint)',
+    required: false,
+  })
+  @IsNumber()
+  @IsOptional()
+  timeLimit?: number;
+
+  @ApiProperty({
+    description: 'Инструкции (для type: checkpoint)',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  instructions?: string;
 }
