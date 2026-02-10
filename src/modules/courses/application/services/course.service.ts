@@ -24,8 +24,7 @@ export class CourseService {
       
       
   ) {}
-
-  async createCourse(createCourseDto: CreateCourseDto, adminId: string): Promise<CourseResponseDto> {
+ async createCourse(createCourseDto: CreateCourseDto, adminId: string): Promise<CourseResponseDto> {
     // Проверка на уникальность названия
     const exists = await this.courseRepository.existsByTitle(createCourseDto.title);
     if (exists) {
@@ -41,19 +40,13 @@ export class CourseService {
       createCourseDto.tags || [],
       createCourseDto.logo,
       adminId,
-      
       createCourseDto.status || 'draft'
     );
 
     const createdCourse = await this.courseRepository.create(course);
 
-
-
-
-
-
-
-     try {
+    // Создаем карту курса
+    try {
       await this.courseMapService.createCourseMap({
         courseId: createdCourse.id,
         width: 800,
@@ -63,13 +56,15 @@ export class CourseService {
         backgroundSize: 'cover'
       });
     } catch (error) {
- 
       console.error('Failed to create course map:', error);
+      // Не прерываем создание курса, если не удалось создать карту
     }
 
     return this.toResponseDto(createdCourse);
   }
 
+
+  
   async getCourseById(id: string): Promise<CourseResponseDto> {
     const course = await this.courseRepository.findById(id);
     if (!course) {
