@@ -11,31 +11,32 @@ export class PostgresDatabase {
     constructor(private readonly configService: ConfigService) { }
 
     getConnection(): TypeOrmModuleOptions {
-        // ЗАХАРДКОЖЕННЫЕ ДАННЫЕ ДЛЯ ПОДКЛЮЧЕНИЯ
-        const hardcodedConfig = {
-            host: 'localhost',
-            port: 5432,
-            username: 'postgres',
-            password: 'Belorus2010', // Ваш пароль из тестового подключения
-            database: 'platform',
-            synchronize: true,
-            logging: false,   //логи
-            retryAttempts: 3,
-            retryDelay: 3000,
-            autoLoadEntities: true,
-            migrationsRun: false,
-            ssl: false
+        // Используем переменные окружения с дефолтными значениями
+        const dbConfig = {
+            host: process.env.DB_HOST || 'localhost',
+            port: parseInt(process.env.DB_PORT || '5432'),
+            username: process.env.DB_USERNAME || 'postgres',
+            password: process.env.DB_PASSWORD || 'Belorus2010',
+            database: process.env.DB_NAME || 'platform',
+            synchronize: process.env.DB_SYNCHRONIZE !== 'false', // по умолчанию true
+            logging: process.env.DB_LOGGING === 'true',
+            retryAttempts: parseInt(process.env.DB_RETRY_ATTEMPTS || '3'),
+            retryDelay: parseInt(process.env.DB_RETRY_DELAY || '3000'),
+            autoLoadEntities: process.env.DB_AUTO_LOAD_ENTITIES !== 'false',
+            migrationsRun: process.env.DB_MIGRATIONS_RUN === 'true',
+            ssl: process.env.DB_SSL === 'true'
         };
 
-        console.log('🔍 POSTGRES CONFIGURATION (HARDCODED):');
+        console.log('🔍 POSTGRES CONFIGURATION:');
         console.log('======================================');
-        console.log('Host:', hardcodedConfig.host);
-        console.log('Port:', hardcodedConfig.port);
-        console.log('Database:', hardcodedConfig.database);
-        console.log('Username:', hardcodedConfig.username);
-        console.log('Password:', '***' + hardcodedConfig.password.slice(-3)); // Показываем последние 3 символа для проверки
-        console.log('Synchronize:', hardcodedConfig.synchronize);
-        console.log('Logging:', hardcodedConfig.logging);
+        console.log('Host:', dbConfig.host);
+        console.log('Port:', dbConfig.port);
+        console.log('Database:', dbConfig.database);
+        console.log('Username:', dbConfig.username);
+        console.log('Password:', '***' + dbConfig.password.slice(-3));
+        console.log('Synchronize:', dbConfig.synchronize);
+        console.log('Logging:', dbConfig.logging);
+        console.log('Retry Attempts:', dbConfig.retryAttempts);
         console.log('======================================');
 
         // Динамическая загрузка entities
@@ -44,18 +45,18 @@ export class PostgresDatabase {
 
         return {
             type: 'postgres',
-            host: hardcodedConfig.host,
-            port: hardcodedConfig.port,
-            username: hardcodedConfig.username,
-            password: hardcodedConfig.password, // Теперь это точно строка
-            database: hardcodedConfig.database,
+            host: dbConfig.host,  // ← Исправлено
+            port: dbConfig.port,  // ← Исправлено
+            username: dbConfig.username,  // ← Исправлено
+            password: dbConfig.password,  // ← Исправлено
+            database: dbConfig.database,  // ← Исправлено
             entities: entities,
-            synchronize: hardcodedConfig.synchronize,
-            logging: hardcodedConfig.logging,
-            retryAttempts: hardcodedConfig.retryAttempts,
-            retryDelay: hardcodedConfig.retryDelay,
-            autoLoadEntities: hardcodedConfig.autoLoadEntities,
-            migrationsRun: hardcodedConfig.migrationsRun,
+            synchronize: dbConfig.synchronize,  // ← Исправлено
+            logging: dbConfig.logging,  // ← Исправлено
+            retryAttempts: dbConfig.retryAttempts,  // ← Исправлено
+            retryDelay: dbConfig.retryDelay,  // ← Исправлено
+            autoLoadEntities: dbConfig.autoLoadEntities,  // ← Исправлено
+            migrationsRun: dbConfig.migrationsRun,  // ← Исправлено
             migrations: [join(__dirname, '../../migrations/*.{ts,js}')],
           
             extra: {
@@ -63,7 +64,7 @@ export class PostgresDatabase {
                 idleTimeoutMillis: 30000,
                 max: 20,
             },
-            ssl: hardcodedConfig.ssl ? {
+            ssl: dbConfig.ssl ? {  // ← Исправлено
                 rejectUnauthorized: false
             } : false,
         };
@@ -160,13 +161,13 @@ export class PostgresDatabase {
         try {
             console.log('🧪 Testing database connection...');
             
-            // ТЕСТОВЫЕ ХАРДКОДНЫЕ ДАННЫЕ
+            // Используем переменные окружения или дефолтные значения
             const testConfig = {
-                host: 'localhost',
-                port: 5432,
-                user: 'postgres',
-                password: 'Belorus2010',
-                database: 'platform'
+                host: process.env.DB_HOST || 'localhost',
+                port: parseInt(process.env.DB_PORT || '5432'),
+                user: process.env.DB_USERNAME || 'postgres',
+                password: process.env.DB_PASSWORD || 'Belorus2010',
+                database: process.env.DB_NAME || 'platform'
             };
             
             console.log('📊 Test config:', {
@@ -181,7 +182,7 @@ export class PostgresDatabase {
                 user: testConfig.user,
                 password: testConfig.password,
                 database: testConfig.database,
-                connectionTimeoutMillis: 5000,
+                connectionTimeoutMillis: 10000,
             });
 
             await client.connect();
@@ -195,20 +196,17 @@ export class PostgresDatabase {
             return true;
         } catch (error) {
             console.error('❌ Database connection failed:', error.message);
+            console.error('Full error:', error);
             
             // Детальная информация об ошибке
             console.log('\n🔧 Troubleshooting steps:');
             console.log('1. Проверьте, запущен ли PostgreSQL:');
             console.log('   Windows: services.msc -> ищите "PostgreSQL"');
             console.log('   Linux: sudo service postgresql status');
-            console.log('2. Попробуйте подключиться вручную:');
-            console.log('   psql -h localhost -U postgres -d platform');
-            console.log('3. Если базы данных нет, создайте ее:');
-            console.log('   createdb -U postgres platform');
-            console.log('4. Или создайте через psql:');
-            console.log('   psql -U postgres');
-            console.log('   CREATE DATABASE platform;');
-            console.log('   \\q');
+            console.log('2. Проверьте параметры подключения:');
+            console.log('   Host:', process.env.DB_HOST || 'localhost');
+            console.log('   Port:', process.env.DB_PORT || '5432');
+            console.log('   Database:', process.env.DB_NAME || 'platform');
             
             return false;
         }
@@ -281,8 +279,6 @@ export class PostgresDatabase {
 export const testPostgresConnection = async (): Promise<boolean> => {
     return PostgresDatabase.testConnection();
 };
-
-// export const createPostgresMigration = PostgresDatabase.createMigration;
 
 // Экспортируем хардкодную конфигурацию для использования в других местах
 export const getHardcodedDbConfig = (): TypeOrmModuleOptions => {

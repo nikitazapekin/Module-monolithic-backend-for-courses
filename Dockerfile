@@ -1,48 +1,41 @@
-# -------- Stage 1: Build environment --------
-FROM node:22.14 AS builder
+FROM node:20-slim
 
-# Install build tools required for native modules (e.g., sqlite3, mysql, mysql2)
-RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
 
-# Set working directory inside the container
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json to install dependencies
 COPY package*.json ./
-
-# Install all dependencies including native modules
 RUN npm install
 
-# RUN npm install sqlite3 --save
-
-# Copy the entire application code into the container
 COPY . .
-
-# Build the application (e.g., NestJS -> dist folder)
 RUN npm run build
 
-# -------- Stage 2: Clean production image --------
-FROM node:22.14
+RUN mkdir -p /tmp/code_execution
 
-# Set working directory in the final production image
-WORKDIR /usr/src/app
-
-# Copy built application and installed modules from the builder stage
-COPY --from=builder /usr/src/app .
-
-# Set environment variables (can be overridden at runtime)
-ENV PORT=3000
-ENV DB_TYPE=sqlite
-ENV DB_HOST=localhost
+ENV PORT=3002
+ENV NODE_ENV=production
+ENV DOCKER=true
+ENV DB_HOST=postgres
 ENV DB_PORT=5432
-ENV DB_USERNAME=''
-ENV DB_PASSWORD=''
-ENV DB_NAME=''
+ENV DB_USERNAME=postgres
+ENV DB_PASSWORD=Belorus2010
+ENV DB_NAME=platform
+ENV DB_SYNCHRONIZE=true
+ENV DB_LOGGING=true
+ENV DB_RETRY_ATTEMPTS=10
+ENV DB_RETRY_DELAY=5000
+ENV DB_AUTO_LOAD_ENTITIES=true
+ENV DB_MIGRATIONS_RUN=false
+ENV DB_SSL=false
 ENV MONGO_URL=mongodb://mongo:27017/eventstore
-ENV JWT_SECRET: your-secret-key
+ENV JWT_SECRET=your-secret-key
+ENV CODE_EXEC_TEMP_DIR=/tmp/code_execution
 
-# Expose the port your app runs on
-EXPOSE 3000
+EXPOSE 3002
 
-# Define the default command to run your application
-CMD ["npm", "run", "start:prod"]
+CMD ["node", "dist/main.js"]

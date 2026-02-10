@@ -7,17 +7,26 @@ services:
       dockerfile: Dockerfile
     container_name: nestjs-app
     ports:
-      - "3000:3000"
+      - "3002:3002"
     environment:
-      PORT: 3000
-      DB_TYPE: postgres
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USERNAME: postgres
-      DB_PASSWORD: postgres
-      DB_NAME: mydb
-      MONGO_URL: mongodb://mongo:27017/eventstore
-      JWT_SECRET: your-secret-key
+      - PORT=3002
+      - NODE_ENV=production
+      - DOCKER=true
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=Belorus2010
+      - DB_NAME=platform           # ← platform
+      - DB_SYNCHRONIZE=true
+      - DB_LOGGING=true
+      - DB_RETRY_ATTEMPTS=10
+      - DB_RETRY_DELAY=5000
+      - DB_AUTO_LOAD_ENTITIES=true
+      - DB_MIGRATIONS_RUN=false
+      - DB_SSL=false
+      - MONGO_URL=mongodb://mongo:27017/eventstore
+      - JWT_SECRET=your-secret-key
+      - CODE_EXEC_TEMP_DIR=/tmp/code_execution
     depends_on:
       - postgres
       - mongo
@@ -27,20 +36,25 @@ services:
     image: postgres:16
     container_name: postgres
     ports:
-      - "5432:5432"
+      - "5433:5432"  # Изменяем порт чтобы не конфликтовал с локальным PostgreSQL
     environment:
-      POSTGRES_DB: mydb
+      POSTGRES_DB: platform          # ← Создаем БД platform
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: Belorus2010
     volumes:
       - postgres-data:/var/lib/postgresql/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d platform"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   mongo:
     image: mongo:6
     container_name: mongodb
     ports:
-      - "27017:27017"
+      - "27018:27017"  # Изменяем порт чтобы не конфликтовал
     volumes:
       - mongo-data:/data/db
     restart: unless-stopped
