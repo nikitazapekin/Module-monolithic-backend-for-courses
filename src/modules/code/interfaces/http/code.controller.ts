@@ -15,12 +15,12 @@ export class CodeController {
     schema: {
       properties: {
         output: { type: 'string' },
+        error: { type: 'string', description: 'Compile or runtime error (stderr)' },
       },
     },
   })
-  async execute(@Body() dto: ExecuteCodeDto): Promise<{ output: string }> {
-    const output = await this.codeExecutionService.executeCode(dto.language, dto.code);
-    return { output };
+  async execute(@Body() dto: ExecuteCodeDto): Promise<{ output: string; error?: string }> {
+    return this.codeExecutionService.executeCode(dto.language, dto.code);
   }
 
   @Get('health')

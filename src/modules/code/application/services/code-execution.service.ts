@@ -67,6 +67,20 @@ ${code}
 }
 `.trimStart(),
   },
+  java: {
+    extension: 'java',
+    command: (filePath) => {
+      const dir = path.dirname(filePath);
+      return `cd "${dir}" && javac Main.java && java -cp . Main`;
+    },
+    template: (code) => `
+public class Main {
+    public static void main(String[] args) {
+        ${code}
+    }
+}
+    `.trimStart(),
+  },
 };
 
 @Injectable()
@@ -89,7 +103,8 @@ export class CodeExecutionService {
     }
   }
 
-  async executeCode(language: SupportedLanguage, code: string): Promise<string> {
+  /** Returns { output } on success, { output, error } on compile/exec failure (error contains stderr). */
+  async executeCode(language: SupportedLanguage, code: string): Promise<{ output: string; error?: string }> {
     const config = LANGUAGE_CONFIG[language];
 
     if (!config) {
@@ -99,8 +114,15 @@ export class CodeExecutionService {
       });
     }
 
-    const fileName = `code_${Date.now()}.${config.extension}`;
-    const filePath = path.join(TEMP_DIR, fileName);
+    const ts = Date.now();
+    const fileName = `code_${ts}.${config.extension}`;
+    let filePath = path.join(TEMP_DIR, fileName);
+
+    if (language === 'java') {
+      const javaDir = path.join(TEMP_DIR, `java_${ts}`);
+      fs.mkdirSync(javaDir, { recursive: true });
+      filePath = path.join(javaDir, 'Main.java');
+    }
 
     try {
       const fullCode = config.template(code);
@@ -112,20 +134,23 @@ export class CodeExecutionService {
       }
 
       const command = config.command(filePath);
+      const cwd = language === 'java' ? path.dirname(filePath) : TEMP_DIR;
 
       const { stdout, stderr } = await execAsync(command, {
         timeout: 15_000,
-        cwd: TEMP_DIR,
+        cwd,
       });
 
       this.cleanupFiles(filePath, language);
 
-      if (stderr && stderr.trim() && !stdout.trim() && !stderr.includes('warning')) {
-        throw new InternalServerErrorException(stderr);
+      const stderrTrim = stderr?.trim() ?? '';
+      const stdoutTrim = stdout?.trim() ?? '';
+      if (stderrTrim && !stdoutTrim && !stderrTrim.toLowerCase().includes('warning')) {
+        return { output: '', error: stderrTrim };
       }
 
-      const result = stdout.trim() || stderr.trim() || 'Код выполнен успешно (без вывода)';
-      return result;
+      const result = stdoutTrim || stderrTrim || 'Код выполнен успешно (без вывода)';
+      return { output: result };
     } catch (error: any) {
       this.cleanupFiles(filePath, language);
 
@@ -133,13 +158,9 @@ export class CodeExecutionService {
         throw error;
       }
 
-      if (language === 'golang') {
-        throw new InternalServerErrorException(
-          `Go execution failed: ${error?.message}. Проверьте, что Go установлен в контейнере.`,
-        );
-      }
-
-      throw new InternalServerErrorException(error?.message || 'Ошибка при выполнении кода');
+      const execErr = error?.stderr ?? error?.stdout ?? error?.message ?? 'Ошибка при выполнении кода';
+      const errStr = typeof execErr === 'string' ? execErr : String(execErr);
+      return { output: '', error: errStr };
     }
   }
 
@@ -164,6 +185,17 @@ export class CodeExecutionService {
 
   private cleanupFiles(filePath: string, language: SupportedLanguage): void {
     try {
+      if (language === 'java') {
+        const dir = path.dirname(filePath);
+        if (fs.existsSync(dir)) {
+          for (const name of fs.readdirSync(dir)) {
+            fs.unlinkSync(path.join(dir, name));
+          }
+          fs.rmdirSync(dir);
+        }
+        return;
+      }
+
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }
@@ -188,6 +220,7 @@ export class CodeExecutionService {
       python: 'print("Python OK")',
       csharp: 'Console.WriteLine("C# OK");',
       golang: 'fmt.Println("Go OK")',
+      java: 'System.out.println("Java OK");',
     };
 
     for (const lang of Object.keys(LANGUAGE_CONFIG) as SupportedLanguage[]) {
@@ -195,8 +228,8 @@ export class CodeExecutionService {
         await this.checkLanguageAvailability(lang);
 
         if (testCodes[lang]) {
-          await this.executeCode(lang, testCodes[lang] as string);
-          languageStatus[lang] = 'Working';
+          const res = await this.executeCode(lang, testCodes[lang] as string);
+          languageStatus[lang] = res.error ? res.error : 'Working';
         } else {
           languageStatus[lang] = 'Available';
         }
@@ -219,12 +252,14 @@ export class CodeExecutionService {
       python: 'python --version',
       csharp: 'dotnet --version',
       golang: 'go version',
+      java: 'javac -version',
     };
 
-    const { stdout } = await execAsync(testCommands[language], { timeout: 5000 });
+    const { stdout, stderr } = await execAsync(testCommands[language], { timeout: 5000 });
+    const out = (stdout || stderr || '').trim();
 
     // eslint-disable-next-line no-console
-    console.log(`${language} version: ${stdout.trim()}`);
+    console.log(`${language} version: ${out}`);
   }
 }
 
