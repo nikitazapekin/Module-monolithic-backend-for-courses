@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { exec } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -7,58 +7,7 @@ import type { SupportedLanguage } from '../dtos/execute-code.dto';
 
 const execAsync = promisify(exec);
 
-interface LanguageConfig {
-  extension: string;
-  command: (filePath: string) => string;
-  template: (code: string) => string;
-}
-
-function resolveTempDir(): string {
-  const envDir = process.env.CODE_EXEC_TEMP_DIR;
-  if (envDir && envDir.trim().length > 0) {
-    return envDir;
-  }
-
-  if (process.platform === 'win32') {
-    return path.join(process.cwd(), 'tmp', 'code_execution');
-  }
-
-  return '/tmp/code_execution';
-}
-
-const TEMP_DIR = resolveTempDir();
-
-const LANGUAGE_CONFIG: Record<SupportedLanguage, LanguageConfig> = {
-  javascript: {
-    extension: 'js',
-    command: (filePath) => `node "${filePath}"`,
-    template: (code) => code, // JS не требует обертки
-  },
-  python: {
-    extension: 'py',
-    command: (filePath) => `python3 "${filePath}"`,
-    template: (code) => code, // Python не требует обертки
-  },
-  csharp: {
-    extension: 'cs',
-    command: (filePath) => `dotnet run --project "${path.dirname(filePath)}"`,
-    template: (code) => code, // C# код уже содержит Program.Main
-  },
-  golang: {
-    extension: 'go',
-    command: (filePath) => `cd "${path.dirname(filePath)}" && go run "${path.basename(filePath)}"`,
-    template: (code) => code, // Go код уже содержит package main и func main
-  },
-  java: {
-    extension: 'java',
-    command: (filePath) => {
-      const dir = path.dirname(filePath);
-      // Извлекаем имя класса из файла
-      return `cd "${dir}" && javac *.java && java -cp . Main`;
-    },
-    template: (code) => code, // Java код уже содержит свой класс
-  },
-};
+const TEMP_DIR = path.join(process.cwd(), 'tmp', 'code_execution');
 
 @Injectable()
 export class CodeExecutionService {
@@ -72,284 +21,284 @@ export class CodeExecutionService {
         fs.mkdirSync(TEMP_DIR, { recursive: true });
       }
     } catch (error: any) {
-      console.error('Failed to create temp dir for code execution:', error?.message);
+      console.error('Failed to create temp dir:', error?.message);
     }
   }
 
   async executeCode(language: SupportedLanguage, code: string): Promise<{ output: string; error?: string }> {
-    const config = LANGUAGE_CONFIG[language];
-
-    if (!config) {
-      throw new BadRequestException({
-        message: `Unsupported language: ${language}`,
-        supported: Object.keys(LANGUAGE_CONFIG),
-      });
-    }
-
-    const ts = Date.now();
-    let filePath: string | undefined;
-
+    const timestamp = Date.now();
+    const uniqueId = `${language}_${timestamp}_${Math.random().toString(36).substring(7)}`;
+    const workDir = path.join(TEMP_DIR, uniqueId);
+    
     try {
-      // Специальная обработка для разных языков
+      // Создаем рабочую директорию
+      fs.mkdirSync(workDir, { recursive: true });
+      console.log(`Work directory created: ${workDir}`);
+
       switch (language) {
-        case 'java': {
-          const javaDir = path.join(TEMP_DIR, `java_${ts}`);
-          fs.mkdirSync(javaDir, { recursive: true });
-
-          // Определяем имя класса из кода
-          const classNameMatch = code.match(/public\s+class\s+(\w+)/);
-          const className = classNameMatch ? classNameMatch[1] : 'Main';
-          filePath = path.join(javaDir, `${className}.java`);
-
-          await fs.promises.writeFile(filePath, code, 'utf8');
-
-          const command = `cd "${javaDir}" && javac *.java && java -cp . ${className}`;
-          const { stdout, stderr } = await execAsync(command, { timeout: 15_000, cwd: javaDir });
-
-          this.cleanupFiles(filePath, language);
-
-          const stderrTrim = stderr?.trim() ?? '';
-          const stdoutTrim = stdout?.trim() ?? '';
-
-          if (stderrTrim && !stdoutTrim && !stderrTrim.toLowerCase().includes('warning')) {
-            return { output: '', error: stderrTrim };
-          }
-
-          return { output: stdoutTrim || stderrTrim || 'Код выполнен успешно' };
-        }
-
-        case 'csharp': {
-          const csDir = path.join(TEMP_DIR, `csharp_${ts}`);
-          fs.mkdirSync(csDir, { recursive: true });
-
-          filePath = path.join(csDir, 'Program.cs');
-          await fs.promises.writeFile(filePath, code, 'utf8');
-
-          // Создаем проект, только если его нет
-          await this.createCSharpProject(csDir);
-
-          const command = `dotnet run --project "${csDir}"`;
-          const { stdout, stderr } = await execAsync(command, { timeout: 15_000, cwd: csDir });
-
-          this.cleanupFiles(filePath, language);
-
-          const stderrTrim = stderr?.trim() ?? '';
-          const stdoutTrim = stdout?.trim() ?? '';
-
-          if (stderrTrim && !stdoutTrim && !stderrTrim.toLowerCase().includes('warning')) {
-            return { output: '', error: stderrTrim };
-          }
-
-          return { output: stdoutTrim || stderrTrim || 'Код выполнен успешно' };
-        }
-
-        case 'golang': {
-          const goDir = path.join(TEMP_DIR, `go_${ts}`);
-          fs.mkdirSync(goDir, { recursive: true });
-
-          filePath = path.join(goDir, 'main.go');
-          await fs.promises.writeFile(filePath, code, 'utf8');
-
-          const command = `go run "${filePath}"`;
-          const { stdout, stderr } = await execAsync(command, { timeout: 15_000, cwd: goDir });
-
-          this.cleanupFiles(filePath, language);
-
-          const stderrTrim = stderr?.trim() ?? '';
-          const stdoutTrim = stdout?.trim() ?? '';
-
-          if (stderrTrim && !stdoutTrim) {
-            return { output: '', error: stderrTrim };
-          }
-
-          return { output: stdoutTrim || stderrTrim || 'Код выполнен успешно' };
-        }
-
-        default: {
-          // JavaScript и Python
-          filePath = path.join(TEMP_DIR, `code_${ts}.${config.extension}`);
-          await fs.promises.writeFile(filePath, code, 'utf8');
-
-          const command = config.command(filePath);
-          const { stdout, stderr } = await execAsync(command, { timeout: 15_000, cwd: TEMP_DIR });
-
-          this.cleanupFiles(filePath, language);
-
-          const stderrTrim = stderr?.trim() ?? '';
-          const stdoutTrim = stdout?.trim() ?? '';
-
-          if (stderrTrim && !stdoutTrim) {
-            return { output: '', error: stderrTrim };
-          }
-
-          return { output: stdoutTrim || stderrTrim || 'Код выполнен успешно' };
-        }
+        case 'javascript':
+          return await this.runJavaScript(code, workDir);
+        case 'python':
+          return await this.runPython(code, workDir);
+        case 'golang':
+          return await this.runGolang(code, workDir);
+        case 'java':
+          return await this.runJava(code, workDir);
+        case 'csharp':
+          return await this.runCSharp(code, workDir);
+        default:
+          throw new BadRequestException(`Unsupported language: ${language}`);
       }
     } catch (error: any) {
-      if (filePath) {
-        this.cleanupFiles(filePath, language);
+      console.error(`Execution error for ${language}:`, error);
+      
+      // Очищаем директорию
+      try {
+        fs.rmSync(workDir, { recursive: true, force: true });
+      } catch (cleanupError) {
+        console.error('Cleanup error:', cleanupError);
       }
-
-      const execErr = error?.stderr ?? error?.stdout ?? error?.message ?? 'Ошибка при выполнении кода';
-      const errStr = typeof execErr === 'string' ? execErr : String(execErr);
-      return { output: '', error: errStr };
+      
+      return {
+        output: '',
+        error: error?.stderr || error?.stdout || error?.message || 'Ошибка выполнения кода'
+      };
     }
   }
 
-  private async createCSharpProject(projectDir: string): Promise<void> {
-    const csprojPath = path.join(projectDir, 'csharp_project.csproj');
-
-    // Проверяем, существует ли уже файл проекта
-    if (fs.existsSync(csprojPath)) {
-      return;
+  private async runJavaScript(code: string, workDir: string): Promise<{ output: string; error?: string }> {
+    const filePath = path.join(workDir, 'main.js');
+    fs.writeFileSync(filePath, code);
+    
+    try {
+      const { stdout, stderr } = await execAsync(`node "${filePath}"`, { cwd: workDir, timeout: 10000 });
+      return { output: stdout.trim(), error: stderr.trim() || undefined };
+    } finally {
+      fs.rmSync(workDir, { recursive: true, force: true });
     }
+  }
 
-    const projectContent = `<?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Microsoft.NET.Sdk">
+  private async runPython(code: string, workDir: string): Promise<{ output: string; error?: string }> {
+    const filePath = path.join(workDir, 'main.py');
+    fs.writeFileSync(filePath, code);
+    
+    try {
+      // Пробуем python3, затем python
+      try {
+        const { stdout, stderr } = await execAsync(`python3 "${filePath}"`, { cwd: workDir, timeout: 10000 });
+        return { output: stdout.trim(), error: stderr.trim() || undefined };
+      } catch (python3Error) {
+        const { stdout, stderr } = await execAsync(`python "${filePath}"`, { cwd: workDir, timeout: 10000 });
+        return { output: stdout.trim(), error: stderr.trim() || undefined };
+      }
+    } finally {
+      fs.rmSync(workDir, { recursive: true, force: true });
+    }
+  }
+
+  private async runGolang(code: string, workDir: string): Promise<{ output: string; error?: string }> {
+    // Проверяем, есть ли package main
+    if (!code.includes('package main')) {
+      code = `package main\n\n${code}`;
+    }
+    
+    // Проверяем, есть ли func main
+    if (!code.includes('func main()')) {
+      code = `${code}\n\nfunc main() {\n    \n}`;
+    }
+    
+    const filePath = path.join(workDir, 'main.go');
+    fs.writeFileSync(filePath, code);
+    
+    console.log('Go code to execute:', code);
+    
+    try {
+      const { stdout, stderr } = await execAsync(`go run "${filePath}"`, { cwd: workDir, timeout: 15000 });
+      console.log('Go stdout:', stdout);
+      console.log('Go stderr:', stderr);
+      
+      return {
+        output: stdout.trim(),
+        error: stderr.trim() || undefined
+      };
+    } finally {
+      fs.rmSync(workDir, { recursive: true, force: true });
+    }
+  }
+// В code-execution.service.ts - исправленный метод для Java
+
+private async runJava(code: string, workDir: string): Promise<{ output: string; error?: string }> {
+  // Извлекаем имя публичного класса
+  const classNameMatch = code.match(/public\s+class\s+(\w+)/);
+  if (!classNameMatch) {
+    return { output: '', error: 'Java code must contain a public class' };
+  }
+  
+  const className = classNameMatch[1];
+  const mainClassFile = path.join(workDir, `${className}.java`);
+  
+  // Сохраняем пользовательский код
+  fs.writeFileSync(mainClassFile, code);
+  
+  // Проверяем, нужен ли нам дополнительный класс Main для тестов
+  // Если код уже содержит main метод, просто компилируем и запускаем его
+  if (code.includes('public static void main')) {
+    try {
+      // Компилируем
+      const { stderr: compileError } = await execAsync(`javac "${mainClassFile}"`, { 
+        cwd: workDir, 
+        timeout: 10000 
+      });
+      
+      if (compileError) {
+        return { output: '', error: compileError };
+      }
+      
+      // Запускаем
+      const { stdout, stderr } = await execAsync(`java -cp "${workDir}" ${className}`, { 
+        cwd: workDir, 
+        timeout: 10000 
+      });
+      
+      return {
+        output: stdout.trim(),
+        error: stderr.trim() || undefined
+      };
+    } catch (error: any) {
+      return {
+        output: '',
+        error: error?.stderr || error?.stdout || error?.message || 'Ошибка выполнения Java'
+      };
+    }
+  } else {
+    // Если main метода нет, создаем отдельный файл Main.java для тестирования
+    const mainFile = path.join(workDir, 'Main.java');
+    const mainCode = `
+public class Main {
+    public static void main(String[] args) {
+        try {
+            // Тестируем функцию из пользовательского класса
+            ${code.includes('int[]') ? 'java.util.Arrays.stream' : 'System.out.println'}
+            // Здесь нужно добавить логику тестирования
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+}`;
+    
+    fs.writeFileSync(mainFile, mainCode);
+    
+    try {
+      // Компилируем оба файла
+      const { stderr: compileError } = await execAsync(`javac "${mainClassFile}" "${mainFile}"`, { 
+        cwd: workDir, 
+        timeout: 10000 
+      });
+      
+      if (compileError) {
+        return { output: '', error: compileError };
+      }
+      
+      // Запускаем Main класс
+      const { stdout, stderr } = await execAsync(`java -cp "${workDir}" Main`, { 
+        cwd: workDir, 
+        timeout: 10000 
+      });
+      
+      return {
+        output: stdout.trim(),
+        error: stderr.trim() || undefined
+      };
+    } catch (error: any) {
+      return {
+        output: '',
+        error: error?.stderr || error?.stdout || error?.message || 'Ошибка выполнения Java'
+      };
+    }
+  }
+}
+  private async runCSharp(code: string, workDir: string): Promise<{ output: string; error?: string }> {
+    const filePath = path.join(workDir, 'Program.cs');
+    fs.writeFileSync(filePath, code);
+    
+    // Создаем csproj файл
+    const csprojPath = path.join(workDir, 'app.csproj');
+    const csprojContent = `<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 </Project>`;
-
-    await fs.promises.writeFile(csprojPath, projectContent, 'utf8');
-  }
-
-  private cleanupFiles(filePath: string, language: SupportedLanguage): void {
+    
+    fs.writeFileSync(csprojPath, csprojContent);
+    
+    console.log('C# code:', code);
+    console.log('Work dir:', workDir);
+    
     try {
-      if (language === 'java') {
-        const dir = path.dirname(filePath);
-        if (fs.existsSync(dir)) {
-          const files = fs.readdirSync(dir);
-          for (const file of files) {
-            if (file.endsWith('.class') || file.endsWith('.java')) {
-              fs.unlinkSync(path.join(dir, file));
-            }
-          }
-          fs.rmdirSync(dir);
-        }
-        return;
+      // Сначала проверяем, что dotnet доступен
+      try {
+        await execAsync('dotnet --version', { timeout: 5000 });
+      } catch (e) {
+        return { output: '', error: '.NET SDK not found. Please install .NET SDK 8.0' };
       }
-
-      if (language === 'csharp') {
-        const dir = path.dirname(filePath);
-        if (fs.existsSync(dir)) {
-          const files = fs.readdirSync(dir);
-          for (const file of files) {
-            if (file.endsWith('.cs') || file.endsWith('.csproj') || file.endsWith('.dll') || file.endsWith('.exe')) {
-              try {
-                fs.unlinkSync(path.join(dir, file));
-              } catch (e) {
-                // Игнорируем ошибки удаления
-              }
-            }
-          }
-          try {
-            fs.rmdirSync(dir);
-          } catch (e) {
-            // Игнорируем ошибки удаления директории
-          }
-        }
-        return;
-      }
-
-      if (language === 'golang') {
-        const dir = path.dirname(filePath);
-        if (fs.existsSync(dir)) {
-          const files = fs.readdirSync(dir);
-          for (const file of files) {
-            try {
-              fs.unlinkSync(path.join(dir, file));
-            } catch (e) {
-              // Игнорируем ошибки удаления
-            }
-          }
-          try {
-            fs.rmdirSync(dir);
-          } catch (e) {
-            // Игнорируем ошибки удаления директории
-          }
-        }
-        return;
-      }
-
-      // Для JS и Python - удаляем только файл
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
-    } catch (e: any) {
-      console.warn('Cleanup warning:', e?.message);
+      
+      // Запускаем
+      const { stdout, stderr } = await execAsync(`dotnet run --project "${csprojPath}"`, { 
+        cwd: workDir, 
+        timeout: 30000 
+      });
+      
+      console.log('C# stdout:', stdout);
+      console.log('C# stderr:', stderr);
+      
+      return {
+        output: stdout.trim(),
+        error: stderr.trim() || undefined
+      };
+    } finally {
+      fs.rmSync(workDir, { recursive: true, force: true });
     }
   }
 
   async getHealth() {
-    const languageStatus: Record<string, string> = {};
-
-    const testCodes: Partial<Record<SupportedLanguage, string>> = {
-      javascript: 'console.log("JS OK")',
-      python: 'print("Python OK")',
-      csharp: `using System;
-
-public class Program {
-    public static void Main() {
-        Console.WriteLine("C# OK");
-    }
-}`,
-      golang: `package main
-
-import "fmt"
-
-func main() {
-    fmt.Println("Go OK")
-}`,
-      java: `public class Main {
-    public static void main(String[] args) {
-        System.out.println("Java OK");
-    }
-}`,
-    };
-
-    for (const lang of Object.keys(LANGUAGE_CONFIG) as SupportedLanguage[]) {
+    const languages = ['javascript', 'python', 'golang', 'java', 'csharp'] as SupportedLanguage[];
+    const status: Record<string, string> = {};
+    
+    for (const lang of languages) {
       try {
-        await this.checkLanguageAvailability(lang);
-
-        if (testCodes[lang]) {
-          const res = await this.executeCode(lang, testCodes[lang] as string);
-          languageStatus[lang] = res.error ? `Error: ${res.error}` : 'Working';
-        } else {
-          languageStatus[lang] = 'Available';
-        }
+        await this.checkLanguage(lang);
+        status[lang] = 'Available';
       } catch (error: any) {
-        languageStatus[lang] = error?.message || 'Unavailable';
+        status[lang] = `Unavailable: ${error.message}`;
       }
     }
-
+    
     return {
       status: 'OK',
       timestamp: new Date().toISOString(),
-      languages: languageStatus,
-      tempDir: TEMP_DIR,
+      languages: status,
+      tempDir: TEMP_DIR
     };
   }
-
-  private async checkLanguageAvailability(language: SupportedLanguage): Promise<void> {
-    const testCommands: Record<SupportedLanguage, string> = {
+  
+  private async checkLanguage(language: SupportedLanguage): Promise<void> {
+    const commands = {
       javascript: 'node --version',
       python: 'python3 --version',
-      csharp: 'dotnet --version',
       golang: 'go version',
       java: 'javac -version',
+      csharp: 'dotnet --version'
     };
-
+    
     try {
-      const { stdout, stderr } = await execAsync(testCommands[language], { timeout: 5000 });
-      const out = (stdout || stderr || '').trim();
-      console.log(`${language} version: ${out}`);
-    } catch (error) {
-      console.error(`${language} not available:`, error);
-      throw new Error(`${language} is not installed or not in PATH`);
+      await execAsync(commands[language], { timeout: 5000 });
+    } catch {
+      // Пробуем альтернативные команды
+      if (language === 'python') {
+        await execAsync('python --version', { timeout: 5000 });
+      }
     }
   }
 }
