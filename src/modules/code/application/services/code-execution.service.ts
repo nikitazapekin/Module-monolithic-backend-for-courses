@@ -127,95 +127,37 @@ export class CodeExecutionService {
   }
 // В code-execution.service.ts - исправленный метод для Java
 
+
 private async runJava(code: string, workDir: string): Promise<{ output: string; error?: string }> {
-  // Извлекаем имя публичного класса
-  const classNameMatch = code.match(/public\s+class\s+(\w+)/);
-  if (!classNameMatch) {
-    return { output: '', error: 'Java code must contain a public class' };
-  }
+  const filePath = path.join(workDir, 'Main.java');
+  fs.writeFileSync(filePath, code);
   
-  const className = classNameMatch[1];
-  const mainClassFile = path.join(workDir, `${className}.java`);
-  
-  // Сохраняем пользовательский код
-  fs.writeFileSync(mainClassFile, code);
-  
-  // Проверяем, нужен ли нам дополнительный класс Main для тестов
-  // Если код уже содержит main метод, просто компилируем и запускаем его
-  if (code.includes('public static void main')) {
-    try {
-      // Компилируем
-      const { stderr: compileError } = await execAsync(`javac "${mainClassFile}"`, { 
-        cwd: workDir, 
-        timeout: 10000 
-      });
-      
-      if (compileError) {
-        return { output: '', error: compileError };
-      }
-      
-      // Запускаем
-      const { stdout, stderr } = await execAsync(`java -cp "${workDir}" ${className}`, { 
-        cwd: workDir, 
-        timeout: 10000 
-      });
-      
-      return {
-        output: stdout.trim(),
-        error: stderr.trim() || undefined
-      };
-    } catch (error: any) {
-      return {
-        output: '',
-        error: error?.stderr || error?.stdout || error?.message || 'Ошибка выполнения Java'
-      };
-    }
-  } else {
-    // Если main метода нет, создаем отдельный файл Main.java для тестирования
-    const mainFile = path.join(workDir, 'Main.java');
-    const mainCode = `
-public class Main {
-    public static void main(String[] args) {
-        try {
-            // Тестируем функцию из пользовательского класса
-            ${code.includes('int[]') ? 'java.util.Arrays.stream' : 'System.out.println'}
-            // Здесь нужно добавить логику тестирования
-        } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-}`;
+  try {
+    // Компилируем
+    const { stderr: compileError } = await execAsync(`javac "${filePath}"`, { 
+      cwd: workDir, 
+      timeout: 10000 
+    });
     
-    fs.writeFileSync(mainFile, mainCode);
-    
-    try {
-      // Компилируем оба файла
-      const { stderr: compileError } = await execAsync(`javac "${mainClassFile}" "${mainFile}"`, { 
-        cwd: workDir, 
-        timeout: 10000 
-      });
-      
-      if (compileError) {
-        return { output: '', error: compileError };
-      }
-      
-      // Запускаем Main класс
-      const { stdout, stderr } = await execAsync(`java -cp "${workDir}" Main`, { 
-        cwd: workDir, 
-        timeout: 10000 
-      });
-      
-      return {
-        output: stdout.trim(),
-        error: stderr.trim() || undefined
-      };
-    } catch (error: any) {
-      return {
-        output: '',
-        error: error?.stderr || error?.stdout || error?.message || 'Ошибка выполнения Java'
-      };
+    if (compileError) {
+      return { output: '', error: compileError };
     }
+    
+    // Запускаем Main класс (не Runner!)
+    const { stdout, stderr } = await execAsync(`java -cp "${workDir}" Main`, { 
+      cwd: workDir, 
+      timeout: 10000 
+    });
+    
+    return {
+      output: stdout.trim(),
+      error: stderr.trim() || undefined
+    };
+  } catch (error: any) {
+    return {
+      output: '',
+      error: error?.stderr || error?.stdout || error?.message || 'Ошибка выполнения Java'
+    };
   }
 }
   private async runCSharp(code: string, workDir: string): Promise<{ output: string; error?: string }> {
