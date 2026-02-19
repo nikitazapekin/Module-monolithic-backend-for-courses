@@ -9,6 +9,9 @@ export class LessonDetailsFacade {
     constructor(private readonly service: LessonDetailsService) { }
 
     createLessonDetails(dto: CreateLessonDetailsDto): Promise<LessonDetailsResponseDto> {
+
+
+        console.log("FACADDDDDDDDDDDDDDEEEEEEEEEEEEEEEEEEE")
         return this.service.createLessonDetails(dto);
     }
 

@@ -1,3 +1,4 @@
+// lesson/application/services/lesson.service.ts
 import { 
   Injectable, 
   Inject, 
@@ -10,34 +11,55 @@ import { Lesson } from '../../domain/entities/lesson.entity';
 import { CreateLessonDto } from '../dtos/create-lesson.dto';
 import { UpdateLessonDto } from '../dtos/update-lesson.dto';
 import { LessonResponseDto } from '../dtos/lesson-response.dto';
+import { LessonDetailsFacade } from '../../../lesson-details/application/facades/lesson-details.facade';
 
 @Injectable()
 export class LessonService {
   constructor(
     @Inject('ILessonRepository')
     private readonly lessonRepository: ILessonRepository,
+    private readonly lessonDetailsFacade: LessonDetailsFacade,
   ) {}
-
-  async createLesson(dto: CreateLessonDto): Promise<LessonResponseDto> {
-    // Проверяем, нет ли уже урока с таким mapElementId
-    const existingLesson = await this.lessonRepository.findByMapElementId(dto.mapElementId);
-    if (existingLesson) {
-      throw new ConflictException('Lesson already exists for this map element');
-    }
-
-    const lesson = new Lesson(
-      dto.mapElementId,
-      dto.title,
-      dto.description,
-      dto.orderIndex,
-      dto.content,
-      dto.duration,
-      dto.isPublished || false
-    );
-
-    const createdLesson = await this.lessonRepository.create(lesson);
-    return this.toResponseDto(createdLesson);
+// В lesson.service.ts добавьте больше логирования
+async createLesson(dto: CreateLessonDto): Promise<LessonResponseDto> {
+  console.log('Creating lesson with data:', dto);
+  
+  const existingLesson = await this.lessonRepository.findByMapElementId(dto.mapElementId);
+  if (existingLesson) {
+    throw new ConflictException('Lesson already exists for this map element');
   }
+
+  const lesson = new Lesson(
+    dto.mapElementId,
+    dto.title,
+    dto.description,
+    dto.orderIndex,
+    dto.content,
+    dto.duration,
+    dto.isPublished || false
+  );
+
+  const createdLesson = await this.lessonRepository.create(lesson);
+  console.log('Lesson created:', createdLesson);
+  
+  try {
+    console.log('Attempting to create lesson details for lesson:', createdLesson.id);
+    const details = await this.lessonDetailsFacade.createLessonDetails({
+      lessonId: createdLesson.id,
+      slides: [],
+      tests: []
+    });
+    console.log('Lesson details created successfully:', details);
+  } catch (error) {
+    console.error('Failed to create lesson details:', error);
+    if (error instanceof Error) {
+      console.error('Error details:', error.message);
+      console.error('Stack:', error.stack);
+    }
+  }
+  
+  return this.toResponseDto(createdLesson);
+}
 
   async getLesson(id: string): Promise<LessonResponseDto> {
     const lesson = await this.lessonRepository.findById(id);
