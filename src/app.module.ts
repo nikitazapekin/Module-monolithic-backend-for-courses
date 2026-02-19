@@ -10,6 +10,7 @@ import { CoursesModule } from '@modules/courses/courses.module';
 import { LessonModule } from '@modules/lesson/lesson.module';
 import { CheckpointModule } from '@modules/checkpoint/checkpoint.module';
 import { CodeModule } from '@modules/code/code.module';
+import { LessonDetailsModule } from '@modules/lesson-details/lesson-details.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -22,9 +23,10 @@ import { CodeModule } from '@modules/code/code.module';
     CoursesModule,
     LessonModule,
     CheckpointModule,
+    LessonDetailsModule,
     CodeModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

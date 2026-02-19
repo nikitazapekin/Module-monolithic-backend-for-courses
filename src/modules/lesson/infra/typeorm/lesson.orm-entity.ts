@@ -1,8 +1,8 @@
-import { 
-  Entity, 
-  PrimaryColumn, 
-  Column, 
-  CreateDateColumn, 
+import {
+  Entity,
+  PrimaryColumn,
+  Column,
+  CreateDateColumn,
   UpdateDateColumn,
   OneToOne,
   JoinColumn,
@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { MapElementOrmEntity } from '@modules/map/infra/typeorm/map-element.orm-entity';
 import { CourseMapOrmEntity } from '@modules/map/infra/typeorm/course-map.orm-entity';
+import { LessonDetailsOrmEntity } from '@modules/lesson-details/infra/typeorm/lesson-details.orm-entity';
 
 @Entity('lessons')
 export class LessonOrmEntity {
@@ -47,4 +48,8 @@ export class LessonOrmEntity {
   @OneToOne(() => MapElementOrmEntity)
   @JoinColumn({ name: 'mapElementId' })
   mapElement: MapElementOrmEntity;
+
+  // Обратная связь один-к-одному с lesson_details
+  @OneToOne(() => LessonDetailsOrmEntity, (ld) => ld.lesson)
+  lessonDetails: LessonDetailsOrmEntity;
 }
