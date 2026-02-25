@@ -1,0 +1,14 @@
+C:\Users\wotbl\Desktop\diplom\monolithic\tmp\code_execution\csharp_1772037693914_pa8c7\bin\Debug\net7.0\app.exe
+C:\Users\wotbl\Desktop\diplom\monolithic\tmp\code_execution\csharp_1772037693914_pa8c7\bin\Debug\net7.0\app.deps.json
+C:\Users\wotbl\Desktop\diplom\monolithic\tmp\code_execution\csharp_1772037693914_pa8c7\bin\Debug\net7.0\app.runtimeconfig.json
+C:\Users\wotbl\Desktop\diplom\monolithic\tmp\code_execution\csharp_1772037693914_pa8c7\bin\Debug\net7.0\app.dll
+C:\Users\wotbl\Desktop\diplom\monolithic\tmp\code_execution\csharp_1772037693914_pa8c7\bin\Debug\net7.0\app.pdb
+C:\Users\wotbl\Desktop\diplom\monolithic\tmp\code_execution\csharp_1772037693914_pa8c7\obj\Debug\net7.0\app.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\wotbl\Desktop\diplom\monolithic\tmp\code_execution\csharp_1772037693914_pa8c7\obj\Debug\net7.0\app.AssemblyInfoInputs.cache
+C:\Users\wotbl\Desktop\diplom\monolithic\tmp\code_execution\csharp_1772037693914_pa8c7\obj\Debug\net7.0\app.AssemblyInfo.cs
+C:\Users\wotbl\Desktop\diplom\monolithic\tmp\code_execution\csharp_1772037693914_pa8c7\obj\Debug\net7.0\app.csproj.CoreCompileInputs.cache
+C:\Users\wotbl\Desktop\diplom\monolithic\tmp\code_execution\csharp_1772037693914_pa8c7\obj\Debug\net7.0\app.dll
+C:\Users\wotbl\Desktop\diplom\monolithic\tmp\code_execution\csharp_1772037693914_pa8c7\obj\Debug\net7.0\refint\app.dll
+C:\Users\wotbl\Desktop\diplom\monolithic\tmp\code_execution\csharp_1772037693914_pa8c7\obj\Debug\net7.0\app.pdb
+C:\Users\wotbl\Desktop\diplom\monolithic\tmp\code_execution\csharp_1772037693914_pa8c7\obj\Debug\net7.0\app.genruntimeconfig.cache
+C:\Users\wotbl\Desktop\diplom\monolithic\tmp\code_execution\csharp_1772037693914_pa8c7\obj\Debug\net7.0\ref\app.dll

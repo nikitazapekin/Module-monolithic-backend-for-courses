@@ -25,46 +25,46 @@ export class CodeExecutionService {
     }
   }
 
-  async executeCode(language: SupportedLanguage, code: string): Promise<{ output: string; error?: string }> {
-    const timestamp = Date.now();
-    const uniqueId = `${language}_${timestamp}_${Math.random().toString(36).substring(7)}`;
-    const workDir = path.join(TEMP_DIR, uniqueId);
-    
-    try {
-      // Создаем рабочую директорию
-      fs.mkdirSync(workDir, { recursive: true });
-      console.log(`Work directory created: ${workDir}`);
+ async executeCode(language: SupportedLanguage, code: string): Promise<{ output: string; error?: string }> {
+  const timestamp = Date.now();
+  const uniqueId = `${language}_${timestamp}_${Math.random().toString(36).substring(7)}`;
+  const workDir = path.join(TEMP_DIR, uniqueId);
+  
+  try {
+    // Создаем рабочую директорию
+    fs.mkdirSync(workDir, { recursive: true });
+    console.log(`Work directory created: ${workDir}`);
 
-      switch (language) {
-        case 'javascript':
-          return await this.runJavaScript(code, workDir);
-        case 'python':
-          return await this.runPython(code, workDir);
-        case 'golang':
-          return await this.runGolang(code, workDir);
-        case 'java':
-          return await this.runJava(code, workDir);
-        case 'csharp':
-          return await this.runCSharp(code, workDir);
-        default:
-          throw new BadRequestException(`Unsupported language: ${language}`);
-      }
-    } catch (error: any) {
-      console.error(`Execution error for ${language}:`, error);
-      
-      // Очищаем директорию
-      try {
-        fs.rmSync(workDir, { recursive: true, force: true });
-      } catch (cleanupError) {
-        console.error('Cleanup error:', cleanupError);
-      }
-      
-      return {
-        output: '',
-        error: error?.stderr || error?.stdout || error?.message || 'Ошибка выполнения кода'
-      };
+    switch (language) {
+      case 'javascript':
+        return await this.runJavaScript(code, workDir);
+      case 'python':
+        return await this.runPython(code, workDir);
+      case 'golang':
+        return await this.runGolang(code, workDir);
+      case 'java':
+        return await this.runJava(code, workDir);
+      case 'csharp':
+        return await this.runCSharp(code, workDir);
+      default:
+        throw new BadRequestException(`Unsupported language: ${language}`);
     }
+  } catch (error: any) {
+    console.error(`Execution error for ${language}:`, error);
+    
+    // Очищаем директорию с игнорированием ошибок
+    try {
+      fs.rmSync(workDir, { recursive: true, force: true, maxRetries: 3 });
+    } catch (cleanupError) {
+      console.warn('Cleanup warning:', cleanupError);
+    }
+    
+    return {
+      output: '',
+      error: error?.stderr || error?.stdout || error?.message || 'Ошибка выполнения кода'
+    };
   }
+}
 
   private async runJavaScript(code: string, workDir: string): Promise<{ output: string; error?: string }> {
     const filePath = path.join(workDir, 'main.js');
@@ -160,49 +160,65 @@ private async runJava(code: string, workDir: string): Promise<{ output: string; 
     };
   }
 }
-  private async runCSharp(code: string, workDir: string): Promise<{ output: string; error?: string }> {
-    const filePath = path.join(workDir, 'Program.cs');
-    fs.writeFileSync(filePath, code);
-    
-    // Создаем csproj файл
-    const csprojPath = path.join(workDir, 'app.csproj');
-    const csprojContent = `<Project Sdk="Microsoft.NET.Sdk">
+
+private async runCSharp(code: string, workDir: string): Promise<{ output: string; error?: string }> {
+  const filePath = path.join(workDir, 'Program.cs');
+  fs.writeFileSync(filePath, code);
+  
+  // Создаем csproj файл с net7.0
+  const csprojPath = path.join(workDir, 'app.csproj');
+  const csprojContent = `<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
   </PropertyGroup>
 </Project>`;
-    
-    fs.writeFileSync(csprojPath, csprojContent);
-    
-    console.log('C# code:', code);
-    console.log('Work dir:', workDir);
-    
+  
+  fs.writeFileSync(csprojPath, csprojContent);
+  
+  console.log('C# code:', code);
+  console.log('Work dir:', workDir);
+  
+  try {
+    // Сначала проверяем, что dotnet доступен
     try {
-      // Сначала проверяем, что dotnet доступен
-      try {
-        await execAsync('dotnet --version', { timeout: 5000 });
-      } catch (e) {
-        return { output: '', error: '.NET SDK not found. Please install .NET SDK 8.0' };
-      }
-      
-      // Запускаем
-      const { stdout, stderr } = await execAsync(`dotnet run --project "${csprojPath}"`, { 
-        cwd: workDir, 
-        timeout: 30000 
-      });
-      
-      console.log('C# stdout:', stdout);
-      console.log('C# stderr:', stderr);
-      
-      return {
-        output: stdout.trim(),
-        error: stderr.trim() || undefined
-      };
-    } finally {
-      fs.rmSync(workDir, { recursive: true, force: true });
+      await execAsync('dotnet --version', { timeout: 5000 });
+    } catch (e) {
+      return { output: '', error: '.NET SDK not found. Please install .NET SDK 7.0' };
+    }
+    
+    // Запускаем
+    const { stdout, stderr } = await execAsync(`dotnet run --project "${csprojPath}"`, { 
+      cwd: workDir, 
+      timeout: 30000 
+    });
+    
+    console.log('C# stdout:', stdout);
+    console.log('C# stderr:', stderr);
+    
+    return {
+      output: stdout.trim(),
+      error: stderr.trim() || undefined
+    };
+  } catch (error: any) {
+    console.error('C# execution error:', error);
+    return {
+      output: '',
+      error: error?.stderr || error?.stdout || error?.message || 'Ошибка выполнения C#'
+    };
+  } finally {
+    // Добавляем задержку перед удалением
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Пытаемся удалить с игнорированием ошибок
+    try {
+      fs.rmSync(workDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+    } catch (cleanupError) {
+      console.warn('Cleanup warning (non-critical):', cleanupError);
+      // Не пробрасываем ошибку дальше
     }
   }
+}
 
   async getHealth() {
     const languages = ['javascript', 'python', 'golang', 'java', 'csharp'] as SupportedLanguage[];
@@ -237,7 +253,7 @@ private async runJava(code: string, workDir: string): Promise<{ output: string; 
     try {
       await execAsync(commands[language], { timeout: 5000 });
     } catch {
-      // Пробуем альтернативные команды
+ 
       if (language === 'python') {
         await execAsync('python --version', { timeout: 5000 });
       }
