@@ -13,3 +13,5 @@ export default class UserTypeOrmEntity {
     @Column()
     email:string
 }
+
+ 

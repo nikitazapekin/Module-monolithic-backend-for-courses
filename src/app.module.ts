@@ -11,6 +11,7 @@ import { LessonModule } from '@modules/lesson/lesson.module';
 import { CheckpointModule } from '@modules/checkpoint/checkpoint.module';
 import { CodeModule } from '@modules/code/code.module';
 import { LessonDetailsModule } from '@modules/lesson-details/lesson-details.module';
+import { ProfileModule } from '@modules/profile/profile.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -25,6 +26,7 @@ import { LessonDetailsModule } from '@modules/lesson-details/lesson-details.modu
     CheckpointModule,
     LessonDetailsModule,
     CodeModule,
+    ProfileModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,0 +1,150 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  HttpCode,
+  HttpStatus,
+  Query,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { StudentResultService } from '../../application/services/student-result.service';
+import { CreateStudentResultDto } from '../../application/dtos/create-student-result.dto';
+import { UpdateStudentResultDto } from '../../application/dtos/update-student-result.dto';
+import { StudentResultResponseDto } from '../../application/dtos/student-result-response.dto';
+import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+
+@ApiTags('profile/student-results')
+@Controller('profile/student-results')
+export class StudentResultController {
+  constructor(private readonly studentResultService: StudentResultService) {}
+
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Создание результата прохождения урока' })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Результат успешно создан',
+    type: StudentResultResponseDto,
+  })
+  @ApiBearerAuth()
+  async create(
+    @Body() createStudentResultDto: CreateStudentResultDto,
+  ): Promise<StudentResultResponseDto> {
+    const result = await this.studentResultService.create(createStudentResultDto);
+    return this.mapToResponse(result);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Получение результата по ID' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Результат найден',
+    type: StudentResultResponseDto,
+  })
+  @ApiBearerAuth()
+  async findById(@Param('id') id: string): Promise<StudentResultResponseDto> {
+    const result = await this.studentResultService.findById(id);
+    return this.mapToResponse(result);
+  }
+
+  @Get('client/:clientId')
+  @ApiOperation({ summary: 'Получение всех результатов студента' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Результаты найдены',
+    type: [StudentResultResponseDto],
+  })
+  @ApiBearerAuth()
+  async findByClientId(@Param('clientId') clientId: string): Promise<StudentResultResponseDto[]> {
+    const results = await this.studentResultService.findByClientId(clientId);
+    return results.map(result => this.mapToResponse(result));
+  }
+
+  @Get('lesson/:lessonId')
+  @ApiOperation({ summary: 'Получение всех результатов по уроку' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Результаты найдены',
+    type: [StudentResultResponseDto],
+  })
+  @ApiBearerAuth()
+  async findByLessonId(@Param('lessonId') lessonId: string): Promise<StudentResultResponseDto[]> {
+    const results = await this.studentResultService.findByLessonId(lessonId);
+    return results.map(result => this.mapToResponse(result));
+  }
+
+  @Get('client/:clientId/progress')
+  @ApiOperation({ summary: 'Получение прогресса студента' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Прогресс получен',
+  })
+  @ApiBearerAuth()
+  async getStudentProgress(@Param('clientId') clientId: string): Promise<{
+    totalLessons: number;
+    averageStars: number;
+    results: StudentResultResponseDto[];
+  }> {
+    const progress = await this.studentResultService.getStudentProgress(clientId);
+    return {
+      ...progress,
+      results: progress.results.map(result => this.mapToResponse(result)),
+    };
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: 'Обновление результата по ID' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Результат успешно обновлен',
+    type: StudentResultResponseDto,
+  })
+  @ApiBearerAuth()
+  async update(
+    @Param('id') id: string,
+    @Body() updateStudentResultDto: UpdateStudentResultDto,
+  ): Promise<StudentResultResponseDto> {
+    const result = await this.studentResultService.update(id, updateStudentResultDto);
+    return this.mapToResponse(result);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Удаление результата по ID' })
+  @ApiResponse({
+    status: HttpStatus.NO_CONTENT,
+    description: 'Результат успешно удален',
+  })
+  @ApiBearerAuth()
+  async delete(@Param('id') id: string): Promise<void> {
+    await this.studentResultService.delete(id);
+  }
+
+  @Delete('client/:clientId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Удаление всех результатов студента' })
+  @ApiResponse({
+    status: HttpStatus.NO_CONTENT,
+    description: 'Результаты успешно удалены',
+  })
+  @ApiBearerAuth()
+  async deleteByClientId(@Param('clientId') clientId: string): Promise<void> {
+    await this.studentResultService.deleteByClientId(clientId);
+  }
+
+  private mapToResponse(result: any): StudentResultResponseDto {
+    const response = new StudentResultResponseDto();
+    response.id = result.id;
+    response.clientId = result.clientId;
+    response.lessonId = result.lessonId;
+    response.countOfStars = result.countOfStars;
+    response.completedAt = result.completedAt;
+    response.createdAt = result.createdAt;
+    response.updatedAt = result.updatedAt;
+    return response;
+  }
+}
