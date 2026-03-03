@@ -125,9 +125,9 @@ export class StudentResultController {
   }
 
   @Post('client/:clientId/course-progress')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Получение лучших результатов студента по всем урокам курса',
-    description: 'Возвращает лучшие результаты (с наибольшим количеством звезд) для каждого урока конкретного курса. Если для урока нет результатов, возвращается null.',
+    description: 'Возвращает лучшие результаты (с наибольшим количеством звезд) для каждого урока конкретного курса. Если для урока нет результатов, возвращается null. В качестве clientId передается auditoryId (первичный ключ из таблицы auditory).',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -141,10 +141,19 @@ export class StudentResultController {
   })
   @ApiBearerAuth()
   async getBestResultsForCourse(
-    @Param('clientId') clientId: string,
+    @Param('clientId') auditoryId: string,
     @Body('courseId') courseId: string,
   ): Promise<{ lessonId: string; bestResult: StudentResultResponseDto | null }[]> {
-    const results = await this.studentResultService.getBestResultsForCourse(clientId, courseId);
+    // Получаем clientId (первичный ключ clients) по auditoryId
+    const client = await this.clientRepository.findOne({
+      where: { auditoryId },
+    });
+
+    if (!client) {
+      throw new NotFoundException(`Client with auditoryId ${auditoryId} not found`);
+    }
+
+    const results = await this.studentResultService.getBestResultsForCourse(client.id, courseId);
     return results.map(({ lessonId, bestResult }) => ({
       lessonId,
       bestResult: bestResult ? this.mapToResponse(bestResult) : null,
