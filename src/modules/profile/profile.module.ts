@@ -17,6 +17,11 @@ import { CourseSubscriptionOrmEntity } from './infra/typeorm/course-subscription
 import { ClientOrmEntity } from '../auth/infra/typeorm/client.orm-entity';
 import { AuditoryOrmEntity } from '../auth/infra/typeorm/auditory.orm-entity';
 import { CourseOrmEntity } from '../courses/infra/typeorm/course.orm-entity';
+import { LessonOrmEntity } from '../lesson/infra/typeorm/lesson.orm-entity';
+import { CourseMapOrmEntity } from '../map/infra/typeorm/course-map.orm-entity';
+import { MapElementOrmEntity } from '../map/infra/typeorm/map-element.orm-entity';
+import { LessonRepository } from '../lesson/infra/repositories/lesson.repository.impl';
+import { CourseMapRepository } from '../map/infra/repositories/course-map.repository.impl';
 
 @Module({
   imports: [
@@ -27,6 +32,9 @@ import { CourseOrmEntity } from '../courses/infra/typeorm/course.orm-entity';
       CourseOrmEntity,
       ClientOrmEntity,
       AuditoryOrmEntity,
+      LessonOrmEntity,
+      CourseMapOrmEntity,
+      MapElementOrmEntity,
     ]),
   ],
   controllers: [
@@ -50,6 +58,14 @@ import { CourseOrmEntity } from '../courses/infra/typeorm/course.orm-entity';
     {
       provide: 'ICourseSubscriptionRepository',
       useClass: CourseSubscriptionRepository,
+    },
+    {
+      provide: 'ILessonRepository',
+      useClass: LessonRepository,
+    },
+    {
+      provide: 'ICourseMapRepository',
+      useClass: CourseMapRepository,
     },
     ProfileInfoRepository,
   ],

@@ -124,6 +124,33 @@ export class StudentResultController {
     return result ? this.mapToResponse(result) : null;
   }
 
+  @Post('client/:clientId/course-progress')
+  @ApiOperation({ 
+    summary: 'Получение лучших результатов студента по всем урокам курса',
+    description: 'Возвращает лучшие результаты (с наибольшим количеством звезд) для каждого урока конкретного курса. Если для урока нет результатов, возвращается null.',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Лучшие результаты получены',
+    schema: {
+      example: [
+        { lessonId: 'lesson_1', bestResult: { id: '1', clientId: 'client_1', lessonId: 'lesson_1', countOfStars: 5 } },
+        { lessonId: 'lesson_2', bestResult: null },
+      ],
+    },
+  })
+  @ApiBearerAuth()
+  async getBestResultsForCourse(
+    @Param('clientId') clientId: string,
+    @Body('courseId') courseId: string,
+  ): Promise<{ lessonId: string; bestResult: StudentResultResponseDto | null }[]> {
+    const results = await this.studentResultService.getBestResultsForCourse(clientId, courseId);
+    return results.map(({ lessonId, bestResult }) => ({
+      lessonId,
+      bestResult: bestResult ? this.mapToResponse(bestResult) : null,
+    }));
+  }
+
   @Get('client/:clientId/progress')
   @ApiOperation({ summary: 'Получение прогресса студента' })
   @ApiResponse({

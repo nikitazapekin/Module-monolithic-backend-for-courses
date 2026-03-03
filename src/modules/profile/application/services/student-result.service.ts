@@ -3,12 +3,18 @@ import { IStudentResultRepository } from '../../domain/interfaces/student-result
 import { StudentResult } from '../../domain/entities/student-result.entity';
 import { CreateStudentResultDto } from '../dtos/create-student-result.dto';
 import { UpdateStudentResultDto } from '../dtos/update-student-result.dto';
+import { ILessonRepository } from '../../../lesson/domain/interfaces/lesson.repository.interface';
+import { ICourseMapRepository } from '../../../map/domain/interfaces/course-map.repository.interface';
 
 @Injectable()
 export class StudentResultService {
   constructor(
     @Inject('IStudentResultRepository')
     private readonly studentResultRepository: IStudentResultRepository,
+    @Inject('ILessonRepository')
+    private readonly lessonRepository: ILessonRepository,
+    @Inject('ICourseMapRepository')
+    private readonly courseMapRepository: ICourseMapRepository,
   ) {}
 
   async create(createStudentResultDto: CreateStudentResultDto): Promise<StudentResult> {
@@ -106,5 +112,44 @@ export class StudentResultService {
     return results.reduce((best, current) => 
       current.countOfStars > best.countOfStars ? current : best
     );
+  }
+
+  async getBestResultsForCourse(clientId: string, courseId: string): Promise<{
+    lessonId: string;
+    bestResult: StudentResult | null;
+  }[]> {
+    // Получаем карту курса по courseId
+    const courseMap = await this.courseMapRepository.findByCourseId(courseId);
+    
+    if (!courseMap) {
+      throw new NotFoundException(`Course map for course ${courseId} not found`);
+    }
+
+    // Получаем все уроки для этого курса
+    const lessons = await this.lessonRepository.findAllByCourseMapId(courseMap.id);
+    const lessonIds = lessons.map(lesson => lesson.id);
+
+    // Получаем все результаты студента
+    const results = await this.studentResultRepository.findByClientId(clientId);
+    
+    // Группируем результаты по lessonId
+    const resultsByLesson = new Map<string, StudentResult[]>();
+    for (const result of results) {
+      const existing = resultsByLesson.get(result.lessonId) || [];
+      existing.push(result);
+      resultsByLesson.set(result.lessonId, existing);
+    }
+
+    // Для каждого урока находим лучший результат
+    return lessonIds.map(lessonId => {
+      const lessonResults = resultsByLesson.get(lessonId) || [];
+      const bestResult = lessonResults.length > 0
+        ? lessonResults.reduce((best, current) =>
+            current.countOfStars > best.countOfStars ? current : best
+          )
+        : null;
+
+      return { lessonId, bestResult };
+    });
   }
 }
