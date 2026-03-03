@@ -1,6 +1,7 @@
-import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn, OneToMany } from 'typeorm';
 import { ClientOrmEntity } from './client.orm-entity';
 import { AdminOrmEntity } from './admin.orm-entity';
+import { CourseSubscriptionOrmEntity } from '@modules/profile/infra/typeorm/course-subscription.orm-entity';
 
 @Entity('auditory')
 export class AuditoryOrmEntity {
@@ -13,7 +14,7 @@ export class AuditoryOrmEntity {
   @Column()
   password: string;
 
-  @Column({ 
+  @Column({
     type: 'enum',
     enum: ['client', 'admin'],
     default: 'client'
@@ -37,7 +38,7 @@ export class AuditoryOrmEntity {
 
   @Column({ type: 'timestamp', nullable: true })
   refreshTokenExpires: Date;
- 
+
   @OneToOne(() => ClientOrmEntity, client => client.auditory, { cascade: true })
   @JoinColumn()
   client: ClientOrmEntity;
@@ -45,4 +46,7 @@ export class AuditoryOrmEntity {
   @OneToOne(() => AdminOrmEntity, admin => admin.auditory, { cascade: true })
   @JoinColumn()
   admin: AdminOrmEntity;
+
+  @OneToMany(() => CourseSubscriptionOrmEntity, sub => sub.auditory)
+  courseSubscriptions: CourseSubscriptionOrmEntity[];
 }

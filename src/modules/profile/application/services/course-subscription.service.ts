@@ -16,11 +16,11 @@ export class CourseSubscriptionService {
     private readonly courseRepository: Repository<CourseOrmEntity>,
   ) {}
 
-  async subscribe(clientId: string, courseId: string): Promise<CourseSubscriptionDto> {
-    const existing = await this.courseSubscriptionRepository.findByClientIdAndCourseId(clientId, courseId);
+  async subscribe(auditoryId: string, courseId: string): Promise<CourseSubscriptionDto> {
+    const existing = await this.courseSubscriptionRepository.findByAuditoryIdAndCourseId(auditoryId, courseId);
 
     if (existing) {
-      throw new ConflictException(`Client ${clientId} is already subscribed to course ${courseId}`);
+      throw new ConflictException(`Auditory ${auditoryId} is already subscribed to course ${courseId}`);
     }
 
     const course = await this.courseRepository.findOne({ where: { id: courseId } });
@@ -28,24 +28,24 @@ export class CourseSubscriptionService {
       throw new NotFoundException(`Course with ID ${courseId} not found`);
     }
 
-    const subscription = new CourseSubscription(clientId, courseId);
+    const subscription = new CourseSubscription(auditoryId, courseId);
     await this.courseSubscriptionRepository.save(subscription);
 
     return this.toDto(subscription);
   }
 
-  async unsubscribe(clientId: string, courseId: string): Promise<void> {
-    const subscription = await this.courseSubscriptionRepository.findByClientIdAndCourseId(clientId, courseId);
+  async unsubscribe(auditoryId: string, courseId: string): Promise<void> {
+    const subscription = await this.courseSubscriptionRepository.findByAuditoryIdAndCourseId(auditoryId, courseId);
 
     if (!subscription) {
-      throw new NotFoundException(`Subscription not found for client ${clientId} and course ${courseId}`);
+      throw new NotFoundException(`Subscription not found for auditory ${auditoryId} and course ${courseId}`);
     }
 
     await this.courseSubscriptionRepository.delete(subscription);
   }
 
-  async getCoursesByClientId(clientId: string): Promise<StudentCourseResponseDto[]> {
-    const subscriptions = await this.courseSubscriptionRepository.findByClientId(clientId);
+  async getCoursesByAuditoryId(auditoryId: string): Promise<StudentCourseResponseDto[]> {
+    const subscriptions = await this.courseSubscriptionRepository.findByAuditoryId(auditoryId);
     
     const courses = await this.courseRepository.findByIds(
       subscriptions.map((s) => s.courseId)
@@ -64,7 +64,7 @@ export class CourseSubscriptionService {
   private toDto(subscription: CourseSubscription): CourseSubscriptionDto {
     const dto = new CourseSubscriptionDto();
     dto.id = subscription.id;
-    dto.clientId = subscription.clientId;
+    dto.auditoryId = subscription.auditoryId;
     dto.courseId = subscription.courseId;
     dto.subscribedAt = subscription.subscribedAt;
     dto.createdAt = subscription.createdAt;

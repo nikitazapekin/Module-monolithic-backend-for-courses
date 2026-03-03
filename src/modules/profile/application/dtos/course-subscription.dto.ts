@@ -4,8 +4,8 @@ export class CourseSubscriptionDto {
   @ApiProperty({ description: 'ID подписки' })
   id: string;
 
-  @ApiProperty({ description: 'ID клиента' })
-  clientId: string;
+  @ApiProperty({ description: 'ID аккаунта (auditory)' })
+  auditoryId: string;
 
   @ApiProperty({ description: 'ID курса' })
   courseId: string;

@@ -1,5 +1,5 @@
 import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
-import { ClientOrmEntity } from '@modules/auth/infra/typeorm/client.orm-entity';
+import { AuditoryOrmEntity } from '@modules/auth/infra/typeorm/auditory.orm-entity';
 
 @Entity('course_subscriptions')
 export class CourseSubscriptionOrmEntity {
@@ -7,7 +7,7 @@ export class CourseSubscriptionOrmEntity {
   id: string;
 
   @Column()
-  clientId: string;
+  auditoryId: string;
 
   @Column()
   courseId: string;
@@ -21,7 +21,7 @@ export class CourseSubscriptionOrmEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => ClientOrmEntity, client => client.courseSubscriptions)
-  @JoinColumn({ name: 'clientId' })
-  client: ClientOrmEntity;
+  @ManyToOne(() => AuditoryOrmEntity, auditory => auditory.courseSubscriptions)
+  @JoinColumn({ name: 'auditoryId' })
+  auditory: AuditoryOrmEntity;
 }

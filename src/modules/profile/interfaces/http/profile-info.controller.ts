@@ -49,7 +49,7 @@ export class ProfileInfoController {
     return this.profileInfoService.getFullClientInfoByClientId(clientId);
   }
 
-  @Post(':clientId/courses/:courseId/subscribe')
+  @Post(':auditoryId/courses/:courseId/subscribe')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Подписка студента на курс' })
   @ApiResponse({
@@ -63,13 +63,13 @@ export class ProfileInfoController {
   })
   @ApiBearerAuth()
   async subscribeToCourse(
-    @Param('clientId') clientId: string,
+    @Param('auditoryId') auditoryId: string,
     @Param('courseId') courseId: string,
   ): Promise<CourseSubscriptionDto> {
-    return this.courseSubscriptionService.subscribe(clientId, courseId);
+    return this.courseSubscriptionService.subscribe(auditoryId, courseId);
   }
 
-  @Delete(':clientId/courses/:courseId/unsubscribe')
+  @Delete(':auditoryId/courses/:courseId/unsubscribe')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Отписка студента от курса' })
   @ApiResponse({
@@ -82,13 +82,13 @@ export class ProfileInfoController {
   })
   @ApiBearerAuth()
   async unsubscribeFromCourse(
-    @Param('clientId') clientId: string,
+    @Param('auditoryId') auditoryId: string,
     @Param('courseId') courseId: string,
   ): Promise<void> {
-    return this.courseSubscriptionService.unsubscribe(clientId, courseId);
+    return this.courseSubscriptionService.unsubscribe(auditoryId, courseId);
   }
 
-  @Get(':clientId/courses')
+  @Get(':auditoryId/courses')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Получение списка курсов студента' })
   @ApiResponse({
@@ -97,7 +97,7 @@ export class ProfileInfoController {
     type: [StudentCourseResponseDto],
   })
   @ApiBearerAuth()
-  async getCoursesByClientId(@Param('clientId') clientId: string): Promise<StudentCourseResponseDto[]> {
-    return this.courseSubscriptionService.getCoursesByClientId(clientId);
+  async getCoursesByAuditoryId(@Param('auditoryId') auditoryId: string): Promise<StudentCourseResponseDto[]> {
+    return this.courseSubscriptionService.getCoursesByAuditoryId(auditoryId);
   }
 }

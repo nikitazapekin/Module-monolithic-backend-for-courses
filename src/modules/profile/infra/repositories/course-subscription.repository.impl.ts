@@ -12,18 +12,18 @@ export class CourseSubscriptionRepository implements ICourseSubscriptionReposito
     private readonly repository: Repository<CourseSubscriptionOrmEntity>,
   ) {}
 
-  async findByClientId(clientId: string): Promise<CourseSubscription[]> {
+  async findByAuditoryId(auditoryId: string): Promise<CourseSubscription[]> {
     const entities = await this.repository.find({
-      where: { clientId },
+      where: { auditoryId },
       order: { subscribedAt: 'DESC' },
     });
 
     return entities.map((entity) => this.toDomain(entity));
   }
 
-  async findByClientIdAndCourseId(clientId: string, courseId: string): Promise<CourseSubscription | null> {
+  async findByAuditoryIdAndCourseId(auditoryId: string, courseId: string): Promise<CourseSubscription | null> {
     const entity = await this.repository.findOne({
-      where: { clientId, courseId },
+      where: { auditoryId, courseId },
     });
 
     return entity ? this.toDomain(entity) : null;
@@ -39,7 +39,7 @@ export class CourseSubscriptionRepository implements ICourseSubscriptionReposito
   }
 
   private toDomain(entity: CourseSubscriptionOrmEntity): CourseSubscription {
-    const subscription = new CourseSubscription(entity.clientId, entity.courseId);
+    const subscription = new CourseSubscription(entity.auditoryId, entity.courseId);
     subscription.id = entity.id;
     subscription.subscribedAt = entity.subscribedAt;
     subscription.createdAt = entity.createdAt;
@@ -50,7 +50,7 @@ export class CourseSubscriptionRepository implements ICourseSubscriptionReposito
   private toOrm(domain: CourseSubscription): CourseSubscriptionOrmEntity {
     const entity = new CourseSubscriptionOrmEntity();
     entity.id = domain.id;
-    entity.clientId = domain.clientId;
+    entity.auditoryId = domain.auditoryId;
     entity.courseId = domain.courseId;
     entity.subscribedAt = domain.subscribedAt;
     entity.createdAt = domain.createdAt;

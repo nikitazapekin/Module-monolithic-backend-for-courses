@@ -1,14 +1,14 @@
 export class CourseSubscription {
   public id: string;
-  public clientId: string;
+  public auditoryId: string;
   public courseId: string;
   public subscribedAt: Date;
   public createdAt: Date;
   public updatedAt: Date;
 
-  constructor(clientId: string, courseId: string) {
+  constructor(auditoryId: string, courseId: string) {
     this.id = this.generateId();
-    this.clientId = clientId;
+    this.auditoryId = auditoryId;
     this.courseId = courseId;
     this.subscribedAt = new Date();
     this.createdAt = new Date();
