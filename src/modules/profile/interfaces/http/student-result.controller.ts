@@ -145,6 +145,9 @@ export class StudentResultController {
     @Body('courseId') courseId: string,
   ): Promise<{ lessonId: string; bestResult: StudentResultResponseDto | null }[]> {
     // Получаем clientId (первичный ключ clients) по auditoryId
+
+console.log("GEEET")
+    
     const client = await this.clientRepository.findOne({
       where: { auditoryId },
     });
