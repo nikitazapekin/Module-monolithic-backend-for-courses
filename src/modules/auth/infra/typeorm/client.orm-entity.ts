@@ -1,5 +1,6 @@
-import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne } from 'typeorm';
+import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, OneToMany } from 'typeorm';
 import { AuditoryOrmEntity } from './auditory.orm-entity';
+import { CourseSubscriptionOrmEntity } from '@modules/profile/infra/typeorm/course-subscription.orm-entity';
 
 @Entity('clients')
 export class ClientOrmEntity {
@@ -32,7 +33,10 @@ export class ClientOrmEntity {
 
   @UpdateDateColumn()
   updatedAt: Date;
- 
+
   @OneToOne(() => AuditoryOrmEntity, auditory => auditory.client)
   auditory: AuditoryOrmEntity;
+
+  @OneToMany(() => CourseSubscriptionOrmEntity, sub => sub.client)
+  courseSubscriptions: CourseSubscriptionOrmEntity[];
 }
