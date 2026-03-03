@@ -1,16 +1,27 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsInt, Min, Max } from 'class-validator';
+import { IsString, IsNotEmpty, IsInt, Min, Max, IsOptional } from 'class-validator';
 import { Expose } from 'class-transformer';
 
 export class CreateStudentResultDto {
   @ApiProperty({
-    description: 'ID студента (client)',
-    example: 'client_1234567890_abc123',
+    description: 'ID аккаунта (auditory). Используется для поиска clientId.',
+    example: 'auth_1234567890_abc123',
+    required: false,
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @Expose()
-  clientId: string;
+  auditoryId?: string;
+
+  @ApiProperty({
+    description: 'ID студента (client). Если не указан, будет найден по auditoryId.',
+    example: 'client_1234567890_abc123',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  @Expose()
+  clientId?: string;
 
   @ApiProperty({
     description: 'ID урока',

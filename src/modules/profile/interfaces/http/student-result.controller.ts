@@ -9,6 +9,7 @@ import {
   HttpCode,
   HttpStatus,
   Query,
+  NotFoundException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { StudentResultService } from '../../application/services/student-result.service';
@@ -16,15 +17,25 @@ import { CreateStudentResultDto } from '../../application/dtos/create-student-re
 import { UpdateStudentResultDto } from '../../application/dtos/update-student-result.dto';
 import { StudentResultResponseDto } from '../../application/dtos/student-result-response.dto';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ClientOrmEntity } from '../../../auth/infra/typeorm/client.orm-entity';
 
 @ApiTags('profile/student-results')
 @Controller('profile/student-results')
 export class StudentResultController {
-  constructor(private readonly studentResultService: StudentResultService) {}
+  constructor(
+    private readonly studentResultService: StudentResultService,
+    @InjectRepository(ClientOrmEntity)
+    private readonly clientRepository: Repository<ClientOrmEntity>,
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Создание результата прохождения урока' })
+  @ApiOperation({ 
+    summary: 'Создание результата прохождения урока',
+    description: 'Для создания результата необходимо передать auditoryId (ID аккаунта). Контроллер автоматически найдет clientId по auditoryId.',
+  })
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'Результат успешно создан',
@@ -34,7 +45,23 @@ export class StudentResultController {
   async create(
     @Body() createStudentResultDto: CreateStudentResultDto,
   ): Promise<StudentResultResponseDto> {
-    const result = await this.studentResultService.create(createStudentResultDto);
+    // Получаем clientId по auditoryId из DTO
+    const client = await this.clientRepository.findOne({
+      where: { auditoryId: createStudentResultDto.auditoryId },
+    });
+
+    if (!client) {
+      throw new NotFoundException(`Client with auditoryId ${createStudentResultDto.auditoryId} not found`);
+    }
+
+    // Создаем объект с правильным clientId (первичный ключ clients)
+    const dtoWithClientId = {
+      clientId: client.id,
+      lessonId: createStudentResultDto.lessonId,
+      countOfStars: createStudentResultDto.countOfStars,
+    };
+
+    const result = await this.studentResultService.create(dtoWithClientId);
     return this.mapToResponse(result);
   }
 

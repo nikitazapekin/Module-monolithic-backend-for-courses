@@ -12,9 +12,12 @@ export class StudentResultService {
   ) {}
 
   async create(createStudentResultDto: CreateStudentResultDto): Promise<StudentResult> {
+    // Используем clientId из DTO
+    const clientId = createStudentResultDto.clientId!;
+    
     // Check if result already exists for this client and lesson
     const existingResult = await this.studentResultRepository.findByClientIdAndLessonId(
-      createStudentResultDto.clientId,
+      clientId,
       createStudentResultDto.lessonId,
     );
 
@@ -25,7 +28,7 @@ export class StudentResultService {
     }
 
     const result = new StudentResult(
-      createStudentResultDto.clientId,
+      clientId,
       createStudentResultDto.lessonId,
       createStudentResultDto.countOfStars,
     );

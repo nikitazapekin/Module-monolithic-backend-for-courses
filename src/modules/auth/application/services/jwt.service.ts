@@ -104,7 +104,7 @@ async createAuthResponse(
         return true;
       }
       
-      const expirationTime = decoded.exp * 1000; // Convert to milliseconds
+      const expirationTime = decoded.exp * 1000;  
       return Date.now() >= expirationTime;
     } catch (error) {
       return true;
