@@ -15,18 +15,6 @@ export class StudentResultService {
     // Используем clientId из DTO
     const clientId = createStudentResultDto.clientId!;
     
-    // Check if result already exists for this client and lesson
-    const existingResult = await this.studentResultRepository.findByClientIdAndLessonId(
-      clientId,
-      createStudentResultDto.lessonId,
-    );
-
-    if (existingResult) {
-      throw new BadRequestException(
-        'Result for this client and lesson already exists. Use update endpoint instead.',
-      );
-    }
-
     const result = new StudentResult(
       clientId,
       createStudentResultDto.lessonId,
@@ -105,5 +93,18 @@ export class StudentResultService {
       averageStars: Math.round(averageStars * 100) / 100,
       results,
     };
+  }
+
+  async getBestResultByClientAndLesson(clientId: string, lessonId: string): Promise<StudentResult | null> {
+    const results = await this.studentResultRepository.findByClientIdAndLessonId(clientId, lessonId);
+    
+    if (!results || results.length === 0) {
+      return null;
+    }
+
+    // Возвращаем результат с наибольшим количеством звезд
+    return results.reduce((best, current) => 
+      current.countOfStars > best.countOfStars ? current : best
+    );
   }
 }

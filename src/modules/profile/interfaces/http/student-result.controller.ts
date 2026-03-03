@@ -104,6 +104,26 @@ export class StudentResultController {
     return results.map(result => this.mapToResponse(result));
   }
 
+  @Get('client/:clientId/lesson/:lessonId/best')
+  @ApiOperation({ summary: 'Получение лучшего результата студента по уроку (с наибольшим количеством звезд)' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Лучший результат найден',
+    type: StudentResultResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Результаты не найдены',
+  })
+  @ApiBearerAuth()
+  async getBestResult(
+    @Param('clientId') clientId: string,
+    @Param('lessonId') lessonId: string,
+  ): Promise<StudentResultResponseDto | null> {
+    const result = await this.studentResultService.getBestResultByClientAndLesson(clientId, lessonId);
+    return result ? this.mapToResponse(result) : null;
+  }
+
   @Get('client/:clientId/progress')
   @ApiOperation({ summary: 'Получение прогресса студента' })
   @ApiResponse({

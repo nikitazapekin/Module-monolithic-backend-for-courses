@@ -38,12 +38,13 @@ export class StudentResultRepository implements IStudentResultRepository {
     return entities.map(entity => this.toDomain(entity));
   }
 
-  async findByClientIdAndLessonId(clientId: string, lessonId: string): Promise<StudentResult | null> {
-    const entity = await this.studentResultRepository.findOne({
+  async findByClientIdAndLessonId(clientId: string, lessonId: string): Promise<StudentResult[]> {
+    const entities = await this.studentResultRepository.find({
       where: { clientId, lessonId },
+      order: { completedAt: 'DESC' },
     });
 
-    return entity ? this.toDomain(entity) : null;
+    return entities.map(entity => this.toDomain(entity));
   }
 
   async save(result: StudentResult): Promise<StudentResult> {
