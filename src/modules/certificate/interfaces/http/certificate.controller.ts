@@ -8,8 +8,11 @@ import {
   Param,
   HttpCode,
   HttpStatus,
+  Res,
+  NotFoundException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { Response } from 'express';
 import { CertificateService } from '../../application/services/certificate.service';
 import { CreateCertificateDto } from '../../application/dtos/create-certificate.dto';
 import { UpdateCertificateDto } from '../../application/dtos/update-certificate.dto';
@@ -37,16 +40,56 @@ export class CertificateController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Получение сертификата по ID' })
+  @ApiOperation({ summary: 'Получение изображения сертификата по ID' })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Сертификат найден',
-    type: CertificateResponseDto,
+    description: 'PNG изображение сертификата',
+    content: {
+      'image/png': {
+        schema: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
   })
-  @ApiBearerAuth()
-  async findById(@Param('id') id: string): Promise<CertificateResponseDto> {
-    const certificate = await this.certificateService.findById(id);
-    return this.mapToResponse(certificate);
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Сертификат не найден',
+  })
+  async getCertificateImage(
+    @Param('id') id: string,
+    @Res() res: Response,
+  ): Promise<void> {
+    try {
+      const certificate = await this.certificateService.findById(id);
+      
+      // Конвертируем base64 в буфер
+      const imageBuffer = Buffer.from(certificate.url, 'base64');
+
+      // Устанавливаем заголовки для отображения PNG
+      res.setHeader('Content-Type', 'image/png');
+      res.setHeader('Content-Length', imageBuffer.length);
+      res.setHeader('Cache-Control', 'public, max-age=31536000'); // Кэширование на год
+      res.setHeader('Content-Disposition', 'inline'); // Отображать в браузере, а не скачивать
+
+      res.status(HttpStatus.OK).send(imageBuffer);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        res.status(HttpStatus.NOT_FOUND).json({
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'Certificate not found',
+          error: 'Not Found',
+        });
+      } else {
+        console.error('Error serving certificate image:', error);
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Internal server error',
+          error: 'Internal Server Error',
+        });
+      }
+    }
   }
 
   @Get('client/:clientId')
@@ -122,7 +165,6 @@ export class CertificateController {
     response.date = certificate.date;
     response.url = certificate.getBase64Data();
     response.digital = certificate.digital;
-    response.viewUrl = `http://localhost:3002/certificates/view/${certificate.id}`;
     response.createdAt = certificate.createdAt;
     response.updatedAt = certificate.updatedAt;
     return response;

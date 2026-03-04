@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CertificateController } from './interfaces/http/certificate.controller';
-import { CertificateDigitalController } from './interfaces/http/certificate-digital.controller';
 import { CertificateService } from './application/services/certificate.service';
 import { CertificateRepository } from './infra/repositories/certificate.repository.impl';
 import { CertificateOrmEntity } from './infra/typeorm/certificate.orm-entity';
@@ -16,7 +15,7 @@ import { AuditoryOrmEntity } from '../auth/infra/typeorm/auditory.orm-entity';
       AuditoryOrmEntity,
     ]),
   ],
-  controllers: [CertificateController, CertificateDigitalController],
+  controllers: [CertificateController],  
   providers: [
     CertificateService,
     {

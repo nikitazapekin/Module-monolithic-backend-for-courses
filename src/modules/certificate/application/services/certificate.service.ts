@@ -41,55 +41,60 @@ export class CertificateService {
     studentName: string,
     courseName: string,
     date: string,
-    viewUrl: string,
+    certificateUrl: string,
   ): Promise<string> {
-    const puppeteer = await import('puppeteer');
+    try {
+      const puppeteer = await import('puppeteer');
 
-    const html = this.createCertificateHTML(studentName, courseName, date, viewUrl);
+      const html = this.createCertificateHTML(studentName, courseName, date, certificateUrl);
 
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    });
+      const browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      });
 
-    const page = await browser.newPage();
+      const page = await browser.newPage();
 
-    await page.setViewport({
-      width: 1200,
-      height: 800,
-      deviceScaleFactor: 2,
-    });
-
-    await page.setContent(html, {
-      waitUntil: 'networkidle0',
-    });
-
-    // Wait for images to load
-    await page.evaluate(() => {
-      return Promise.all(
-        Array.from(document.images)
-          .filter(img => !img.complete)
-          .map(img => new Promise((resolve, reject) => {
-            img.onload = resolve;
-            img.onerror = reject;
-          }))
-      );
-    }).catch(() => console.log('⚠️ Some images failed to load, continuing...'));
-
-    const screenshot = await page.screenshot({
-      fullPage: false,
-      clip: {
-        x: 0,
-        y: 0,
+      await page.setViewport({
         width: 1200,
         height: 800,
-      },
-    });
+        deviceScaleFactor: 2,
+      });
 
-    await browser.close();
+      await page.setContent(html, {
+        waitUntil: 'networkidle0',
+      });
 
-    // Convert buffer to base64 (without prefix)
-    return Buffer.from(screenshot).toString('base64');
+      // Wait for images to load
+      await page.evaluate(() => {
+        return Promise.all(
+          Array.from(document.images)
+            .filter(img => !img.complete)
+            .map(img => new Promise((resolve, reject) => {
+              img.onload = resolve;
+              img.onerror = reject;
+            }))
+        );
+      }).catch(() => console.log('⚠️ Some images failed to load, continuing...'));
+
+      const screenshot = await page.screenshot({
+        fullPage: false,
+        clip: {
+          x: 0,
+          y: 0,
+          width: 1200,
+          height: 800,
+        },
+      });
+
+      await browser.close();
+
+      // Convert buffer to base64 (without prefix)
+      return Buffer.from(screenshot).toString('base64');
+    } catch (error) {
+      console.error('Error generating certificate image:', error);
+      throw new BadRequestException('Failed to generate certificate image');
+    }
   }
 
   /**
@@ -99,7 +104,7 @@ export class CertificateService {
     name: string,
     course: string,
     date: string,
-    viewUrl: string,
+    certificateUrl: string,
   ): string {
     return `<!DOCTYPE html>
 <html>
@@ -276,6 +281,10 @@ export class CertificateService {
         .footer a:hover {
             text-decoration: underline;
         }
+        
+        .footer a:visited {
+            color: #fff;
+        }
     </style>
 </head>
 <body>
@@ -306,7 +315,7 @@ export class CertificateService {
             <div class="footer">
                 <p>
                     Digital version: <br />
-                    <a href="${viewUrl}" target="_blank">View Certificate</a>
+                    <a href="${certificateUrl}" target="_blank">${certificateUrl}</a>
                 </p>
             </div>
         </div>
@@ -316,52 +325,59 @@ export class CertificateService {
   }
 
   /**
-   * Generate digital URL (PSD version)
+   * Generate certificate URL (для отображения PNG)
    */
-  private generateDigitalUrl(certificateId: string): string {
-    return `http://localhost:3002/certificates/digital/${certificateId}.psd`;
-  }
-
-  /**
-   * Generate view URL
-   */
-  private generateViewUrl(certificateId: string): string {
-    return `http://localhost:3002/certificates/view/${certificateId}`;
+  private generateCertificateUrl(certificateId: string): string {
+    // Используем переменную окружения или localhost по умолчанию
+    const baseUrl = process.env.API_URL || 'http://localhost:3002';
+    return `${baseUrl}/certificates/${certificateId}`;
   }
 
   async create(createCertificateDto: CreateCertificateDto): Promise<Certificate> {
-    const clientId = await this.getClientIdFromAuditoryId(createCertificateDto.auditoryId);
+    try {
+      // Получаем clientId из auditoryId
+      const clientId = await this.getClientIdFromAuditoryId(createCertificateDto.auditoryId);
 
-    const date = new Date(createCertificateDto.date);
-    const tempId = `temp_${Date.now()}`;
-    const viewUrl = this.generateViewUrl(tempId);
+      const date = new Date(createCertificateDto.date);
+      
+      // Генерируем временный URL для вставки в HTML
+      const tempId = `temp_${Date.now()}`;
+      const tempCertificateUrl = this.generateCertificateUrl(tempId);
 
-    // Generate certificate image
-    const base64Image = await this.generateCertificateImage(
-      createCertificateDto.studentName,
-      createCertificateDto.courseName,
-      createCertificateDto.date,
-      viewUrl,
-    );
+      // Генерируем изображение сертификата
+      const base64Image = await this.generateCertificateImage(
+        createCertificateDto.studentName,
+        createCertificateDto.courseName,
+        createCertificateDto.date,
+        tempCertificateUrl,
+      );
 
-    const certificate = new Certificate(
-      clientId,
-      date,
-      base64Image,
-      '', // временно пусто
-    );
+      // Создаем сущность сертификата (без digital URL)
+      const certificate = new Certificate(
+        clientId,
+        date,
+        base64Image,
+        '', // временно пусто
+      );
 
-    const saved = await this.certificateRepository.save(certificate);
+      // Сохраняем сертификат
+      const saved = await this.certificateRepository.save(certificate);
 
-    // Update URLs with actual certificate ID
-    const actualDigitalUrl = this.generateDigitalUrl(saved.id);
-    const actualViewUrl = this.generateViewUrl(saved.id);
-    
-    await this.certificateRepository.update(saved.id, { 
-      digital: actualDigitalUrl 
-    });
+      // Генерируем реальный URL с ID сохраненного сертификата
+      const actualCertificateUrl = this.generateCertificateUrl(saved.id);
+      
+      // Обновляем digital URL с реальным ID
+      await this.certificateRepository.update(saved.id, { 
+        digital: actualCertificateUrl 
+      });
 
-    return this.findById(saved.id);
+      console.log(`Certificate created successfully with ID: ${saved.id}`);
+      
+      return this.findById(saved.id);
+    } catch (error) {
+      console.error('Error creating certificate:', error);
+      throw new BadRequestException(`Failed to create certificate: ${error.message}`);
+    }
   }
 
   async findById(id: string): Promise<Certificate> {
@@ -418,5 +434,26 @@ export class CertificateService {
 
   async deleteByClientId(clientId: string): Promise<boolean> {
     return this.certificateRepository.deleteByClientId(clientId);
+  }
+
+  /**
+   * Проверка валидности base64 изображения
+   */
+  validateBase64Image(base64String: string): boolean {
+    try {
+      const buffer = Buffer.from(base64String, 'base64');
+      return buffer.length > 0;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Получение размера изображения в байтах
+   */
+  getImageSize(id: string): Promise<number> {
+    return this.findById(id).then(cert => 
+      Buffer.from(cert.url, 'base64').length
+    );
   }
 }
