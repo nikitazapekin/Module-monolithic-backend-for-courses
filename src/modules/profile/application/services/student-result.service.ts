@@ -116,11 +116,12 @@ export class StudentResultService {
 
   async getBestResultsForCourse(clientId: string, courseId: string): Promise<{
     lessonId: string;
+    orderIndex: number;
     bestResult: StudentResult | null;
   }[]> {
     // Получаем карту курса по courseId
     const courseMap = await this.courseMapRepository.findByCourseId(courseId);
-    
+
     if (!courseMap) {
       throw new NotFoundException(`Course map for course ${courseId} not found`);
     }
@@ -131,13 +132,19 @@ export class StudentResultService {
 
     // Получаем все результаты студента
     const results = await this.studentResultRepository.findByClientId(clientId);
-    
+
     // Группируем результаты по lessonId
     const resultsByLesson = new Map<string, StudentResult[]>();
     for (const result of results) {
       const existing = resultsByLesson.get(result.lessonId) || [];
       existing.push(result);
       resultsByLesson.set(result.lessonId, existing);
+    }
+
+    // Создаем мапу lessonId -> orderIndex
+    const lessonOrderIndexMap = new Map<string, number>();
+    for (const lesson of lessons) {
+      lessonOrderIndexMap.set(lesson.id, lesson.orderIndex);
     }
 
     // Для каждого урока находим лучший результат
@@ -149,7 +156,11 @@ export class StudentResultService {
           )
         : null;
 
-      return { lessonId, bestResult };
+      return { 
+        lessonId, 
+        orderIndex: lessonOrderIndexMap.get(lessonId) || 0,
+        bestResult 
+      };
     });
   }
 }

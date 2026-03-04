@@ -134,8 +134,8 @@ export class StudentResultController {
     description: 'Лучшие результаты получены',
     schema: {
       example: [
-        { lessonId: 'lesson_1', bestResult: { id: '1', clientId: 'client_1', lessonId: 'lesson_1', countOfStars: 5 } },
-        { lessonId: 'lesson_2', bestResult: null },
+        { lessonId: 'lesson_1', orderIndex: 1, bestResult: { id: '1', clientId: 'client_1', lessonId: 'lesson_1', countOfStars: 5 } },
+        { lessonId: 'lesson_2', orderIndex: 2, bestResult: null },
       ],
     },
   })
@@ -143,11 +143,11 @@ export class StudentResultController {
   async getBestResultsForCourse(
     @Param('clientId') auditoryId: string,
     @Body('courseId') courseId: string,
-  ): Promise<{ lessonId: string; bestResult: StudentResultResponseDto | null }[]> {
+  ): Promise<{ lessonId: string; orderIndex: number; bestResult: StudentResultResponseDto | null }[]> {
     // Получаем clientId (первичный ключ clients) по auditoryId
 
 console.log("GEEET")
-    
+
     const client = await this.clientRepository.findOne({
       where: { auditoryId },
     });
@@ -157,8 +157,9 @@ console.log("GEEET")
     }
 
     const results = await this.studentResultService.getBestResultsForCourse(client.id, courseId);
-    return results.map(({ lessonId, bestResult }) => ({
+    return results.map(({ lessonId, orderIndex, bestResult }) => ({
       lessonId,
+      orderIndex,
       bestResult: bestResult ? this.mapToResponse(bestResult) : null,
     }));
   }

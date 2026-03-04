@@ -27,8 +27,7 @@ export class LessonController {
   @ApiResponse({ status: 201, type: LessonResponseDto })
   async create(@Body() dto: CreateLessonDto): Promise<LessonResponseDto> {
 
-
-    console.log("CREAAAAAAAATTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTEEEEEEEEEEEEEEEEEEE CPNTROLLLLLLLLLLLER")
+ 
     return this.lessonFacade.createLesson(dto);
   }
 

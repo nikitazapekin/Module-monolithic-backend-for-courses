@@ -1,3 +1,4 @@
+// map/application/services/course-map.service.ts
 import { 
   Injectable, 
   Inject, 
@@ -13,8 +14,7 @@ import { UpdateCourseMapDto } from '../dtos/update-course-map.dto';
 import { CreateMapElementDto } from '../dtos/create-map-element.dto';
 import { CourseMapResponseDto } from '../dtos/course-map-response.dto';
 import { MapElementDto } from '../dtos/map-element.dto';
-import { MapElementType } from '@modules/map/infra/typeorm/map-element-types.enum';
-import { elementAt } from 'rxjs';
+import { MapElementType } from '../../domain/entities/map-element-types.enum';
 import { ILessonRepository } from '@modules/lesson/domain/interfaces/lesson.repository.interface';
 import { ICheckpointRepository } from '@modules/checkpoint/domain/interfaces/checkpoint.repository.interface';
 import { Lesson } from '@modules/lesson/domain/entities/lesson.entity';
@@ -27,53 +27,50 @@ export class CourseMapService {
     @Inject('ICourseMapRepository')
     private readonly courseMapRepository: ICourseMapRepository,
 
+    @Inject('ILessonRepository')
+    private readonly lessonRepository: ILessonRepository,
+    
+    @Inject('ICheckpointRepository')
+    private readonly checkpointRepository: ICheckpointRepository,
 
-     @Inject('ILessonRepository')
-  private readonly lessonRepository: ILessonRepository,
-  @Inject('ICheckpointRepository')
-  private readonly checkpointRepository: ICheckpointRepository,
-
-
-   private readonly lessonDetailsCreator: LessonDetailsCreatorService,
+    private readonly lessonDetailsCreator: LessonDetailsCreatorService,
   ) {}
 
-  
-
-
-    async createCourseMap(createDto: CreateCourseMapDto): Promise<CourseMapResponseDto> {
-  // Проверяем, нет ли уже карты для этого курса
-  const existingMap = await this.courseMapRepository.findByCourseId(createDto.courseId);
-  if (existingMap) {
-    throw new ConflictException('Course map already exists for this course');
-  }
-
-  const courseMap = new CourseMap(
-    createDto.courseId,
-    createDto.width,
-    createDto.height,
-    createDto.backgroundColor,
-    createDto.backgroundRepeat,
-    createDto.backgroundSize,
-    createDto.backgroundImage
-  );
-
-  const createdMap = await this.courseMapRepository.create(courseMap);
-
-  // Добавляем элементы, если они есть
-  if (createDto.elements && createDto.elements.length > 0) {
-    for (const elementDto of createDto.elements) {
-      const element = this.createMapElementFromDto(elementDto, createdMap.id);
-      const createdElement = await this.courseMapRepository.createElement(element);
-      
-      // Создаем связанные сущности для уроков и контрольных точек
-      await this.createRelatedEntityForMapElement(createdElement, elementDto);
+  async createCourseMap(createDto: CreateCourseMapDto): Promise<CourseMapResponseDto> {
+    // Проверяем, нет ли уже карты для этого курса
+    const existingMap = await this.courseMapRepository.findByCourseId(createDto.courseId);
+    if (existingMap) {
+      throw new ConflictException('Course map already exists for this course');
     }
+
+    const courseMap = new CourseMap(
+      createDto.courseId,
+      createDto.width,
+      createDto.height,
+      createDto.backgroundColor,
+      createDto.backgroundRepeat,
+      createDto.backgroundSize,
+      createDto.backgroundImage
+    );
+
+    const createdMap = await this.courseMapRepository.create(courseMap);
+
+    // Добавляем элементы, если они есть
+    if (createDto.elements && createDto.elements.length > 0) {
+      for (const elementDto of createDto.elements) {
+        const element = this.createMapElementFromDto(elementDto, createdMap.id);
+        const createdElement = await this.courseMapRepository.createElement(element);
+        
+        // Создаем связанные сущности для уроков и контрольных точек
+        await this.createRelatedEntityForMapElement(createdElement, elementDto);
+      }
+    }
+
+    // Получаем полную карту с элементами
+    const fullMap = await this.courseMapRepository.findById(createdMap.id);
+    return this.toResponseDto(fullMap!);
   }
 
-  // Получаем полную карту с элементами
-  const fullMap = await this.courseMapRepository.findById(createdMap.id);
-  return this.toResponseDto(fullMap!);
-}
   async getCourseMap(id: string): Promise<CourseMapResponseDto> {
     const courseMap = await this.courseMapRepository.findById(id);
     if (!courseMap) {
@@ -89,38 +86,39 @@ export class CourseMapService {
     }
     return this.toResponseDto(courseMap);
   }
-async updateCourseMap(id: string, updateDto: UpdateCourseMapDto): Promise<CourseMapResponseDto> {
-  const courseMap = await this.courseMapRepository.findById(id);
-  if (!courseMap) {
-    throw new NotFoundException('Course map not found');
+
+  async updateCourseMap(id: string, updateDto: UpdateCourseMapDto): Promise<CourseMapResponseDto> {
+    const courseMap = await this.courseMapRepository.findById(id);
+    if (!courseMap) {
+      throw new NotFoundException('Course map not found');
+    }
+
+    // Обновляем настройки карты
+    courseMap.update({
+      width: updateDto.width,
+      height: updateDto.height,
+      backgroundColor: updateDto.backgroundColor,
+      backgroundImage: updateDto.backgroundImage,
+      backgroundRepeat: updateDto.backgroundRepeat,
+      backgroundSize: updateDto.backgroundSize,
+    });
+
+    // Если есть элементы в updateDto, обрабатываем их
+    if (updateDto.elements && updateDto.elements.length > 0) {
+      console.log(`🔄 Синхронизация элементов: ${updateDto.elements.length} элементов`);
+      await this.synchronizeMapElements(id, updateDto.elements);
+    }
+
+    const updated = await this.courseMapRepository.update(id, courseMap);
+    if (!updated) {
+      throw new BadRequestException('Failed to update course map');
+    }
+
+    const updatedMap = await this.courseMapRepository.findById(id);
+    return this.toResponseDto(updatedMap!);
   }
 
-  // Обновляем настройки карты
-  courseMap.update({
-    width: updateDto.width,
-    height: updateDto.height,
-    backgroundColor: updateDto.backgroundColor,
-    backgroundImage: updateDto.backgroundImage,
-    backgroundRepeat: updateDto.backgroundRepeat,
-    backgroundSize: updateDto.backgroundSize,
-  });
-
-  // Если есть элементы в updateDto, обрабатываем их
-  if (updateDto.elements && updateDto.elements.length > 0) {
-    console.log(`🔄 Синхронизация элементов: ${updateDto.elements.length} элементов`);
-    await this.synchronizeMapElements(id, updateDto.elements);
-  }
-
-  const updated = await this.courseMapRepository.update(id, courseMap);
-  if (!updated) {
-    throw new BadRequestException('Failed to update course map');
-  }
-
-  const updatedMap = await this.courseMapRepository.findById(id);
-  return this.toResponseDto(updatedMap!);
-}
-
- private async synchronizeMapElements(mapId: string, newElements: CreateMapElementDto[]): Promise<void> {
+  private async synchronizeMapElements(mapId: string, newElements: CreateMapElementDto[]): Promise<void> {
     // Получаем текущие элементы
     const existingElements = await this.courseMapRepository.findElementsByMapId(mapId);
     
@@ -168,7 +166,6 @@ async updateCourseMap(id: string, updateDto: UpdateCourseMapDto): Promise<Course
     console.log('✅ Синхронизация элементов завершена');
   }
 
-  
   async deleteCourseMap(id: string): Promise<{ success: boolean }> {
     const courseMap = await this.courseMapRepository.findById(id);
     if (!courseMap) {
@@ -182,7 +179,6 @@ async updateCourseMap(id: string, updateDto: UpdateCourseMapDto): Promise<Course
     return { success: deleted };
   }
 
- /*  // Элементы карты
   async addMapElement(mapId: string, elementDto: CreateMapElementDto): Promise<MapElementDto> {
     const courseMap = await this.courseMapRepository.findById(mapId);
     if (!courseMap) {
@@ -192,81 +188,35 @@ async updateCourseMap(id: string, updateDto: UpdateCourseMapDto): Promise<Course
     const element = this.createMapElementFromDto(elementDto, mapId);
     const createdElement = await this.courseMapRepository.createElement(element);
 
+    // Автоматически создаем связанные сущности
+    await this.createRelatedEntityForMapElement(createdElement, elementDto);
 
     console.log("CREATED", createdElement)
     return this.toElementDto(createdElement);
-  } */
-
-
-
-
-    async addMapElement(mapId: string, elementDto: CreateMapElementDto): Promise<MapElementDto> {
-  const courseMap = await this.courseMapRepository.findById(mapId);
-  if (!courseMap) {
-    throw new NotFoundException('Course map not found');
   }
 
-  const element = this.createMapElementFromDto(elementDto, mapId);
-  const createdElement = await this.courseMapRepository.createElement(element);
-
-  // Автоматически создаем связанные сущности
-  await this.createRelatedEntityForMapElement(createdElement, elementDto);
-
-  console.log("CREATED", createdElement)
-  return this.toElementDto(createdElement);
-}
-/* 
-// Новый метод для создания связанных сущностей
-private async createRelatedEntityForMapElement(
-  mapElement: MapElement, 
-  elementDto: CreateMapElementDto
-): Promise<void> {
-  if (mapElement.type === MapElementType.LESSON) {
-    // Создаем урок
-    const lessonDto = elementDto as any; // Cast чтобы получить дополнительные поля
-    
-    // Определяем orderIndex (можно брать из DTO или вычислять)
-    const orderIndex = lessonDto.orderIndex || 0;
-    
-    const lesson = new Lesson(
-      mapElement.id, // mapElementId - связь один к одному
-      mapElement.title || 'Новый урок',
-      mapElement.text || 'Описание урока',
-      orderIndex,
-      lessonDto.content, // дополнительный контент
-      lessonDto.duration, // длительность
-      lessonDto.isPublished || false,
-      undefined // id - сгенерируется автоматически
-    );
-    
-    await this.lessonRepository.create(lesson);
-    console.log(`✅ Создан урок для элемента карты: ${mapElement.id}`);
-    
-  } else if (mapElement.type === MapElementType.CHECKPOINT) {
-    // Создаем контрольную точку
-    const checkpointDto = elementDto as any;
-    
-    // Определяем тип checkpoint из DTO или используем значение по умолчанию
-    const checkpointType = checkpointDto.checkpointType  
-    
-    const checkpoint = new Checkpoint(
-      mapElement.id, // mapElementId
-      mapElement.title || 'Новая контрольная точка',
-      mapElement.text || 'Описание контрольной точки',
-      checkpointType,
-      checkpointDto.passingScore, // проходной балл
-      checkpointDto.maxAttempts, // максимальное количество попыток
-      checkpointDto.timeLimit, // лимит времени
-      checkpointDto.instructions, // инструкции
-      checkpointDto.isPublished || false,
-      undefined // id
-    );
-    
-    await this.checkpointRepository.create(checkpoint);
-    console.log(`✅ Создана контрольная точка для элемента карты: ${mapElement.id}`);
+  /**
+   * Вычисляет следующий orderIndex для урока в рамках данной карты курса
+   */
+  private async calculateNextOrderIndex(courseMapId: string): Promise<number> {
+    try {
+      // Получаем все уроки для этой карты курса
+      const lessons = await this.lessonRepository.findAllByCourseMapId(courseMapId);
+      
+      // Находим максимальный orderIndex
+      const maxOrderIndex = lessons.reduce((max, lesson) => 
+        lesson.orderIndex > max ? lesson.orderIndex : max, 0);
+      
+      const nextOrderIndex = maxOrderIndex + 1;
+      console.log(`📊 Рассчитан orderIndex: ${nextOrderIndex} (макс был ${maxOrderIndex}) для карты ${courseMapId}`);
+      
+      return nextOrderIndex;
+    } catch (error) {
+      console.error('Ошибка при расчете orderIndex:', error);
+      return 1; // В случае ошибки возвращаем 1
+    }
   }
-} */
-  // Обновляем метод createRelatedEntityForMapElement
+
   private async createRelatedEntityForMapElement(
     mapElement: MapElement, 
     elementDto: CreateMapElementDto
@@ -276,8 +226,18 @@ private async createRelatedEntityForMapElement(
         // Создаем урок
         const lessonDto = elementDto as any;
         
-        // Определяем orderIndex (можно брать из DTO или вычислять)
-        const orderIndex = lessonDto.orderIndex || 0;
+        // ВАЖНО: Вычисляем правильный orderIndex
+        let orderIndex: number;
+        
+        if (lessonDto.orderIndex !== undefined && lessonDto.orderIndex !== null) {
+          // Если orderIndex передан в DTO, используем его
+          orderIndex = lessonDto.orderIndex;
+          console.log(`📌 Используем переданный orderIndex: ${orderIndex}`);
+        } else {
+          // Иначе вычисляем автоматически на основе максимального значения в БД
+          orderIndex = await this.calculateNextOrderIndex(mapElement.courseMapId);
+          console.log(`📌 Автоматически вычисленный orderIndex: ${orderIndex}`);
+        }
         
         const lesson = new Lesson(
           mapElement.id, // mapElementId - связь один к одному
@@ -291,7 +251,7 @@ private async createRelatedEntityForMapElement(
         );
         
         const createdLesson = await this.lessonRepository.create(lesson);
-        console.log(`✅ Создан урок для элемента карты: ${mapElement.id}, lesson ID: ${createdLesson.id}`);
+        console.log(`✅ Создан урок для элемента карты: ${mapElement.id}, lesson ID: ${createdLesson.id}, orderIndex: ${createdLesson.orderIndex}`);
         
         // Создаем lesson_details для этого урока
         await this.lessonDetailsCreator.createLessonDetailsForLesson(createdLesson.id, mapElement.id);
@@ -323,59 +283,8 @@ private async createRelatedEntityForMapElement(
       console.error('❌ Ошибка при создании связанной сущности:', error);
       throw new BadRequestException(`Failed to create related entity for map element: ${error.message}`);
     }
-  
-}
-
-/* 
-// Также нужно обновить метод synchronizeMapElements для создания связанных сущностей при обновлении
-private async synchronizeMapElements(mapId: string, newElements: CreateMapElementDto[]): Promise<void> {
-  // Получаем текущие элементы
-  const existingElements = await this.courseMapRepository.findElementsByMapId(mapId);
-  
-  console.log(`📊 До: ${existingElements.length} элементов, После: ${newElements.length} элементов`);
-
-  // Создаем мапы для быстрого поиска
-  const existingElementsMap = new Map<string, MapElement>();
-  existingElements.forEach(el => existingElementsMap.set(el.id, el));
-  
-  // Для новых элементов проверяем, есть ли ID в DTO
-  for (const newElDto of newElements) {
-    const elementWithId = newElDto as any;
-    
-    if (!elementWithId.id) {
-      // Если ID нет - создаем новый элемент
-      console.log('🆕 Создание нового элемента без ID');
-      const element = this.createMapElementFromDto(newElDto, mapId);
-      const createdElement = await this.courseMapRepository.createElement(element);
-      
-      // Создаем связанные сущности
-      await this.createRelatedEntityForMapElement(createdElement, newElDto);
-      
-    } else if (existingElementsMap.has(elementWithId.id)) {
-      // Если ID есть и элемент существует - обновляем
-      console.log(`🔄 Обновление существующего элемента: ${elementWithId.id}`);
-      await this.courseMapRepository.updateElement(elementWithId.id, newElDto);
-      existingElementsMap.delete(elementWithId.id); // Убираем из списка существующих
-    } else {
-      // Если ID есть, но элемент не существует - создаем с этим ID
-      console.log(`➕ Создание нового элемента с заданным ID: ${elementWithId.id}`);
-      const element = this.createMapElementFromDto(newElDto, mapId);
-      const createdElement = await this.courseMapRepository.createElement(element);
-      
-      // Создаем связанные сущности
-      await this.createRelatedEntityForMapElement(createdElement, newElDto);
-    }
   }
 
-  // Удаляем элементы, которые остались в existingElementsMap (не были обновлены)
-  for (const [elementId, element] of existingElementsMap) {
-    console.log(`🗑️ Удаление элемента: ${elementId}`);
-    await this.deleteMapElement(elementId); // Используем существующий метод, который удаляет связанные сущности
-  }
-
-  console.log('✅ Синхронизация элементов завершена');
-}
- */
   async getMapElement(elementId: string): Promise<MapElementDto> {
     const element = await this.courseMapRepository.findElementById(elementId);
     if (!element) {
@@ -418,73 +327,58 @@ private async synchronizeMapElements(mapId: string, newElements: CreateMapElemen
     const updatedElement = await this.courseMapRepository.findElementById(elementId);
     return this.toElementDto(updatedElement!);
   }
-/* 
-   async deleteMapElement(elementId: string): Promise<{ success: boolean }> {
+
+  async deleteMapElement(elementId: string): Promise<{ success: boolean }> {
     console.log("Удаление элемента:", elementId);
     
     const element = await this.courseMapRepository.findElementById(elementId);
     if (!element) {
-      // Если элемент не найден, все равно возвращаем успех
       console.warn(`Элемент ${elementId} не найден при удалении`);
       return { success: true };
+    }
+
+    // Удаляем связанные сущности
+    if (element.type === MapElementType.LESSON) {
+      await this.lessonRepository.deleteByMapElementId(elementId);
+    } else if (element.type === MapElementType.CHECKPOINT) {
+      await this.checkpointRepository.deleteByMapElementId(elementId);
     }
 
     const deleted = await this.courseMapRepository.deleteElement(elementId);
     return { success: deleted };
   }
- */
 
-
-  async deleteMapElement(elementId: string): Promise<{ success: boolean }> {
-  console.log("Удаление элемента:", elementId);
-  
-  const element = await this.courseMapRepository.findElementById(elementId);
-  if (!element) {
-    console.warn(`Элемент ${elementId} не найден при удалении`);
-    return { success: true };
+  private createMapElementFromDto(dto: CreateMapElementDto, courseMapId: string): MapElement {
+    // Пробуем получить ID из DTO (если он есть)
+    const elementWithId = dto as any;
+    const id = elementWithId.id;
+    
+    return new MapElement(
+      dto.type as MapElementType,
+      courseMapId,
+      dto.positionX,
+      dto.positionY,
+      dto.positioning,
+      dto.offsetX,
+      dto.offsetY,
+      dto.rotation || 0,
+      dto.title,
+      dto.text,
+      dto.color,
+      dto.imageUrl,
+      dto.emoji,
+      dto.fontSize,
+      dto.fontFamily,
+      dto.fontWeight,
+      dto.fontStyle,
+      dto.width,
+      dto.height,
+      dto.isActive,
+      dto.stars,
+      dto.breakpoints,
+      id  
+    );
   }
-
-  // Удаляем связанные сущности
-  if (element.type === MapElementType.LESSON) {
-    await this.lessonRepository.deleteByMapElementId(elementId);
-  } else if (element.type === MapElementType.CHECKPOINT) {
-    await this.checkpointRepository.deleteByMapElementId(elementId);
-  }
-
-  const deleted = await this.courseMapRepository.deleteElement(elementId);
-  return { success: deleted };
-}
-private createMapElementFromDto(dto: CreateMapElementDto, courseMapId: string): MapElement {
-  // Пробуем получить ID из DTO (если он есть)
-  const elementWithId = dto as any;
-  const id = elementWithId.id;
-  
-  return new MapElement(
-    dto.type as MapElementType,
-    courseMapId,
-    dto.positionX,
-    dto.positionY,
-    dto.positioning,
-    dto.offsetX,
-    dto.offsetY,
-    dto.rotation || 0,
-    dto.title,
-    dto.text,
-    dto.color,
-    dto.imageUrl,
-    dto.emoji,
-    dto.fontSize,
-    dto.fontFamily,
-    dto.fontWeight,
-    dto.fontStyle,
-    dto.width,
-    dto.height,
-    dto.isActive,
-    dto.stars,
-    dto.breakpoints,
-    id  
-  );
-}
 
   private toResponseDto(courseMap: CourseMap): CourseMapResponseDto {
     const elements = courseMap.elements.map(element => this.toElementDto(element));
@@ -503,32 +397,33 @@ private createMapElementFromDto(dto: CreateMapElementDto, courseMapId: string): 
       updatedAt: courseMap.updatedAt,
     };
   }
-private toElementDto(element: MapElement): MapElementDto {
-  return {
-    id: element.id, // Теперь element.id гарантированно существует
-    type: element.type,
-    title: element.title,
-    text: element.text,
-    color: element.color,
-    imageUrl: element.imageUrl,
-    emoji: element.emoji,
-    fontSize: element.fontSize,
-    fontFamily: element.fontFamily,
-    fontWeight: element.fontWeight,
-    fontStyle: element.fontStyle,
-    positionX: element.positionX,
-    positionY: element.positionY,
-    positioning: element.positioning,
-    offsetX: element.offsetX,
-    offsetY: element.offsetY,
-    width: element.width,
-    height: element.height,
-    rotation: element.rotation,
-    isActive: element.isActive,
-    stars: element.stars,
-    breakpoints: element.breakpoints,
-    createdAt: element.createdAt,
-    updatedAt: element.updatedAt,
-  };
-}
+
+  private toElementDto(element: MapElement): MapElementDto {
+    return {
+      id: element.id,
+      type: element.type,
+      title: element.title,
+      text: element.text,
+      color: element.color,
+      imageUrl: element.imageUrl,
+      emoji: element.emoji,
+      fontSize: element.fontSize,
+      fontFamily: element.fontFamily,
+      fontWeight: element.fontWeight,
+      fontStyle: element.fontStyle,
+      positionX: element.positionX,
+      positionY: element.positionY,
+      positioning: element.positioning,
+      offsetX: element.offsetX,
+      offsetY: element.offsetY,
+      width: element.width,
+      height: element.height,
+      rotation: element.rotation,
+      isActive: element.isActive,
+      stars: element.stars,
+      breakpoints: element.breakpoints,
+      createdAt: element.createdAt,
+      updatedAt: element.updatedAt,
+    };
+  }
 }

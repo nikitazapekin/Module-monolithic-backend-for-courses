@@ -14,7 +14,7 @@ export class Lesson {
     mapElementId: string,
     title: string,
     description: string,
-    orderIndex: number,
+    orderIndex: number | undefined,
     content?: string,
     duration?: number,
     isPublished: boolean = false,
@@ -30,7 +30,7 @@ export class Lesson {
     this.description = description;
     this.content = content;
     this.duration = duration;
-    this.orderIndex = orderIndex;
+    this.orderIndex = orderIndex ?? 1; // Default to 1 if undefined or null
     this.isPublished = isPublished;
     this.createdAt = new Date();
     this.updatedAt = new Date();
@@ -43,7 +43,7 @@ export class Lesson {
     if (data.duration !== undefined) this.duration = data.duration;
     if (data.orderIndex !== undefined) this.orderIndex = data.orderIndex;
     if (data.isPublished !== undefined) this.isPublished = data.isPublished;
-    
+
     this.updatedAt = new Date();
   }
 

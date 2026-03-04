@@ -13,9 +13,36 @@ export class LessonRepository implements ILessonRepository {
   ) {}
 
   async create(lesson: Lesson): Promise<Lesson> {
-    const entity = this.toOrmEntity(lesson);
-    const saved = await this.lessonRepository.save(entity);
-    return this.toDomain(saved);
+    console.log(`[LessonRepository] Creating lesson with orderIndex: ${lesson.orderIndex}`);
+    
+    // Use query builder to explicitly insert values
+    const result = await this.lessonRepository
+      .createQueryBuilder()
+      .insert()
+      .into(LessonOrmEntity)
+      .values({
+        id: lesson.id,
+        mapElementId: lesson.mapElementId,
+        title: lesson.title,
+        description: lesson.description,
+        content: lesson.content,
+        duration: lesson.duration,
+        orderIndex: lesson.orderIndex,
+        isPublished: lesson.isPublished,
+        createdAt: lesson.createdAt,
+        updatedAt: lesson.updatedAt,
+      })
+      .execute();
+
+    console.log(`[LessonRepository] Insert result:`, result);
+
+    // Fetch the created entity
+    const saved = await this.lessonRepository.findOne({
+      where: { id: lesson.id }
+    });
+
+    console.log(`[LessonRepository] Saved entity orderIndex: ${saved?.orderIndex}`);
+    return this.toDomain(saved!);
   }
 
   async findById(id: string): Promise<Lesson | null> {
@@ -40,7 +67,7 @@ export class LessonRepository implements ILessonRepository {
       .where('mapElement.courseMapId = :courseMapId', { courseMapId })
       .orderBy('lesson.orderIndex', 'ASC')
       .getMany();
-    
+
     return entities.map(entity => this.toDomain(entity));
   }
 
@@ -48,14 +75,14 @@ export class LessonRepository implements ILessonRepository {
     const entity = await this.lessonRepository.findOne({
       where: { id }
     });
-    
+
     if (!entity) {
       return false;
     }
-    
+
     Object.assign(entity, updates);
     entity.updatedAt = new Date();
-    
+
     await this.lessonRepository.save(entity);
     return true;
   }
@@ -91,11 +118,11 @@ export class LessonRepository implements ILessonRepository {
     entity.description = lesson.description;
     entity.content = lesson.content;
     entity.duration = lesson.duration;
-    entity.orderIndex = lesson.orderIndex;
+    entity.orderIndex = lesson.orderIndex ?? 1; // Ensure orderIndex is never null/undefined
     entity.isPublished = lesson.isPublished;
     entity.createdAt = lesson.createdAt;
     entity.updatedAt = lesson.updatedAt;
-    
+
     return entity;
   }
 }

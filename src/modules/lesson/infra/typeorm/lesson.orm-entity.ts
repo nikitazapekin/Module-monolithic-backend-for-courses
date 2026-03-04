@@ -32,7 +32,7 @@ export class LessonOrmEntity {
   @Column('int', { nullable: true })
   duration?: number;
 
-  @Column('int')
+  @Column('int', { default: 1 })
   orderIndex: number;
 
   @Column({ default: false })

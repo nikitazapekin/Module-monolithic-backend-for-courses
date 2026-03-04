@@ -8,11 +8,13 @@ import { LessonRepository } from './infra/repositories/lesson.repository.impl';
 import { LessonOrmEntity } from './infra/typeorm/lesson.orm-entity';
 import { MapElementOrmEntity } from '../map/infra/typeorm/map-element.orm-entity';
 import { LessonDetailsModule } from '../lesson-details/lesson-details.module';
+import { MapModule } from '../map/map.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([LessonOrmEntity, MapElementOrmEntity]),
     forwardRef(() => LessonDetailsModule),
+    forwardRef(() => MapModule),
   ],
   controllers: [LessonController],
   providers: [
@@ -22,6 +24,8 @@ import { LessonDetailsModule } from '../lesson-details/lesson-details.module';
       provide: 'ILessonRepository',
       useClass: LessonRepository,
     },
+    // Добавляем экспорт IMapElementRepository из MapModule
+    // Но его нужно будет добавить в exports MapModule
   ],
   exports: [
     LessonService,

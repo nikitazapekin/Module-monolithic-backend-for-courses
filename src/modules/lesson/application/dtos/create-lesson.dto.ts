@@ -41,11 +41,13 @@ export class CreateLessonDto {
   duration?: number;
 
   @ApiProperty({
-    description: 'Порядковый номер урока',
+    description: 'Порядковый номер урока (авто-вычисляется, если не указан)',
     example: 1,
+    required: false,
   })
   @IsNumber()
-  orderIndex: number;
+  @IsOptional()
+  orderIndex?: number;
 
   @ApiProperty({
     description: 'Опубликован ли урок',
