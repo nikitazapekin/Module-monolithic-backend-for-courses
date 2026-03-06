@@ -335,44 +335,32 @@ export class CertificateService {
 
   async create(createCertificateDto: CreateCertificateDto): Promise<Certificate> {
     try {
-      // Получаем clientId из auditoryId
       const clientId = await this.getClientIdFromAuditoryId(createCertificateDto.auditoryId);
-
       const date = new Date(createCertificateDto.date);
-      
-      // Генерируем временный URL для вставки в HTML
-      const tempId = `temp_${Date.now()}`;
-      const tempCertificateUrl = this.generateCertificateUrl(tempId);
 
-      // Генерируем изображение сертификата
+      // Сохраняем сертификат-заглушку, чтобы получить реальный ID
+      const certificate = new Certificate(clientId, createCertificateDto.courseId, date, '', '');
+      const saved = await this.certificateRepository.save(certificate);
+
+      // Генерируем реальный URL с настоящим ID
+      const actualCertificateUrl = this.generateCertificateUrl(saved.id);
+
+      // Генерируем изображение с реальным URL внутри
       const base64Image = await this.generateCertificateImage(
         createCertificateDto.studentName,
         createCertificateDto.courseName,
         createCertificateDto.date,
-        tempCertificateUrl,
+        actualCertificateUrl,
       );
 
-      // Создаем сущность сертификата (без digital URL)
-      const certificate = new Certificate(
-        clientId,
-        date,
-        base64Image,
-        '', // временно пусто
-      );
-
-      // Сохраняем сертификат
-      const saved = await this.certificateRepository.save(certificate);
-
-      // Генерируем реальный URL с ID сохраненного сертификата
-      const actualCertificateUrl = this.generateCertificateUrl(saved.id);
-      
-      // Обновляем digital URL с реальным ID
-      await this.certificateRepository.update(saved.id, { 
-        digital: actualCertificateUrl 
+      // Обновляем и изображение, и digital URL
+      await this.certificateRepository.update(saved.id, {
+        url: base64Image,
+        digital: actualCertificateUrl,
       });
 
       console.log(`Certificate created successfully with ID: ${saved.id}`);
-      
+
       return this.findById(saved.id);
     } catch (error) {
       console.error('Error creating certificate:', error);

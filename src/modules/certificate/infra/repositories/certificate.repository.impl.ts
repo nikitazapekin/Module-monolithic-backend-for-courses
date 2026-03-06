@@ -73,6 +73,7 @@ export class CertificateRepository implements ICertificateRepository {
   private toDomain(entity: CertificateOrmEntity): Certificate {
     const certificate = new Certificate(
       entity.clientId,
+      entity.courseId || '',
       entity.date,
       entity.url,
       entity.digital,
@@ -92,6 +93,7 @@ export class CertificateRepository implements ICertificateRepository {
     const entity = new CertificateOrmEntity();
     entity.id = certificate.id;
     entity.clientId = certificate.clientId;
+    entity.courseId = certificate.courseId;
     entity.date = certificate.date;
     entity.url = certificate.url;
     entity.digital = certificate.digital;

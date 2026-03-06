@@ -13,6 +13,15 @@ export class CreateCertificateDto {
   auditoryId: string;
 
   @ApiProperty({
+    description: 'ID курса',
+    example: 'course_123',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @Expose()
+  courseId: string;
+
+  @ApiProperty({
     description: 'Дата выдачи сертификата',
     example: '2024-01-15',
   })

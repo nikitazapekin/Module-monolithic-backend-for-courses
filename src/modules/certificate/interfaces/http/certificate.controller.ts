@@ -177,6 +177,7 @@ export class CertificateController {
     const response = new CertificateResponseDto();
     response.id = certificate.id;
     response.clientId = certificate.clientId;
+    response.courseId = certificate.courseId || '';
     response.date = certificate.date;
     response.url = certificate.getBase64Data();
     response.digital = certificate.digital;

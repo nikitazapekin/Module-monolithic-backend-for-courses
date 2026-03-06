@@ -17,6 +17,13 @@ export class CertificateResponseDto {
   clientId: string;
 
   @ApiProperty({
+    description: 'ID курса',
+    example: 'course_123',
+  })
+  @Expose()
+  courseId: string;
+
+  @ApiProperty({
     description: 'Дата выдачи сертификата',
     example: '2024-01-15T00:00:00.000Z',
   })

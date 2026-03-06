@@ -1,6 +1,7 @@
 export class Certificate {
   public id: string;
   public clientId: string;
+  public courseId: string;
   public date: Date;
   public url: string; // BASE64 encoded image (without prefix)
   public digital: string; // URL for PSD version
@@ -11,12 +12,14 @@ export class Certificate {
 
   constructor(
     clientId: string,
+    courseId: string,
     date: Date,
     url: string,
     digital: string,
   ) {
     this.id = this.generateId();
     this.clientId = clientId;
+    this.courseId = courseId;
     this.date = date;
     this.url = url;
     this.digital = digital;

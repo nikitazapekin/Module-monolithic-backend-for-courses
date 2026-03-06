@@ -9,6 +9,9 @@ export class CertificateOrmEntity {
   @Column()
   clientId: string;
 
+  @Column({ nullable: true })
+  courseId: string;
+
   @Column()
   date: Date;
 
