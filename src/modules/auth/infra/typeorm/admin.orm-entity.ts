@@ -1,6 +1,7 @@
 import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, OneToMany } from 'typeorm';
 import { AuditoryOrmEntity } from './auditory.orm-entity';
 import { CourseOrmEntity } from '@modules/courses/infra/typeorm/course.orm-entity';
+import { CodeTaskOrmEntity } from '@modules/coding-tasks/infra/typeorm/code-task.orm-entity';
 
 @Entity('admins')
 export class AdminOrmEntity {
@@ -43,4 +44,7 @@ export class AdminOrmEntity {
 
     @OneToMany(() => CourseOrmEntity, course => course.admin)
   courses: CourseOrmEntity[];
+
+  @OneToMany(() => CodeTaskOrmEntity, task => task.admin)
+  codeTasks: CodeTaskOrmEntity[];
 }

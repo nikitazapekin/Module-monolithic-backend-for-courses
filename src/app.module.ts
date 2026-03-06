@@ -13,6 +13,7 @@ import { CodeModule } from '@modules/code/code.module';
 import { LessonDetailsModule } from '@modules/lesson-details/lesson-details.module';
 import { ProfileModule } from '@modules/profile/profile.module';
 import { CertificateModule } from '@modules/certificate/certificate.module';
+import { CodingTasksModule } from '@modules/coding-tasks/coding-tasks.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -29,6 +30,7 @@ import { CertificateModule } from '@modules/certificate/certificate.module';
     CodeModule,
     ProfileModule,
     CertificateModule,
+    CodingTasksModule,
   ],
   controllers: [AppController],
   providers: [AppService],
