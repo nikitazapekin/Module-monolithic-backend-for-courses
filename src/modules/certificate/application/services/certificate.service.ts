@@ -424,6 +424,20 @@ export class CertificateService {
     return this.findById(id);
   }
 
+  async setIsViewed(id: string): Promise<Certificate> {
+    const certificate = await this.certificateRepository.findById(id);
+    if (!certificate) {
+      throw new NotFoundException(`Certificate with ID ${id} not found`);
+    }
+
+    await this.certificateRepository.update(id, {
+      isViewed: true,
+      updatedAt: new Date(),
+    });
+
+    return this.findById(id);
+  }
+
   async delete(id: string): Promise<boolean> {
     const certificate = await this.certificateRepository.findById(id);
     if (!certificate) {

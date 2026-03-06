@@ -4,6 +4,7 @@ export class Certificate {
   public date: Date;
   public url: string; // BASE64 encoded image (without prefix)
   public digital: string; // URL for PSD version
+  public isViewed: boolean;
 
   public createdAt: Date;
   public updatedAt: Date;
@@ -19,6 +20,7 @@ export class Certificate {
     this.date = date;
     this.url = url;
     this.digital = digital;
+    this.isViewed = false;
     this.createdAt = new Date();
     this.updatedAt = new Date();
   }
@@ -26,6 +28,11 @@ export class Certificate {
   public updateCertificate(url: string, digital: string): void {
     this.url = url;
     this.digital = digital;
+    this.updatedAt = new Date();
+  }
+
+  public markAsViewed(): void {
+    this.isViewed = true;
     this.updatedAt = new Date();
   }
 

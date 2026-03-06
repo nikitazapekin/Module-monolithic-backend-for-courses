@@ -45,6 +45,13 @@ export class CertificateResponseDto {
   viewUrl: string;
 
   @ApiProperty({
+    description: 'Просмотрен ли сертификат',
+    example: false,
+  })
+  @Expose()
+  isViewed: boolean;
+
+  @ApiProperty({
     description: 'Дата создания',
     example: '2024-01-01T00:00:00.000Z',
   })

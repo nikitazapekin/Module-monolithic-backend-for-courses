@@ -18,6 +18,9 @@ export class CertificateOrmEntity {
   @Column({ type: 'text' })
   digital: string; // URL for PSD version
 
+  @Column({ default: false })
+  isViewed: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 

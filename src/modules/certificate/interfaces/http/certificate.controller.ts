@@ -39,6 +39,21 @@ export class CertificateController {
     return this.mapToResponse(certificate);
   }
 
+  @Put('setIsViewed')
+  @ApiOperation({ summary: 'Отметить сертификат как просмотренный' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Сертификат отмечен как просмотренный',
+    type: CertificateResponseDto,
+  })
+  @ApiBearerAuth()
+  async setIsViewed(
+    @Body('id') id: string,
+  ): Promise<CertificateResponseDto> {
+    const certificate = await this.certificateService.setIsViewed(id);
+    return this.mapToResponse(certificate);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Получение изображения сертификата по ID' })
   @ApiResponse({
@@ -165,6 +180,7 @@ export class CertificateController {
     response.date = certificate.date;
     response.url = certificate.getBase64Data();
     response.digital = certificate.digital;
+    response.isViewed = certificate.isViewed ?? false;
     response.createdAt = certificate.createdAt;
     response.updatedAt = certificate.updatedAt;
     return response;

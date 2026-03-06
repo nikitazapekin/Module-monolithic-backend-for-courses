@@ -80,6 +80,7 @@ export class CertificateRepository implements ICertificateRepository {
 
     Object.assign(certificate, {
       id: entity.id,
+      isViewed: entity.isViewed ?? false,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     });
@@ -94,6 +95,7 @@ export class CertificateRepository implements ICertificateRepository {
     entity.date = certificate.date;
     entity.url = certificate.url;
     entity.digital = certificate.digital;
+    entity.isViewed = certificate.isViewed;
     entity.createdAt = certificate.createdAt;
     entity.updatedAt = certificate.updatedAt;
 

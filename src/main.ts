@@ -1,4 +1,4 @@
- import { NestFactory } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from '@common/filters/http-exceptions.filter';
 import { ResposneInterceptor } from '@common/interceptors/response.interceptor';
