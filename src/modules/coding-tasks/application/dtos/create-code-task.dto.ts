@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsArray, IsEnum, IsInt, IsOptional, Min } from 'class-validator';
+import { IsString, IsArray, IsEnum, IsInt, IsOptional, IsObject, Min } from 'class-validator';
 
 export class CreateCodeTaskDto {
   @ApiProperty({ example: 'Two Sum' })
@@ -10,13 +10,13 @@ export class CreateCodeTaskDto {
   @IsString()
   description: string;
 
-  @ApiProperty({ example: 'javascript' })
-  @IsString()
-  language: string;
+  @ApiProperty({ example: ['javascript', 'python'] })
+  @IsArray()
+  languages: string[];
 
-  @ApiProperty({ example: 'function twoSum(nums, target) {\n  // your code\n}' })
-  @IsString()
-  startCode: string;
+  @ApiProperty({ example: { javascript: 'function twoSum(nums, target) {\n  // your code\n}', python: 'def two_sum(nums, target):\n    pass' } })
+  @IsObject()
+  startCodes: Record<string, string>;
 
   @ApiProperty({ type: 'array', example: [{ input: '[2,7,11,15], 9', expectedOutput: '[0,1]' }] })
   @IsArray()

@@ -104,6 +104,10 @@ export class CodingTasksService {
   }> {
     const task = await this.getTaskById(taskId);
 
+    if (!task.languages.includes(language)) {
+      throw new BadRequestException(`Language "${language}" is not supported for this task. Supported: ${task.languages.join(', ')}`);
+    }
+
     if (!task.testCases || task.testCases.length === 0) {
       throw new BadRequestException('Task has no test cases');
     }

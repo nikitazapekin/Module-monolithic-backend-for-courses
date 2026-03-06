@@ -20,11 +20,11 @@ export class CodeTaskOrmEntity {
   @Column({ type: 'text' })
   description: string;
 
-  @Column()
-  language: string;
+  @Column({ type: 'jsonb', default: '["javascript"]' })
+  languages: string[];
 
-  @Column({ type: 'text' })
-  startCode: string;
+  @Column({ type: 'jsonb', default: '{}' })
+  startCodes: Record<string, string>;
 
   @Column({ type: 'jsonb', default: '[]' })
   testCases: Array<{ input: string; expectedOutput: string }>;
