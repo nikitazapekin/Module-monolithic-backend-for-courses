@@ -216,38 +216,320 @@ export class CodingTasksService {
   private buildJavaTestCode(userCode: string, fnName: string, input: string, index: number): string {
     const marker = `===RESULT_START_${index}===`;
     const markerEnd = `===RESULT_END_${index}===`;
-    const cleanCode = userCode
-      .replace(/public\s+class\s+\w+\s*\{/, '')
-      .replace(/public\s+static\s+void\s+main\s*\(String\[\]\s*args\)\s*\{[\s\S]*?\}/, '')
-      .replace(/\}\s*$/, '');
+    
+    // Проверяем, есть ли уже класс в коде
+    const hasClass = userCode.includes('public class');
+    const hasMain = userCode.includes('public static void main');
+    
+    if (hasMain) {
+      // Если есть main метод, заменяем его на наш тестовый
+      return userCode.replace(
+        /public\s+static\s+void\s+main\s*\(String\[\]\s*args\)\s*\{[\s\S]*?\}/,
+        `public static void main(String[] args) {
+            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+            java.io.PrintStream originalOut = System.out;
+            System.setOut(new java.io.PrintStream(baos));
+            
+            try {
+                Object result = ${fnName}(${input});
+                System.setOut(originalOut);
+                
+                String logs = baos.toString();
+                if (!logs.isEmpty()) {
+                    System.out.println("===LOGS_START===");
+                    System.out.print(logs);
+                    System.out.println("===LOGS_END===");
+                }
+                
+                System.out.println("${marker}");
+                if (result == null) {
+                    System.out.print("null");
+                } else if (result instanceof String) {
+                    System.out.print("\\"" + result + "\\"");
+                } else if (result.getClass().isArray()) {
+                    if (result instanceof int[]) {
+                        System.out.print(java.util.Arrays.toString((int[])result));
+                    } else if (result instanceof Integer[]) {
+                        System.out.print(java.util.Arrays.toString((Integer[])result));
+                    } else if (result instanceof String[]) {
+                        System.out.print(java.util.Arrays.toString((String[])result));
+                    } else {
+                        System.out.print(java.util.Arrays.toString((Object[])result));
+                    }
+                } else {
+                    System.out.print(result);
+                }
+                System.out.println();
+                System.out.println("${markerEnd}");
+            } catch (Exception e) {
+                System.setOut(originalOut);
+                System.out.println("${marker}");
+                System.out.print("{\\"error\\":\\"" + e.getMessage() + "\\"}");
+                System.out.println("${markerEnd}");
+            }
+        }`
+      );
+    } else if (hasClass) {
+      // Если есть класс, добавляем main метод в конец
+      const codeWithoutLastBrace = userCode.trim().replace(/\}\s*$/, "");
+      return `${codeWithoutLastBrace}
 
-    return `import java.util.*;
-public class Solution {
-${cleanCode}
-  public static void main(String[] args) {
-    Object result = ${fnName}(${input});
-    System.out.println("${marker}");
-    System.out.println(result instanceof int[] ? Arrays.toString((int[])result) : String.valueOf(result));
-    System.out.println("${markerEnd}");
-  }
+    public static void main(String[] args) {
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+        java.io.PrintStream originalOut = System.out;
+        System.setOut(new java.io.PrintStream(baos));
+        
+        try {
+            Object result = ${fnName}(${input});
+            System.setOut(originalOut);
+            
+            String logs = baos.toString();
+            if (!logs.isEmpty()) {
+                System.out.println("===LOGS_START===");
+                System.out.print(logs);
+                System.out.println("===LOGS_END===");
+            }
+            
+            System.out.println("${marker}");
+            if (result == null) {
+                System.out.print("null");
+            } else if (result instanceof String) {
+                System.out.print("\\"" + result + "\\"");
+            } else if (result.getClass().isArray()) {
+                if (result instanceof int[]) {
+                    System.out.print(java.util.Arrays.toString((int[])result));
+                } else if (result instanceof Integer[]) {
+                    System.out.print(java.util.Arrays.toString((Integer[])result));
+                } else if (result instanceof String[]) {
+                    System.out.print(java.util.Arrays.toString((String[])result));
+                } else {
+                    System.out.print(java.util.Arrays.toString((Object[])result));
+                }
+            } else {
+                System.out.print(result);
+            }
+            System.out.println();
+            System.out.println("${markerEnd}");
+        } catch (Exception e) {
+            System.setOut(originalOut);
+            System.out.println("${marker}");
+            System.out.print("{\\"error\\":\\"" + e.getMessage() + "\\"}");
+            System.out.println("${markerEnd}");
+        }
+    }
 }`;
+    } else {
+      // Если нет класса, оборачиваем в класс
+      return `public class Main {
+${userCode}
+
+    public static void main(String[] args) {
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+        java.io.PrintStream originalOut = System.out;
+        System.setOut(new java.io.PrintStream(baos));
+        
+        try {
+            Object result = ${fnName}(${input});
+            System.setOut(originalOut);
+            
+            String logs = baos.toString();
+            if (!logs.isEmpty()) {
+                System.out.println("===LOGS_START===");
+                System.out.print(logs);
+                System.out.println("===LOGS_END===");
+            }
+            
+            System.out.println("${marker}");
+            if (result == null) {
+                System.out.print("null");
+            } else if (result instanceof String) {
+                System.out.print("\\"" + result + "\\"");
+            } else if (result.getClass().isArray()) {
+                if (result instanceof int[]) {
+                    System.out.print(java.util.Arrays.toString((int[])result));
+                } else if (result instanceof Integer[]) {
+                    System.out.print(java.util.Arrays.toString((Integer[])result));
+                } else if (result instanceof String[]) {
+                    System.out.print(java.util.Arrays.toString((String[])result));
+                } else {
+                    System.out.print(java.util.Arrays.toString((Object[])result));
+                }
+            } else {
+                System.out.print(result);
+            }
+            System.out.println();
+            System.out.println("${markerEnd}");
+        } catch (Exception e) {
+            System.setOut(originalOut);
+            System.out.println("${marker}");
+            System.out.print("{\\"error\\":\\"" + e.getMessage() + "\\"}");
+            System.out.println("${markerEnd}");
+        }
+    }
+}`;
+    }
   }
 
   private buildCSharpTestCode(userCode: string, fnName: string, input: string, index: number): string {
     const marker = `===RESULT_START_${index}===`;
     const markerEnd = `===RESULT_END_${index}===`;
-    return `using System;
-using System.Linq;
+    
+    // Проверяем, есть ли уже класс в коде
+    const hasClass = userCode.includes('class Program') || userCode.includes('class Solution');
+    const hasMain = userCode.includes('static void Main') || userCode.includes('public static void Main');
+    
+    const usings = `using System;
+using System.IO;
+using System.Text;
+using System.Text.Json;
 using System.Collections.Generic;
-class Solution {
-  ${userCode}
-  static void Main(string[] args) {
-    var result = ${fnName}(${input});
-    Console.WriteLine("${marker}");
-    Console.WriteLine(result);
-    Console.WriteLine("${markerEnd}");
-  }
+`;
+
+    if (hasMain) {
+      // Если есть Main метод, заменяем его на наш тестовый
+      return usings + userCode.replace(
+        /(?:public\s+)?static\s+void\s+Main\s*\([^)]*\)\s*\{[\s\S]*?\}/,
+        `static void Main() {
+            var originalOut = Console.Out;
+            var originalError = Console.Error;
+            var outWriter = new StringWriter();
+            var errorWriter = new StringWriter();
+            Console.SetOut(outWriter);
+            Console.SetError(errorWriter);
+            
+            try {
+                var result = Program.${fnName}(${input});
+                
+                Console.SetOut(originalOut);
+                Console.SetError(originalError);
+                
+                var outLogs = outWriter.ToString();
+                var errorLogs = errorWriter.ToString();
+                
+                if (!string.IsNullOrEmpty(outLogs) || !string.IsNullOrEmpty(errorLogs)) {
+                    Console.WriteLine("===LOGS_START===");
+                    if (!string.IsNullOrEmpty(outLogs)) {
+                        Console.Write(outLogs);
+                    }
+                    if (!string.IsNullOrEmpty(errorLogs)) {
+                        Console.Write("ERROR: " + errorLogs);
+                    }
+                    if (!outLogs.EndsWith("\\n") && !errorLogs.EndsWith("\\n")) {
+                        Console.WriteLine();
+                    }
+                    Console.WriteLine("===LOGS_END===");
+                }
+                
+                Console.WriteLine("${marker}");
+                Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(result));
+                Console.WriteLine("${markerEnd}");
+            } catch (Exception e) {
+                Console.SetOut(originalOut);
+                Console.SetError(originalError);
+                Console.WriteLine("${marker}");
+                Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new { error = e.Message }));
+                Console.WriteLine("${markerEnd}");
+            }
+        }`
+      );
+    } else if (hasClass) {
+      // Если есть класс, добавляем Main метод
+      return usings + userCode.replace(
+        /\}\s*$/,
+        `
+    public static void Main() {
+        var originalOut = Console.Out;
+        var originalError = Console.Error;
+        var outWriter = new StringWriter();
+        var errorWriter = new StringWriter();
+        Console.SetOut(outWriter);
+        Console.SetError(errorWriter);
+        
+        try {
+            var result = Program.${fnName}(${input});
+            
+            Console.SetOut(originalOut);
+            Console.SetError(originalError);
+            
+            var outLogs = outWriter.ToString();
+            var errorLogs = errorWriter.ToString();
+            
+            if (!string.IsNullOrEmpty(outLogs) || !string.IsNullOrEmpty(errorLogs)) {
+                Console.WriteLine("===LOGS_START===");
+                if (!string.IsNullOrEmpty(outLogs)) {
+                    Console.Write(outLogs);
+                }
+                if (!string.IsNullOrEmpty(errorLogs)) {
+                    Console.Write("ERROR: " + errorLogs);
+                }
+                if (!outLogs.EndsWith("\\n") && !errorLogs.EndsWith("\\n")) {
+                    Console.WriteLine();
+                }
+                Console.WriteLine("===LOGS_END===");
+            }
+            
+            Console.WriteLine("${marker}");
+            Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(result));
+            Console.WriteLine("${markerEnd}");
+        } catch (Exception e) {
+            Console.SetOut(originalOut);
+            Console.SetError(originalError);
+            Console.WriteLine("${marker}");
+            Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new { error = e.Message }));
+            Console.WriteLine("${markerEnd}");
+        }
+    }
+}`
+      );
+    } else {
+      // Если нет класса, создаём класс Program
+      return usings + `${userCode}
+
+public class Program {
+    public static void Main() {
+        var originalOut = Console.Out;
+        var originalError = Console.Error;
+        var outWriter = new StringWriter();
+        var errorWriter = new StringWriter();
+        Console.SetOut(outWriter);
+        Console.SetError(errorWriter);
+        
+        try {
+            var result = Program.${fnName}(${input});
+            
+            Console.SetOut(originalOut);
+            Console.SetError(originalError);
+            
+            var outLogs = outWriter.ToString();
+            var errorLogs = errorWriter.ToString();
+            
+            if (!string.IsNullOrEmpty(outLogs) || !string.IsNullOrEmpty(errorLogs)) {
+                Console.WriteLine("===LOGS_START===");
+                if (!string.IsNullOrEmpty(outLogs)) {
+                    Console.Write(outLogs);
+                }
+                if (!string.IsNullOrEmpty(errorLogs)) {
+                    Console.Write("ERROR: " + errorLogs);
+                }
+                if (!outLogs.EndsWith("\\n") && !errorLogs.EndsWith("\\n")) {
+                    Console.WriteLine();
+                }
+                Console.WriteLine("===LOGS_END===");
+            }
+            
+            Console.WriteLine("${marker}");
+            Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(result));
+            Console.WriteLine("${markerEnd}");
+        } catch (Exception e) {
+            Console.SetOut(originalOut);
+            Console.SetError(originalError);
+            Console.WriteLine("${marker}");
+            Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new { error = e.Message }));
+            Console.WriteLine("${markerEnd}");
+        }
+    }
 }`;
+    }
   }
 
   private buildGoTestCode(userCode: string, fnName: string, input: string, index: number): string {
@@ -298,7 +580,13 @@ func main() {
     const startIdx = output.indexOf(marker);
     const endIdx = output.indexOf(markerEnd);
 
-    if (startIdx === -1 || endIdx === -1) return output.trim();
+    if (startIdx === -1 || endIdx === -1) {
+      // Если не нашли маркеры с индексом, пробуем без индекса
+      const startIdx2 = output.indexOf('===RESULT_START===');
+      const endIdx2 = output.indexOf('===RESULT_END===');
+      if (startIdx2 === -1 || endIdx2 === -1) return output.trim();
+      return output.substring(startIdx2 + '===RESULT_START==='.length, endIdx2).trim();
+    }
 
     return output.substring(startIdx + marker.length, endIdx).trim();
   }
