@@ -14,6 +14,7 @@ import { LessonDetailsModule } from '@modules/lesson-details/lesson-details.modu
 import { ProfileModule } from '@modules/profile/profile.module';
 import { CertificateModule } from '@modules/certificate/certificate.module';
 import { CodingTasksModule } from '@modules/coding-tasks/coding-tasks.module';
+import { AchievementsModule } from '@modules/achievements/achievement.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -31,6 +32,7 @@ import { CodingTasksModule } from '@modules/coding-tasks/coding-tasks.module';
     ProfileModule,
     CertificateModule,
     CodingTasksModule,
+    AchievementsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

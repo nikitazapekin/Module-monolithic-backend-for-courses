@@ -57,7 +57,7 @@ export class PostgresDatabase {
             retryDelay: dbConfig.retryDelay,  // ← Исправлено
             autoLoadEntities: dbConfig.autoLoadEntities,  // ← Исправлено
             migrationsRun: dbConfig.migrationsRun,  // ← Исправлено
-            migrations: [join(__dirname, '../../migrations/*.{ts,js}')],
+            migrations: [join(__dirname, '../../database/migrations/*.{ts,js}')],
           
             extra: {
                 connectionTimeoutMillis: 10000,
