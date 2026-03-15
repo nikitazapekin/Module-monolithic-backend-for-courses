@@ -89,6 +89,14 @@ export class CodingTasksController {
     return this.codingTasksService.getStudentLevel(client.id);
   }
 
+  @Get('student-level/:clientId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Получить уровень студента по clientId (для просмотра прогресса других пользователей)' })
+  async getStudentLevelByClientId(@Param('clientId') clientId: string) {
+    return this.codingTasksService.getStudentLevel(clientId);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Получить задачу по ID' })
   async getTask(@Param('id') id: string) {
