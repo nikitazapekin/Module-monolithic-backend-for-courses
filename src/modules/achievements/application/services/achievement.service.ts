@@ -1,6 +1,7 @@
-import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
+import { QueryFailedError } from 'typeorm';
 import { IAchievementRepository } from '../../domain/interfaces/achievement.repository.interface';
 import { Achievement, AchievementType, AchievementTier } from '../../domain/entities/achievement.entity';
 import { CreateAchievementDto } from '../dtos/create-achievement.dto';
@@ -95,6 +96,7 @@ export class AchievementService {
     private readonly studentLevelRepository: Repository<StudentLevelOrmEntity>,
     @InjectRepository(SolvedTaskOrmEntity)
     private readonly solvedTaskRepository: Repository<SolvedTaskOrmEntity>,
+    private readonly dataSource: DataSource,
   ) {}
 
   /**
@@ -150,7 +152,7 @@ export class AchievementService {
 
     // Check student results achievements
     const studentResultsCount = await this.getStudentResultsCount(clientId);
-    
+
     for (const tier of [
       AchievementTier.MASTER,
       AchievementTier.EXPERT,
@@ -170,8 +172,20 @@ export class AchievementService {
           definition.description,
           definition.image,
         );
-        const saved = await this.achievementRepository.save(achievement);
-        awardedAchievements.push(saved);
+        try {
+          const saved = await this.achievementRepository.save(achievement);
+          awardedAchievements.push(saved);
+        } catch (error) {
+          // Игнорируем ошибку уникального ограничения, если достижение уже было создано
+          // PostgreSQL: 23505, SQLite: SQLITE_CONSTRAINT
+          const isUniqueViolation =
+            error instanceof QueryFailedError &&
+            (error.driverError?.code === '23505' || error.driverError?.code?.includes('SQLITE_CONSTRAINT'));
+          
+          if (!isUniqueViolation) {
+            throw error;
+          }
+        }
       }
     }
 
@@ -197,8 +211,20 @@ export class AchievementService {
           definition.description,
           definition.image,
         );
-        const saved = await this.achievementRepository.save(achievement);
-        awardedAchievements.push(saved);
+        try {
+          const saved = await this.achievementRepository.save(achievement);
+          awardedAchievements.push(saved);
+        } catch (error) {
+          // Игнорируем ошибку уникального ограничения, если достижение уже было создано
+          // PostgreSQL: 23505, SQLite: SQLITE_CONSTRAINT
+          const isUniqueViolation =
+            error instanceof QueryFailedError &&
+            (error.driverError?.code === '23505' || error.driverError?.code?.includes('SQLITE_CONSTRAINT'));
+          
+          if (!isUniqueViolation) {
+            throw error;
+          }
+        }
       }
     }
 

@@ -1,8 +1,9 @@
-import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, Unique } from 'typeorm';
 import { ClientOrmEntity } from '../../../auth/infra/typeorm/client.orm-entity';
 import { AchievementType, AchievementTier } from '../../domain/entities/achievement.entity';
 
 @Entity('achievements')
+@Unique(['clientId', 'tier'])
 export class AchievementOrmEntity {
   @PrimaryColumn()
   id: string;
@@ -11,13 +12,13 @@ export class AchievementOrmEntity {
   clientId: string;
 
   @Column({
-    type: 'enum',
+    type: 'simple-enum',
     enum: AchievementType,
   })
   type: AchievementType;
 
   @Column({
-    type: 'enum',
+    type: 'simple-enum',
     enum: AchievementTier,
   })
   tier: AchievementTier;
