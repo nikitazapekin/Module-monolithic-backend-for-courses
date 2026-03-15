@@ -11,6 +11,7 @@ import {
 import { LessonOrmEntity } from '@modules/lesson/infra/typeorm/lesson.orm-entity';
 import { LessonSlideOrmEntity } from './lesson-slide.orm-entity';
 import { LessonTestOrmEntity } from './lesson-test.orm-entity';
+import { LessonCommentOrmEntity } from '@modules/lesson-comments/infra/typeorm/lesson-comment.orm-entity';
 
 @Entity('lesson_details')
 export class LessonDetailsOrmEntity {
@@ -21,6 +22,7 @@ export class LessonDetailsOrmEntity {
     lessonId: string;
 
     @CreateDateColumn()
+    
     createdAt: Date;
 
     @UpdateDateColumn()
@@ -44,4 +46,8 @@ export class LessonDetailsOrmEntity {
         eager: true,
     })
     tests: LessonTestOrmEntity[];
+
+    // Связь один-ко-многим с таблицей lesson_comments
+    @OneToMany(() => LessonCommentOrmEntity, (comment) => comment.lessonDetails)
+    comments: LessonCommentOrmEntity[];
 }
