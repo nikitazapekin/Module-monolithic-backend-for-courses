@@ -1,7 +1,7 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ICertificateRepository } from '../../domain/interfaces/certificate.repository.interface';
+import { ICertificateRepository, CertificateSearchParams, CertificateSearchResult } from '../../domain/interfaces/certificate.repository.interface';
 import { Certificate } from '../../domain/entities/certificate.entity';
 import { CreateCertificateDto } from '../dtos/create-certificate.dto';
 import { UpdateCertificateDto } from '../dtos/update-certificate.dto';
@@ -354,10 +354,17 @@ export class CertificateService {
       );
 
       // Обновляем и изображение, и digital URL
-      await this.certificateRepository.update(saved.id, {
+      const updateResult = await this.certificateRepository.update(saved.id, {
         url: base64Image,
         digital: actualCertificateUrl,
       });
+
+      console.log('Update result:', updateResult);
+
+      // Проверяем, что данные сохранились
+      const updatedCert = await this.certificateRepository.findById(saved.id);
+      console.log('Updated certificate url length:', updatedCert?.url?.length);
+      console.log('Updated certificate url preview:', updatedCert?.url?.substring(0, 100));
 
       console.log(`Certificate created successfully with ID: ${saved.id}`);
 
@@ -436,6 +443,10 @@ export class CertificateService {
 
   async deleteByClientId(clientId: string): Promise<boolean> {
     return this.certificateRepository.deleteByClientId(clientId);
+  }
+
+  async search(params: CertificateSearchParams): Promise<CertificateSearchResult> {
+    return this.certificateRepository.search(params);
   }
 
   /**

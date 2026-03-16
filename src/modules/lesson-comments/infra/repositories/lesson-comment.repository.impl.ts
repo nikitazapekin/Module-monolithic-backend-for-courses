@@ -42,6 +42,10 @@ export class LessonCommentRepository implements ILessonCommentRepository {
     async update(id: string, comment: LessonComment): Promise<boolean> {
         await this.repository.update(id, {
             content: comment.content,
+            likes: comment.likes,
+            dislikes: comment.dislikes,
+            likedByUsers: comment.likedByUsers,
+            dislikedByUsers: comment.dislikedByUsers,
             updatedAt: comment.updatedAt,
         });
         return true;

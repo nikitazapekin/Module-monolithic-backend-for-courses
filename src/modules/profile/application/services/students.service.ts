@@ -17,6 +17,7 @@ export class StudentsService {
     search?: string;
   }): Promise<{ students: StudentResponseDto[]; total: number; page: number; limit: number; totalPages: number }> {
     const { students, total } = await this.studentsRepository.findStudents({ page, limit, search });
+    console.log('Students with auditory:', JSON.stringify(students.slice(0, 1), null, 2));
 
     const totalPages = Math.ceil(total / limit);
 

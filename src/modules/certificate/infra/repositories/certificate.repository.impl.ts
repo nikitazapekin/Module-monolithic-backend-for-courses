@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ICertificateRepository } from '../../domain/interfaces/certificate.repository.interface';
+import { ICertificateRepository, CertificateSearchParams, CertificateSearchResult } from '../../domain/interfaces/certificate.repository.interface';
 import { Certificate } from '../../domain/entities/certificate.entity';
 import { CertificateOrmEntity } from '../typeorm/certificate.orm-entity';
 import { ClientOrmEntity } from '../../../auth/infra/typeorm/client.orm-entity';
+import { CourseOrmEntity } from '../../../courses/infra/typeorm/course.orm-entity';
 
 @Injectable()
 export class CertificateRepository implements ICertificateRepository {
@@ -68,6 +69,50 @@ export class CertificateRepository implements ICertificateRepository {
   async deleteByClientId(clientId: string): Promise<boolean> {
     const result = await this.certificateRepository.delete({ clientId });
     return (result.affected ?? 0) > 0;
+  }
+
+  async search(params: CertificateSearchParams): Promise<CertificateSearchResult> {
+    const { firstName, lastName, courseName, dateFrom, dateTo, page = 1, limit = 10 } = params;
+
+    const queryBuilder = this.certificateRepository.createQueryBuilder('cert')
+      .leftJoinAndSelect('cert.client', 'client');
+
+    if (firstName) {
+      queryBuilder.andWhere('client.firstName ILIKE :firstName', { firstName: `%${firstName}%` });
+    }
+
+    if (lastName) {
+      queryBuilder.andWhere('client.lastName ILIKE :lastName', { lastName: `%${lastName}%` });
+    }
+
+    if (dateFrom) {
+      queryBuilder.andWhere('cert.date >= :dateFrom', { dateFrom: new Date(dateFrom) });
+    }
+
+    if (dateTo) {
+      queryBuilder.andWhere('cert.date <= :dateTo', { dateTo: new Date(dateTo) });
+    }
+
+    if (courseName) {
+      queryBuilder.andWhere('EXISTS (SELECT 1 FROM courses c WHERE c.id = cert.courseId AND c.title ILIKE :courseName)', { courseName: `%${courseName}%` });
+    }
+
+    const total = await queryBuilder.getCount();
+    const totalPages = Math.ceil(total / limit);
+
+    const entities = await queryBuilder
+      .orderBy('cert.date', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getMany();
+
+    return {
+      certificates: entities.map(entity => this.toDomain(entity)),
+      total,
+      page,
+      limit,
+      totalPages,
+    };
   }
 
   private toDomain(entity: CertificateOrmEntity): Certificate {

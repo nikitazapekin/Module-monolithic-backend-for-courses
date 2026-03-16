@@ -24,7 +24,8 @@ export class StudentsRepository {
   }): Promise<{ students: ClientOrmEntity[]; total: number }> {
     const queryBuilder = this.clientRepository
       .createQueryBuilder('client')
-      .leftJoinAndSelect('client.auditory', 'auditory');
+      .leftJoin('client.auditory', 'auditory')
+      .addSelect(['auditory.id', 'auditory.email', 'auditory.role', 'auditory.isActive', 'auditory.lastLoginAt']);
 
     if (search) {
       const searchTerms = search.trim().split(/\s+/).filter(Boolean);

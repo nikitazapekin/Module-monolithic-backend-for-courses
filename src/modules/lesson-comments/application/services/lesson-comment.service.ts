@@ -29,12 +29,16 @@ export class LessonCommentService {
         dto: CreateLessonCommentDto,
         userId: string,
     ): Promise<LessonCommentResponseDto> {
+        let lessonDetailsIdToUse = dto.lessonDetailsId;
+
         // Если есть parentId, проверяем существование родительского комментария
         if (dto.parentId) {
             const parent = await this.commentRepo.findById(dto.parentId);
             if (!parent) {
                 throw new NotFoundException('Родительский комментарий не найден');
             }
+            // Используем lessonDetailsId родительского комментария
+            lessonDetailsIdToUse = parent.lessonDetailsId;
             // Убедимся, что parentId принадлежит тому же lessonDetails
             if (parent.lessonDetailsId !== dto.lessonDetailsId) {
                 throw new BadRequestException('Неверный parentId для данного урока');
@@ -42,7 +46,7 @@ export class LessonCommentService {
         }
 
         const comment = new LessonComment(
-            dto.lessonDetailsId,
+            lessonDetailsIdToUse,
             userId,
             dto.content,
             dto.parentId || null,

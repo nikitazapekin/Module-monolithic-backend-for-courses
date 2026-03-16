@@ -6,12 +6,13 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   HttpCode,
   HttpStatus,
   Res,
   NotFoundException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { Response } from 'express';
 import { CertificateService } from '../../application/services/certificate.service';
 import { CreateCertificateDto } from '../../application/dtos/create-certificate.dto';
@@ -22,6 +23,48 @@ import { CertificateResponseDto } from '../../application/dtos/certificate-respo
 @Controller('certificates')
 export class CertificateController {
   constructor(private readonly certificateService: CertificateService) {}
+
+  @Get('search')
+  @ApiOperation({ summary: 'Поиск сертификатов по параметрам' })
+  @ApiQuery({ name: 'firstName', required: false, description: 'Имя студента' })
+  @ApiQuery({ name: 'lastName', required: false, description: 'Фамилия студента' })
+  @ApiQuery({ name: 'courseName', required: false, description: 'Название курса' })
+  @ApiQuery({ name: 'dateFrom', required: false, description: 'Дата с (YYYY-MM-DD)' })
+  @ApiQuery({ name: 'dateTo', required: false, description: 'Дата по (YYYY-MM-DD)' })
+  @ApiQuery({ name: 'page', required: false, description: 'Номер страницы', type: Number })
+  @ApiQuery({ name: 'limit', required: false, description: 'Количество на странице', type: Number })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Найденные сертификаты',
+  })
+  @ApiBearerAuth()
+  async search(
+    @Query('firstName') firstName?: string,
+    @Query('lastName') lastName?: string,
+    @Query('courseName') courseName?: string,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    const result = await this.certificateService.search({
+      firstName,
+      lastName,
+      courseName,
+      dateFrom,
+      dateTo,
+      page: page || 1,
+      limit: limit || 10,
+    });
+
+    return {
+      certificates: result.certificates.map(cert => this.mapToResponse(cert)),
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages,
+    };
+  }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
