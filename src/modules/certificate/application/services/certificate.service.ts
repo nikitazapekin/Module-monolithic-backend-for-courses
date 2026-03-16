@@ -338,33 +338,33 @@ export class CertificateService {
       const clientId = await this.getClientIdFromAuditoryId(createCertificateDto.auditoryId);
       const date = new Date(createCertificateDto.date);
 
-      // Сохраняем сертификат-заглушку, чтобы получить реальный ID
+      const studentNameParts = createCertificateDto.studentName.split(' ');
+      const firstName = studentNameParts[0] || '';
+      const lastName = studentNameParts[1] || '';
+      const middleName = studentNameParts.slice(2).join(' ') || '';
+
       const certificate = new Certificate(clientId, createCertificateDto.courseId, date, '', '');
+      certificate.firstName = firstName;
+      certificate.lastName = lastName;
+      certificate.middleName = middleName;
+      certificate.courseName = createCertificateDto.courseName;
+      
       const saved = await this.certificateRepository.save(certificate);
 
-      // Генерируем реальный URL с настоящим ID
       const actualCertificateUrl = this.generateCertificateUrl(saved.id);
 
-      // Генерируем изображение с реальным URL внутри
+      const fullStudentName = [firstName, lastName, middleName].filter(Boolean).join(' ');
       const base64Image = await this.generateCertificateImage(
-        createCertificateDto.studentName,
+        fullStudentName,
         createCertificateDto.courseName,
         createCertificateDto.date,
         actualCertificateUrl,
       );
 
-      // Обновляем и изображение, и digital URL
-      const updateResult = await this.certificateRepository.update(saved.id, {
+      await this.certificateRepository.update(saved.id, {
         url: base64Image,
         digital: actualCertificateUrl,
       });
-
-      console.log('Update result:', updateResult);
-
-      // Проверяем, что данные сохранились
-      const updatedCert = await this.certificateRepository.findById(saved.id);
-      console.log('Updated certificate url length:', updatedCert?.url?.length);
-      console.log('Updated certificate url preview:', updatedCert?.url?.substring(0, 100));
 
       console.log(`Certificate created successfully with ID: ${saved.id}`);
 
@@ -398,9 +398,17 @@ export class CertificateService {
     }
 
     const updates: Partial<Certificate> = {};
+    let needsRegeneration = false;
+    let newFirstName = certificate.firstName;
+    let newLastName = certificate.lastName;
+    let newMiddleName = certificate.middleName;
+    let newCourseName = certificate.courseName;
+    let newDate = certificate.date;
 
     if (updateCertificateDto.date) {
-      updates.date = new Date(updateCertificateDto.date);
+      newDate = new Date(updateCertificateDto.date);
+      updates.date = newDate;
+      needsRegeneration = true;
     }
 
     if (updateCertificateDto.url) {
@@ -409,6 +417,42 @@ export class CertificateService {
 
     if (updateCertificateDto.digital) {
       updates.digital = updateCertificateDto.digital;
+    }
+
+    if (updateCertificateDto.firstName !== undefined) {
+      newFirstName = updateCertificateDto.firstName;
+      updates.firstName = newFirstName;
+      needsRegeneration = true;
+    }
+
+    if (updateCertificateDto.lastName !== undefined) {
+      newLastName = updateCertificateDto.lastName;
+      updates.lastName = newLastName;
+      needsRegeneration = true;
+    }
+
+    if (updateCertificateDto.middleName !== undefined) {
+      newMiddleName = updateCertificateDto.middleName;
+      updates.middleName = newMiddleName;
+      needsRegeneration = true;
+    }
+
+    if (updateCertificateDto.courseName !== undefined) {
+      newCourseName = updateCertificateDto.courseName;
+      updates.courseName = newCourseName;
+      needsRegeneration = true;
+    }
+
+    if (needsRegeneration && !updateCertificateDto.url) {
+      const fullStudentName = [newFirstName, newLastName, newMiddleName].filter(Boolean).join(' ');
+      const dateStr = newDate.toISOString().split('T')[0];
+      const base64Image = await this.generateCertificateImage(
+        fullStudentName,
+        newCourseName,
+        dateStr,
+        certificate.digital,
+      );
+      updates.url = base64Image;
     }
 
     if (Object.keys(updates).length > 0) {

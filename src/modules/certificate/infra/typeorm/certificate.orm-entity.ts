@@ -16,13 +16,25 @@ export class CertificateOrmEntity {
   date: Date;
 
   @Column({ type: 'text' })
-  url: string; // BASE64 encoded image
+  url: string;
 
   @Column({ type: 'text' })
-  digital: string; // URL for PSD version
+  digital: string;
 
   @Column({ default: false })
   isViewed: boolean;
+
+  @Column({ nullable: true })
+  firstName: string;
+
+  @Column({ nullable: true })
+  lastName: string;
+
+  @Column({ nullable: true })
+  middleName: string;
+
+  @Column({ nullable: true })
+  courseName: string;
 
   @CreateDateColumn()
   createdAt: Date;

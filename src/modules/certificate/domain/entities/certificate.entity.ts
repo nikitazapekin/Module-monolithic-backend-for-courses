@@ -3,9 +3,13 @@ export class Certificate {
   public clientId: string;
   public courseId: string;
   public date: Date;
-  public url: string; // BASE64 encoded image (without prefix)
-  public digital: string; // URL for PSD version
+  public url: string;
+  public digital: string;
   public isViewed: boolean;
+  public firstName: string;
+  public lastName: string;
+  public middleName: string;
+  public courseName: string;
 
   public createdAt: Date;
   public updatedAt: Date;
@@ -24,6 +28,10 @@ export class Certificate {
     this.url = url;
     this.digital = digital;
     this.isViewed = false;
+    this.firstName = '';
+    this.lastName = '';
+    this.middleName = '';
+    this.courseName = '';
     this.createdAt = new Date();
     this.updatedAt = new Date();
   }

@@ -78,11 +78,11 @@ export class CertificateRepository implements ICertificateRepository {
       .leftJoinAndSelect('cert.client', 'client');
 
     if (firstName) {
-      queryBuilder.andWhere('client.firstName ILIKE :firstName', { firstName: `%${firstName}%` });
+      queryBuilder.andWhere('(client.firstName ILIKE :firstName OR cert.firstName ILIKE :firstName)', { firstName: `%${firstName}%` });
     }
 
     if (lastName) {
-      queryBuilder.andWhere('client.lastName ILIKE :lastName', { lastName: `%${lastName}%` });
+      queryBuilder.andWhere('(client.lastName ILIKE :lastName OR cert.lastName ILIKE :lastName)', { lastName: `%${lastName}%` });
     }
 
     if (dateFrom) {
@@ -94,7 +94,7 @@ export class CertificateRepository implements ICertificateRepository {
     }
 
     if (courseName) {
-      queryBuilder.andWhere('EXISTS (SELECT 1 FROM courses c WHERE c.id = cert.courseId AND c.title ILIKE :courseName)', { courseName: `%${courseName}%` });
+      queryBuilder.andWhere('(EXISTS (SELECT 1 FROM courses c WHERE c.id = cert.courseId AND c.title ILIKE :courseName) OR cert.courseName ILIKE :courseName)', { courseName: `%${courseName}%` });
     }
 
     const total = await queryBuilder.getCount();
@@ -127,6 +127,10 @@ export class CertificateRepository implements ICertificateRepository {
     Object.assign(certificate, {
       id: entity.id,
       isViewed: entity.isViewed ?? false,
+      firstName: entity.firstName ?? '',
+      lastName: entity.lastName ?? '',
+      middleName: entity.middleName ?? '',
+      courseName: entity.courseName ?? '',
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     });
@@ -143,6 +147,10 @@ export class CertificateRepository implements ICertificateRepository {
     entity.url = certificate.url;
     entity.digital = certificate.digital;
     entity.isViewed = certificate.isViewed;
+    entity.firstName = certificate.firstName;
+    entity.lastName = certificate.lastName;
+    entity.middleName = certificate.middleName;
+    entity.courseName = certificate.courseName;
     entity.createdAt = certificate.createdAt;
     entity.updatedAt = certificate.updatedAt;
 

@@ -30,4 +30,44 @@ export class UpdateCertificateDto {
   @IsOptional()
   @Expose()
   digital?: string;
+
+  @ApiProperty({
+    description: 'Имя студента',
+    example: 'John',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  @Expose()
+  firstName?: string;
+
+  @ApiProperty({
+    description: 'Фамилия студента',
+    example: 'Doe',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  @Expose()
+  lastName?: string;
+
+  @ApiProperty({
+    description: 'Отчество студента',
+    example: 'Ivanovich',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  @Expose()
+  middleName?: string;
+
+  @ApiProperty({
+    description: 'Название курса',
+    example: 'JavaScript for Beginners',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  @Expose()
+  courseName?: string;
 }

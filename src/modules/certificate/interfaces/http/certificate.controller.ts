@@ -222,9 +222,13 @@ export class CertificateController {
     response.clientId = certificate.clientId;
     response.courseId = certificate.courseId || '';
     response.date = certificate.date;
-    response.url = certificate.getBase64Data();
+    response.url = certificate.getBase64Data ? certificate.getBase64Data() : certificate.url;
     response.digital = certificate.digital;
     response.isViewed = certificate.isViewed ?? false;
+    response.firstName = certificate.firstName ?? '';
+    response.lastName = certificate.lastName ?? '';
+    response.middleName = certificate.middleName ?? '';
+    response.courseName = certificate.courseName ?? '';
     response.createdAt = certificate.createdAt;
     response.updatedAt = certificate.updatedAt;
     return response;

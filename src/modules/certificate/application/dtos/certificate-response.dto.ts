@@ -59,6 +59,34 @@ export class CertificateResponseDto {
   isViewed: boolean;
 
   @ApiProperty({
+    description: 'Имя студента',
+    example: 'John',
+  })
+  @Expose()
+  firstName: string;
+
+  @ApiProperty({
+    description: 'Фамилия студента',
+    example: 'Doe',
+  })
+  @Expose()
+  lastName: string;
+
+  @ApiProperty({
+    description: 'Отчество студента',
+    example: 'Ivanovich',
+  })
+  @Expose()
+  middleName: string;
+
+  @ApiProperty({
+    description: 'Название курса',
+    example: 'JavaScript for Beginners',
+  })
+  @Expose()
+  courseName: string;
+
+  @ApiProperty({
     description: 'Дата создания',
     example: '2024-01-01T00:00:00.000Z',
   })
