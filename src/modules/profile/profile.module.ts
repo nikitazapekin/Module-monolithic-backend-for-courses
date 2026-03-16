@@ -8,6 +8,7 @@ import { AvatarService } from './application/services/avatar.service';
 import { StudentResultService } from './application/services/student-result.service';
 import { ProfileInfoService } from './application/services/profile-info.service';
 import { StudentsService } from './application/services/students.service';
+import { AdminService } from './application/services/admin.service';
 import { CourseSubscriptionService } from './application/services/course-subscription.service';
 import { AvatarRepository } from './infra/repositories/avatar.repository.impl';
 import { StudentResultRepository } from './infra/repositories/student-result.repository.impl';
@@ -19,6 +20,7 @@ import { StudentResultOrmEntity } from './infra/typeorm/student-result.orm-entit
 import { CourseSubscriptionOrmEntity } from './infra/typeorm/course-subscription.orm-entity';
 import { ClientOrmEntity } from '../auth/infra/typeorm/client.orm-entity';
 import { AuditoryOrmEntity } from '../auth/infra/typeorm/auditory.orm-entity';
+import { AdminOrmEntity } from '../auth/infra/typeorm/admin.orm-entity';
 import { CourseOrmEntity } from '../courses/infra/typeorm/course.orm-entity';
 import { LessonOrmEntity } from '../lesson/infra/typeorm/lesson.orm-entity';
 import { CourseMapOrmEntity } from '../map/infra/typeorm/course-map.orm-entity';
@@ -35,6 +37,7 @@ import { CourseMapRepository } from '../map/infra/repositories/course-map.reposi
       CourseOrmEntity,
       ClientOrmEntity,
       AuditoryOrmEntity,
+      AdminOrmEntity,
       LessonOrmEntity,
       CourseMapOrmEntity,
       MapElementOrmEntity,
@@ -51,6 +54,7 @@ import { CourseMapRepository } from '../map/infra/repositories/course-map.reposi
     StudentResultService,
     ProfileInfoService,
     StudentsService,
+    AdminService,
     CourseSubscriptionService,
     {
       provide: 'IAvatarRepository',
@@ -80,6 +84,7 @@ import { CourseMapRepository } from '../map/infra/repositories/course-map.reposi
     StudentResultService,
     ProfileInfoService,
     StudentsService,
+    AdminService,
     CourseSubscriptionService,
     TypeOrmModule,
   ],

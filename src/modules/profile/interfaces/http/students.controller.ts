@@ -11,11 +11,16 @@ import { StudentsService } from '../../application/services/students.service';
 import { StudentResponseDto } from '../../application/dtos/student-response.dto';
 import { StudentsListResponseDto } from '../../application/dtos/students-list-response.dto';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+import { AdminResponseDto } from '../../application/dtos/admin-response.dto';
+import { AdminService } from '../../application/services/admin.service';
 
 @ApiTags('students')
 @Controller('students')
 export class StudentsController {
-  constructor(private readonly studentsService: StudentsService) {}
+  constructor(
+    private readonly studentsService: StudentsService,
+    private readonly adminService: AdminService,
+  ) {}
 
   @Get()
   @HttpCode(HttpStatus.OK)
@@ -56,5 +61,31 @@ export class StudentsController {
     }
     
     return found;
+  }
+
+  @Get('admins-list')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Получение списка всех администраторов' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Список администраторов получен',
+    type: [AdminResponseDto],
+  })
+  @ApiBearerAuth()
+  async getAdminsList(): Promise<AdminResponseDto[]> {
+    return this.adminService.getAllAdmins();
+  }
+
+  @Get('auditory/:auditoryId/admin')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Получение администратора по auditoryId' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Администратор получен',
+    type: AdminResponseDto,
+  })
+  @ApiBearerAuth()
+  async getAdminByAuditoryId(@Param('auditoryId') auditoryId: string): Promise<AdminResponseDto | null> {
+    return this.adminService.getAdminByAuditoryId(auditoryId);
   }
 }

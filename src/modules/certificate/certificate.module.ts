@@ -6,7 +6,6 @@ import { CertificateRepository } from './infra/repositories/certificate.reposito
 import { CertificateOrmEntity } from './infra/typeorm/certificate.orm-entity';
 import { ClientOrmEntity } from '../auth/infra/typeorm/client.orm-entity';
 import { AuditoryOrmEntity } from '../auth/infra/typeorm/auditory.orm-entity';
-import { CourseOrmEntity } from '../courses/infra/typeorm/course.orm-entity';
 
 @Module({
   imports: [
@@ -14,7 +13,6 @@ import { CourseOrmEntity } from '../courses/infra/typeorm/course.orm-entity';
       CertificateOrmEntity,
       ClientOrmEntity,
       AuditoryOrmEntity,
-      CourseOrmEntity,
     ]),
   ],
   controllers: [CertificateController],  

@@ -5,7 +5,6 @@ import { ICertificateRepository, CertificateSearchParams, CertificateSearchResul
 import { Certificate } from '../../domain/entities/certificate.entity';
 import { CertificateOrmEntity } from '../typeorm/certificate.orm-entity';
 import { ClientOrmEntity } from '../../../auth/infra/typeorm/client.orm-entity';
-import { CourseOrmEntity } from '../../../courses/infra/typeorm/course.orm-entity';
 
 @Injectable()
 export class CertificateRepository implements ICertificateRepository {
@@ -30,7 +29,8 @@ export class CertificateRepository implements ICertificateRepository {
       order: { date: 'DESC' },
     });
 
-    return entities.map(entity => this.toDomain(entity));
+    const certificates = entities.map(entity => this.toDomain(entity));
+    return Promise.all(certificates.map(cert => this.enrichWithClientInfo(cert)));
   }
 
   async findByAuditoryId(auditoryId: string): Promise<Certificate[]> {
@@ -47,7 +47,8 @@ export class CertificateRepository implements ICertificateRepository {
       order: { date: 'DESC' },
     });
 
-    return entities.map(entity => this.toDomain(entity));
+    const certificates = entities.map(entity => this.toDomain(entity));
+    return Promise.all(certificates.map(cert => this.enrichWithClientInfo(cert)));
   }
 
   async save(certificate: Certificate): Promise<Certificate> {
@@ -107,7 +108,10 @@ export class CertificateRepository implements ICertificateRepository {
       .getMany();
 
     return {
-      certificates: entities.map(entity => this.toDomain(entity)),
+      certificates: await Promise.all(entities.map(async entity => {
+        const cert = this.toDomain(entity);
+        return this.enrichWithClientInfo(cert);
+      })),
       total,
       page,
       limit,
@@ -135,6 +139,20 @@ export class CertificateRepository implements ICertificateRepository {
       updatedAt: entity.updatedAt,
     });
 
+    return certificate;
+  }
+
+  private async enrichWithClientInfo(certificate: Certificate): Promise<Certificate> {
+    if (!certificate.firstName || !certificate.lastName) {
+      const client = await this.clientRepository.findOne({
+        where: { id: certificate.clientId },
+      });
+      if (client) {
+        certificate.firstName = certificate.firstName || client.firstName || '';
+        certificate.lastName = certificate.lastName || client.lastName || '';
+        certificate.middleName = certificate.middleName || client.middleName || '';
+      }
+    }
     return certificate;
   }
 
