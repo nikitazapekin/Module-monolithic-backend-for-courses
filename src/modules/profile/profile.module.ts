@@ -3,14 +3,17 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AvatarController } from './interfaces/http/avatar.controller';
 import { StudentResultController } from './interfaces/http/student-result.controller';
 import { ProfileInfoController } from './interfaces/http/profile-info.controller';
+import { StudentsController } from './interfaces/http/students.controller';
 import { AvatarService } from './application/services/avatar.service';
 import { StudentResultService } from './application/services/student-result.service';
 import { ProfileInfoService } from './application/services/profile-info.service';
+import { StudentsService } from './application/services/students.service';
 import { CourseSubscriptionService } from './application/services/course-subscription.service';
 import { AvatarRepository } from './infra/repositories/avatar.repository.impl';
 import { StudentResultRepository } from './infra/repositories/student-result.repository.impl';
 import { CourseSubscriptionRepository } from './infra/repositories/course-subscription.repository.impl';
 import { ProfileInfoRepository } from './infra/repositories/profile-info.repository.impl';
+import { StudentsRepository } from './infra/repositories/students.repository.impl';
 import { AvatarOrmEntity } from './infra/typeorm/avatar.orm-entity';
 import { StudentResultOrmEntity } from './infra/typeorm/student-result.orm-entity';
 import { CourseSubscriptionOrmEntity } from './infra/typeorm/course-subscription.orm-entity';
@@ -41,11 +44,13 @@ import { CourseMapRepository } from '../map/infra/repositories/course-map.reposi
     AvatarController,
     StudentResultController,
     ProfileInfoController,
+    StudentsController,
   ],
   providers: [
     AvatarService,
     StudentResultService,
     ProfileInfoService,
+    StudentsService,
     CourseSubscriptionService,
     {
       provide: 'IAvatarRepository',
@@ -68,11 +73,13 @@ import { CourseMapRepository } from '../map/infra/repositories/course-map.reposi
       useClass: CourseMapRepository,
     },
     ProfileInfoRepository,
+    StudentsRepository,
   ],
   exports: [
     AvatarService,
     StudentResultService,
     ProfileInfoService,
+    StudentsService,
     CourseSubscriptionService,
     TypeOrmModule,
   ],
