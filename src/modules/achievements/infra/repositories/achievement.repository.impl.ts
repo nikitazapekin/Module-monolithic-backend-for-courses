@@ -2,7 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { IAchievementRepository } from '../../domain/interfaces/achievement.repository.interface';
-import { Achievement, AchievementType, AchievementTier } from '../../domain/entities/achievement.entity';
+import {
+  Achievement,
+  AchievementType,
+  AchievementTier,
+} from '../../domain/entities/achievement.entity';
 import { AchievementOrmEntity } from '../typeorm/achievement.orm-entity';
 import { ClientOrmEntity } from '../../../auth/infra/typeorm/client.orm-entity';
 
@@ -29,7 +33,7 @@ export class AchievementRepository implements IAchievementRepository {
       order: { earnedAt: 'DESC' },
     });
 
-    return entities.map(entity => this.toDomain(entity));
+    return entities.map((entity) => this.toDomain(entity));
   }
 
   async findByClientIdAndType(
@@ -41,7 +45,7 @@ export class AchievementRepository implements IAchievementRepository {
       order: { earnedAt: 'DESC' },
     });
 
-    return entities.map(entity => this.toDomain(entity));
+    return entities.map((entity) => this.toDomain(entity));
   }
 
   async save(achievement: Achievement): Promise<Achievement> {

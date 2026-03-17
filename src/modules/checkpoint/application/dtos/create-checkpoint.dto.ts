@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, IsOptional, IsBoolean, IsEnum } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsBoolean,
+  IsEnum,
+} from 'class-validator';
 import { CheckpointType } from '../../domain/entities/checkpoint.entity';
 
 export class CreateCheckpointDto {

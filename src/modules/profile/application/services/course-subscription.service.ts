@@ -1,4 +1,9 @@
-import { Injectable, ConflictException, NotFoundException, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+  Inject,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CourseSubscription } from '../../domain/entities/course-subscription.entity';
@@ -16,14 +21,25 @@ export class CourseSubscriptionService {
     private readonly courseRepository: Repository<CourseOrmEntity>,
   ) {}
 
-  async subscribe(auditoryId: string, courseId: string): Promise<CourseSubscriptionDto> {
-    const existing = await this.courseSubscriptionRepository.findByAuditoryIdAndCourseId(auditoryId, courseId);
+  async subscribe(
+    auditoryId: string,
+    courseId: string,
+  ): Promise<CourseSubscriptionDto> {
+    const existing =
+      await this.courseSubscriptionRepository.findByAuditoryIdAndCourseId(
+        auditoryId,
+        courseId,
+      );
 
     if (existing) {
-      throw new ConflictException(`Auditory ${auditoryId} is already subscribed to course ${courseId}`);
+      throw new ConflictException(
+        `Auditory ${auditoryId} is already subscribed to course ${courseId}`,
+      );
     }
 
-    const course = await this.courseRepository.findOne({ where: { id: courseId } });
+    const course = await this.courseRepository.findOne({
+      where: { id: courseId },
+    });
     if (!course) {
       throw new NotFoundException(`Course with ID ${courseId} not found`);
     }
@@ -35,20 +51,29 @@ export class CourseSubscriptionService {
   }
 
   async unsubscribe(auditoryId: string, courseId: string): Promise<void> {
-    const subscription = await this.courseSubscriptionRepository.findByAuditoryIdAndCourseId(auditoryId, courseId);
+    const subscription =
+      await this.courseSubscriptionRepository.findByAuditoryIdAndCourseId(
+        auditoryId,
+        courseId,
+      );
 
     if (!subscription) {
-      throw new NotFoundException(`Subscription not found for auditory ${auditoryId} and course ${courseId}`);
+      throw new NotFoundException(
+        `Subscription not found for auditory ${auditoryId} and course ${courseId}`,
+      );
     }
 
     await this.courseSubscriptionRepository.delete(subscription);
   }
 
-  async getCoursesByAuditoryId(auditoryId: string): Promise<StudentCourseResponseDto[]> {
-    const subscriptions = await this.courseSubscriptionRepository.findByAuditoryId(auditoryId);
-    
+  async getCoursesByAuditoryId(
+    auditoryId: string,
+  ): Promise<StudentCourseResponseDto[]> {
+    const subscriptions =
+      await this.courseSubscriptionRepository.findByAuditoryId(auditoryId);
+
     const courses = await this.courseRepository.findByIds(
-      subscriptions.map((s) => s.courseId)
+      subscriptions.map((s) => s.courseId),
     );
 
     const courseMap = new Map(courses.map((c) => [c.id, c]));

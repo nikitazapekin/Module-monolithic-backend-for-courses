@@ -43,7 +43,9 @@ export class AvatarController {
     type: AvatarResponseDto,
   })
   @ApiBearerAuth()
-  async create(@Body() createAvatarDto: CreateAvatarDto): Promise<AvatarResponseDto> {
+  async create(
+    @Body() createAvatarDto: CreateAvatarDto,
+  ): Promise<AvatarResponseDto> {
     const avatar = await this.avatarService.create(createAvatarDto);
     return this.mapToResponse(avatar);
   }
@@ -76,7 +78,8 @@ export class AvatarController {
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addFileTypeValidator({
-          fileType: /(image\/jpeg|image\/jpg|image\/png|image\/gif|image\/webp)/,
+          fileType:
+            /(image\/jpeg|image\/jpg|image\/png|image\/gif|image\/webp)/,
         })
         .addMaxSizeValidator({ maxSize: 5 * 1024 * 1024 })
         .build({
@@ -123,7 +126,9 @@ export class AvatarController {
     type: AvatarResponseDto,
   })
   @ApiBearerAuth()
-  async findByAuditoryId(@Param('auditoryId') auditoryId: string): Promise<AvatarResponseDto> {
+  async findByAuditoryId(
+    @Param('auditoryId') auditoryId: string,
+  ): Promise<AvatarResponseDto> {
     const avatar = await this.avatarService.findByAuditoryId(auditoryId);
     return this.mapToResponse(avatar);
   }
@@ -156,7 +161,10 @@ export class AvatarController {
     @Param('auditoryId') auditoryId: string,
     @Body() updateAvatarDto: UpdateAvatarDto,
   ): Promise<AvatarResponseDto> {
-    const avatar = await this.avatarService.updateByAuditoryId(auditoryId, updateAvatarDto);
+    const avatar = await this.avatarService.updateByAuditoryId(
+      auditoryId,
+      updateAvatarDto,
+    );
     return this.mapToResponse(avatar);
   }
 
@@ -180,7 +188,9 @@ export class AvatarController {
     description: 'Аватар успешно удален',
   })
   @ApiBearerAuth()
-  async deleteByAuditoryId(@Param('auditoryId') auditoryId: string): Promise<void> {
+  async deleteByAuditoryId(
+    @Param('auditoryId') auditoryId: string,
+  ): Promise<void> {
     await this.avatarService.deleteByAuditoryId(auditoryId);
   }
 

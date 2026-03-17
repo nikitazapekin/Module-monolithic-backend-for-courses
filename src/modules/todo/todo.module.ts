@@ -33,7 +33,7 @@ const CommandHandlers = [CreateTodoHandler, CompleteTodoHandler];
     },
     // ✅ Регистрируем обработчики CQRS
     ...CommandHandlers,
-//...QueryHandlers,
+    //...QueryHandlers,
   ],
   exports: [
     TodoService,

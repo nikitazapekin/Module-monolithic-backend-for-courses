@@ -8,7 +8,9 @@ import { CheckpointResponseDto } from '../dtos/checkpoint-response.dto';
 export class CheckpointFacade {
   constructor(private readonly checkpointService: CheckpointService) {}
 
-  async createCheckpoint(dto: CreateCheckpointDto): Promise<CheckpointResponseDto> {
+  async createCheckpoint(
+    dto: CreateCheckpointDto,
+  ): Promise<CheckpointResponseDto> {
     return this.checkpointService.createCheckpoint(dto);
   }
 
@@ -16,15 +18,22 @@ export class CheckpointFacade {
     return this.checkpointService.getCheckpoint(id);
   }
 
-  async getCheckpointByMapElementId(mapElementId: string): Promise<CheckpointResponseDto> {
+  async getCheckpointByMapElementId(
+    mapElementId: string,
+  ): Promise<CheckpointResponseDto> {
     return this.checkpointService.getCheckpointByMapElementId(mapElementId);
   }
 
-  async getCheckpointsByCourseMapId(courseMapId: string): Promise<CheckpointResponseDto[]> {
+  async getCheckpointsByCourseMapId(
+    courseMapId: string,
+  ): Promise<CheckpointResponseDto[]> {
     return this.checkpointService.getCheckpointsByCourseMapId(courseMapId);
   }
 
-  async updateCheckpoint(id: string, dto: UpdateCheckpointDto): Promise<CheckpointResponseDto> {
+  async updateCheckpoint(
+    id: string,
+    dto: UpdateCheckpointDto,
+  ): Promise<CheckpointResponseDto> {
     return this.checkpointService.updateCheckpoint(id, dto);
   }
 
@@ -32,7 +41,9 @@ export class CheckpointFacade {
     return this.checkpointService.deleteCheckpoint(id);
   }
 
-  async deleteCheckpointByMapElementId(mapElementId: string): Promise<{ success: boolean }> {
+  async deleteCheckpointByMapElementId(
+    mapElementId: string,
+  ): Promise<{ success: boolean }> {
     return this.checkpointService.deleteCheckpointByMapElementId(mapElementId);
   }
 }

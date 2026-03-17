@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsInt, Min, Max, IsOptional } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsInt,
+  Min,
+  Max,
+  IsOptional,
+} from 'class-validator';
 import { Expose } from 'class-transformer';
 
 export class CreateStudentResultDto {
@@ -14,7 +21,8 @@ export class CreateStudentResultDto {
   auditoryId?: string;
 
   @ApiProperty({
-    description: 'ID студента (client). Если не указан, будет найден по auditoryId.',
+    description:
+      'ID студента (client). Если не указан, будет найден по auditoryId.',
     example: 'client_1234567890_abc123',
     required: false,
   })

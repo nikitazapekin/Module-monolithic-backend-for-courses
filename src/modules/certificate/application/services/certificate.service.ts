@@ -1,7 +1,16 @@
-import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ICertificateRepository, CertificateSearchParams, CertificateSearchResult } from '../../domain/interfaces/certificate.repository.interface';
+import {
+  ICertificateRepository,
+  CertificateSearchParams,
+  CertificateSearchResult,
+} from '../../domain/interfaces/certificate.repository.interface';
 import { Certificate } from '../../domain/entities/certificate.entity';
 import { CreateCertificateDto } from '../dtos/create-certificate.dto';
 import { UpdateCertificateDto } from '../dtos/update-certificate.dto';
@@ -28,7 +37,9 @@ export class CertificateService {
     });
 
     if (!client) {
-      throw new NotFoundException(`Client with auditory ID ${auditoryId} not found`);
+      throw new NotFoundException(
+        `Client with auditory ID ${auditoryId} not found`,
+      );
     }
 
     return client.id;
@@ -46,7 +57,12 @@ export class CertificateService {
     try {
       const puppeteer = await import('puppeteer');
 
-      const html = this.createCertificateHTML(studentName, courseName, date, certificateUrl);
+      const html = this.createCertificateHTML(
+        studentName,
+        courseName,
+        date,
+        certificateUrl,
+      );
 
       const browser = await puppeteer.launch({
         headless: true,
@@ -66,16 +82,23 @@ export class CertificateService {
       });
 
       // Wait for images to load
-      await page.evaluate(() => {
-        return Promise.all(
-          Array.from(document.images)
-            .filter(img => !img.complete)
-            .map(img => new Promise((resolve, reject) => {
-              img.onload = resolve;
-              img.onerror = reject;
-            }))
+      await page
+        .evaluate(() => {
+          return Promise.all(
+            Array.from(document.images)
+              .filter((img) => !img.complete)
+              .map(
+                (img) =>
+                  new Promise((resolve, reject) => {
+                    img.onload = resolve;
+                    img.onerror = reject;
+                  }),
+              ),
+          );
+        })
+        .catch(() =>
+          console.log('⚠️ Some images failed to load, continuing...'),
         );
-      }).catch(() => console.log('⚠️ Some images failed to load, continuing...'));
 
       const screenshot = await page.screenshot({
         fullPage: false,
@@ -333,9 +356,13 @@ export class CertificateService {
     return `${baseUrl}/certificates/${certificateId}`;
   }
 
-  async create(createCertificateDto: CreateCertificateDto): Promise<Certificate> {
+  async create(
+    createCertificateDto: CreateCertificateDto,
+  ): Promise<Certificate> {
     try {
-      const clientId = await this.getClientIdFromAuditoryId(createCertificateDto.auditoryId);
+      const clientId = await this.getClientIdFromAuditoryId(
+        createCertificateDto.auditoryId,
+      );
       const date = new Date(createCertificateDto.date);
 
       const studentNameParts = createCertificateDto.studentName.split(' ');
@@ -343,17 +370,25 @@ export class CertificateService {
       const lastName = studentNameParts[1] || '';
       const middleName = studentNameParts.slice(2).join(' ') || '';
 
-      const certificate = new Certificate(clientId, createCertificateDto.courseId, date, '', '');
+      const certificate = new Certificate(
+        clientId,
+        createCertificateDto.courseId,
+        date,
+        '',
+        '',
+      );
       certificate.firstName = firstName;
       certificate.lastName = lastName;
       certificate.middleName = middleName;
       certificate.courseName = createCertificateDto.courseName;
-      
+
       const saved = await this.certificateRepository.save(certificate);
 
       const actualCertificateUrl = this.generateCertificateUrl(saved.id);
 
-      const fullStudentName = [firstName, lastName, middleName].filter(Boolean).join(' ');
+      const fullStudentName = [firstName, lastName, middleName]
+        .filter(Boolean)
+        .join(' ');
       const base64Image = await this.generateCertificateImage(
         fullStudentName,
         createCertificateDto.courseName,
@@ -371,7 +406,9 @@ export class CertificateService {
       return this.findById(saved.id);
     } catch (error) {
       console.error('Error creating certificate:', error);
-      throw new BadRequestException(`Failed to create certificate: ${error.message}`);
+      throw new BadRequestException(
+        `Failed to create certificate: ${error.message}`,
+      );
     }
   }
 
@@ -391,7 +428,10 @@ export class CertificateService {
     return this.certificateRepository.findByAuditoryId(auditoryId);
   }
 
-  async update(id: string, updateCertificateDto: UpdateCertificateDto): Promise<Certificate> {
+  async update(
+    id: string,
+    updateCertificateDto: UpdateCertificateDto,
+  ): Promise<Certificate> {
     const certificate = await this.certificateRepository.findById(id);
     if (!certificate) {
       throw new NotFoundException(`Certificate with ID ${id} not found`);
@@ -444,7 +484,9 @@ export class CertificateService {
     }
 
     if (needsRegeneration && !updateCertificateDto.url) {
-      const fullStudentName = [newFirstName, newLastName, newMiddleName].filter(Boolean).join(' ');
+      const fullStudentName = [newFirstName, newLastName, newMiddleName]
+        .filter(Boolean)
+        .join(' ');
       const dateStr = newDate.toISOString().split('T')[0];
       const base64Image = await this.generateCertificateImage(
         fullStudentName,
@@ -489,7 +531,9 @@ export class CertificateService {
     return this.certificateRepository.deleteByClientId(clientId);
   }
 
-  async search(params: CertificateSearchParams): Promise<CertificateSearchResult> {
+  async search(
+    params: CertificateSearchParams,
+  ): Promise<CertificateSearchResult> {
     return this.certificateRepository.search(params);
   }
 
@@ -509,8 +553,8 @@ export class CertificateService {
    * Получение размера изображения в байтах
    */
   getImageSize(id: string): Promise<number> {
-    return this.findById(id).then(cert => 
-      Buffer.from(cert.url, 'base64').length
+    return this.findById(id).then(
+      (cert) => Buffer.from(cert.url, 'base64').length,
     );
   }
 }

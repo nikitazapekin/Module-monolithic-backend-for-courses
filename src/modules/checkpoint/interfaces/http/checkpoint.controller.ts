@@ -1,16 +1,22 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Put, 
-  Delete, 
-  Body, 
-  Param, 
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
   Query,
   UseInterceptors,
-  ClassSerializerInterceptor
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { CheckpointFacade } from '../../application/facades/checkpoint.facade';
 import { CreateCheckpointDto } from '../../application/dtos/create-checkpoint.dto';
 import { UpdateCheckpointDto } from '../../application/dtos/update-checkpoint.dto';
@@ -25,7 +31,9 @@ export class CheckpointController {
   @Post()
   @ApiOperation({ summary: 'Создать контрольную точку' })
   @ApiResponse({ status: 201, type: CheckpointResponseDto })
-  async create(@Body() dto: CreateCheckpointDto): Promise<CheckpointResponseDto> {
+  async create(
+    @Body() dto: CreateCheckpointDto,
+  ): Promise<CheckpointResponseDto> {
     return this.checkpointFacade.createCheckpoint(dto);
   }
 
@@ -41,7 +49,9 @@ export class CheckpointController {
   @ApiOperation({ summary: 'Получить контрольную точку по ID элемента карты' })
   @ApiResponse({ status: 200, type: CheckpointResponseDto })
   @ApiParam({ name: 'mapElementId', type: String })
-  async getByMapElementId(@Param('mapElementId') mapElementId: string): Promise<CheckpointResponseDto> {
+  async getByMapElementId(
+    @Param('mapElementId') mapElementId: string,
+  ): Promise<CheckpointResponseDto> {
     return this.checkpointFacade.getCheckpointByMapElementId(mapElementId);
   }
 
@@ -49,7 +59,9 @@ export class CheckpointController {
   @ApiOperation({ summary: 'Получить контрольные точки по ID карты курса' })
   @ApiResponse({ status: 200, type: [CheckpointResponseDto] })
   @ApiQuery({ name: 'courseMapId', type: String, required: true })
-  async getByCourseMapId(@Query('courseMapId') courseMapId: string): Promise<CheckpointResponseDto[]> {
+  async getByCourseMapId(
+    @Query('courseMapId') courseMapId: string,
+  ): Promise<CheckpointResponseDto[]> {
     return this.checkpointFacade.getCheckpointsByCourseMapId(courseMapId);
   }
 
@@ -57,13 +69,19 @@ export class CheckpointController {
   @ApiOperation({ summary: 'Обновить контрольную точку' })
   @ApiResponse({ status: 200, type: CheckpointResponseDto })
   @ApiParam({ name: 'id', type: String })
-  async update(@Param('id') id: string, @Body() dto: UpdateCheckpointDto): Promise<CheckpointResponseDto> {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateCheckpointDto,
+  ): Promise<CheckpointResponseDto> {
     return this.checkpointFacade.updateCheckpoint(id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Удалить контрольную точку' })
-  @ApiResponse({ status: 200, schema: { properties: { success: { type: 'boolean' } } } })
+  @ApiResponse({
+    status: 200,
+    schema: { properties: { success: { type: 'boolean' } } },
+  })
   @ApiParam({ name: 'id', type: String })
   async delete(@Param('id') id: string): Promise<{ success: boolean }> {
     return this.checkpointFacade.deleteCheckpoint(id);
@@ -71,9 +89,14 @@ export class CheckpointController {
 
   @Delete('map-element/:mapElementId')
   @ApiOperation({ summary: 'Удалить контрольную точку по ID элемента карты' })
-  @ApiResponse({ status: 200, schema: { properties: { success: { type: 'boolean' } } } })
+  @ApiResponse({
+    status: 200,
+    schema: { properties: { success: { type: 'boolean' } } },
+  })
   @ApiParam({ name: 'mapElementId', type: String })
-  async deleteByMapElementId(@Param('mapElementId') mapElementId: string): Promise<{ success: boolean }> {
+  async deleteByMapElementId(
+    @Param('mapElementId') mapElementId: string,
+  ): Promise<{ success: boolean }> {
     return this.checkpointFacade.deleteCheckpointByMapElementId(mapElementId);
   }
 }

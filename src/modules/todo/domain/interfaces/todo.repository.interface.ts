@@ -8,7 +8,7 @@ export interface ITodoRepository {
   findAll(): Promise<Todo[]>;
   findByStatus(completed: boolean): Promise<Todo[]>;
   delete(id: string): Promise<boolean>;
-  
+
   // ✅ Специфичные операции
   findIncomplete(): Promise<Todo[]>;
   markAllAsCompleted(): Promise<number>;

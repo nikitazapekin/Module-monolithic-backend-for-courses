@@ -4,7 +4,7 @@ export enum MapElementType {
   LESSON = 'lesson',
   TEXT = 'text',
   CHECKPOINT = 'checkpoint',
-  EMOJI = 'emoji'
+  EMOJI = 'emoji',
 }
 
 export type PositioningType = 'left' | 'center' | 'right' | 'free';

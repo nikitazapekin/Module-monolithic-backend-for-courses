@@ -1,6 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, IsOptional, IsIn, IsBoolean, IsEnum } from 'class-validator';
-import { MapElementType, PositioningType } from '../../domain/entities/map-element-types.enum';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsIn,
+  IsBoolean,
+  IsEnum,
+} from 'class-validator';
+import {
+  MapElementType,
+  PositioningType,
+} from '../../domain/entities/map-element-types.enum';
 import { CheckpointType } from '@modules/checkpoint/domain/entities/checkpoint.entity';
 
 export class CreateMapElementDto {

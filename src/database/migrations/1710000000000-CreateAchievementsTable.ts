@@ -1,6 +1,13 @@
-import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
+import {
+  MigrationInterface,
+  QueryRunner,
+  Table,
+  TableForeignKey,
+} from 'typeorm';
 
-export class CreateAchievementsTable1710000000000 implements MigrationInterface {
+export class CreateAchievementsTable1710000000000
+  implements MigrationInterface
+{
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create achievements table
     await queryRunner.createTable(
@@ -24,7 +31,16 @@ export class CreateAchievementsTable1710000000000 implements MigrationInterface 
           {
             name: 'tier',
             type: 'enum',
-            enum: ['novice', 'advanced', 'expert', 'master', 'beginner', 'intermediate', 'professional', 'legendary'],
+            enum: [
+              'novice',
+              'advanced',
+              'expert',
+              'master',
+              'beginner',
+              'intermediate',
+              'professional',
+              'legendary',
+            ],
           },
           {
             name: 'title',
@@ -73,7 +89,9 @@ export class CreateAchievementsTable1710000000000 implements MigrationInterface 
   public async down(queryRunner: QueryRunner): Promise<void> {
     // Drop foreign key
     const table = await queryRunner.getTable('achievements');
-    const foreignKey = table?.foreignKeys.find(fk => fk.columnNames.includes('clientId'));
+    const foreignKey = table?.foreignKeys.find((fk) =>
+      fk.columnNames.includes('clientId'),
+    );
     if (foreignKey) {
       await queryRunner.dropForeignKey('achievements', foreignKey);
     }

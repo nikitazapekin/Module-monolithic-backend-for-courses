@@ -26,7 +26,7 @@ export class StudentResultRepository implements IStudentResultRepository {
       order: { completedAt: 'DESC' },
     });
 
-    return entities.map(entity => this.toDomain(entity));
+    return entities.map((entity) => this.toDomain(entity));
   }
 
   async findByLessonId(lessonId: string): Promise<StudentResult[]> {
@@ -35,16 +35,19 @@ export class StudentResultRepository implements IStudentResultRepository {
       order: { completedAt: 'DESC' },
     });
 
-    return entities.map(entity => this.toDomain(entity));
+    return entities.map((entity) => this.toDomain(entity));
   }
 
-  async findByClientIdAndLessonId(clientId: string, lessonId: string): Promise<StudentResult[]> {
+  async findByClientIdAndLessonId(
+    clientId: string,
+    lessonId: string,
+  ): Promise<StudentResult[]> {
     const entities = await this.studentResultRepository.find({
       where: { clientId, lessonId },
       order: { completedAt: 'DESC' },
     });
 
-    return entities.map(entity => this.toDomain(entity));
+    return entities.map((entity) => this.toDomain(entity));
   }
 
   async save(result: StudentResult): Promise<StudentResult> {

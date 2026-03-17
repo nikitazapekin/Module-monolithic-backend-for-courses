@@ -1,7 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, MinLength, IsOptional, IsEnum } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  MinLength,
+  IsOptional,
+  IsEnum,
+} from 'class-validator';
 import { Expose } from 'class-transformer';
-import { UserRole } from './auth-response.dto'; 
+import { UserRole } from './auth-response.dto';
 
 export class RegisterDto {
   @ApiProperty({

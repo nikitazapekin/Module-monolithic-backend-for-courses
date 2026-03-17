@@ -11,7 +11,7 @@ export class Avatar {
     auditoryId: string,
     imageData: string,
     mimeType: string,
-    fileSize: number
+    fileSize: number,
   ) {
     this.id = this.generateId();
     this.auditoryId = auditoryId;
@@ -22,7 +22,11 @@ export class Avatar {
     this.updatedAt = new Date();
   }
 
-  public updateImage(imageData: string, mimeType: string, fileSize: number): void {
+  public updateImage(
+    imageData: string,
+    mimeType: string,
+    fileSize: number,
+  ): void {
     this.imageData = imageData;
     this.mimeType = mimeType;
     this.fileSize = fileSize;

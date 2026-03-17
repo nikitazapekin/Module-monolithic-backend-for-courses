@@ -18,7 +18,7 @@ export class Lesson {
     content?: string,
     duration?: number,
     isPublished: boolean = false,
-    id?: string
+    id?: string,
   ) {
     if (id) {
       this.id = id;

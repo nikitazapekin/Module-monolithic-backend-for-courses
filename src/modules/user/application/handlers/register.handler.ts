@@ -9,7 +9,7 @@ export class RegisterUserHandler
   constructor(private readonly authService: any) {}
 
   async execute(command: RegisterUserCommand): Promise<any> {
-   // return this.authService.register(command.name, command.email);
-   return ""
+    // return this.authService.register(command.name, command.email);
+    return '';
   }
 }

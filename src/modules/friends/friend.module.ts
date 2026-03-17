@@ -12,7 +12,11 @@ import { ClientOrmEntity } from '../auth/infra/typeorm/client.orm-entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([FriendOrmEntity, FriendRequestOrmEntity, ClientOrmEntity]),
+    TypeOrmModule.forFeature([
+      FriendOrmEntity,
+      FriendRequestOrmEntity,
+      ClientOrmEntity,
+    ]),
   ],
   controllers: [FriendController, FriendRequestController],
   providers: [
@@ -27,10 +31,6 @@ import { ClientOrmEntity } from '../auth/infra/typeorm/client.orm-entity';
       useClass: FriendRequestRepository,
     },
   ],
-  exports: [
-    FriendService,
-    FriendRequestService,
-    TypeOrmModule,
-  ],
+  exports: [FriendService, FriendRequestService, TypeOrmModule],
 })
 export class FriendsModule {}

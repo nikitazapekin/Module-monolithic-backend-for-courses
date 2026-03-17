@@ -27,9 +27,6 @@ import { MapModule } from '../map/map.module';
     // Добавляем экспорт IMapElementRepository из MapModule
     // Но его нужно будет добавить в exports MapModule
   ],
-  exports: [
-    LessonService,
-    LessonFacade,
-  ],
+  exports: [LessonService, LessonFacade],
 })
 export class LessonModule {}

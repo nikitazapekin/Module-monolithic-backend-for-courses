@@ -1,12 +1,12 @@
-import { 
-  Entity, 
-  PrimaryColumn, 
-  Column, 
-  CreateDateColumn, 
-  UpdateDateColumn, 
+import {
+  Entity,
+  PrimaryColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
   ManyToOne,
-  JoinColumn, 
-  OneToOne
+  JoinColumn,
+  OneToOne,
 } from 'typeorm';
 import { AdminOrmEntity } from '@modules/auth/infra/typeorm/admin.orm-entity';
 import { CourseMapOrmEntity } from '@modules/map/infra/typeorm/course-map.orm-entity';
@@ -37,7 +37,7 @@ export class CourseOrmEntity {
   @Column({
     type: 'enum',
     enum: ['draft', 'published', 'archived'],
-    default: 'draft'
+    default: 'draft',
   })
   status: string;
 
@@ -52,19 +52,14 @@ export class CourseOrmEntity {
 
   @Column({ nullable: true })
   publishedAt: Date;
- 
-  @ManyToOne(() => AdminOrmEntity, admin => admin.courses)
+
+  @ManyToOne(() => AdminOrmEntity, (admin) => admin.courses)
   @JoinColumn({ name: 'adminId' })
   admin: AdminOrmEntity;
 
-
-
-
-
-  @OneToOne(() => CourseMapOrmEntity, map => map.course)
-@JoinColumn()
-map: CourseMapOrmEntity;
-
+  @OneToOne(() => CourseMapOrmEntity, (map) => map.course)
+  @JoinColumn()
+  map: CourseMapOrmEntity;
 }
 
 // Обновляем AdminOrmEntity для связи один-ко-многим:

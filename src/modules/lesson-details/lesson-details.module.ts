@@ -14,32 +14,32 @@ import { LessonOrmEntity } from '@modules/lesson/infra/typeorm/lesson.orm-entity
 import { MapModule } from '@modules/map/map.module';
 
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([
-            LessonDetailsOrmEntity,
-            LessonSlideOrmEntity,
-            LessonTestOrmEntity,
-            LessonOrmEntity,
-        ]),
-        forwardRef(() => MapModule), // Добавляем для избежания циклических зависимостей
-    ],
-    controllers: [LessonDetailsController],
-    providers: [
-        LessonDetailsService,
-        LessonDetailsFacade,
-        {
-            provide: 'ILessonDetailsRepository',
-            useClass: LessonDetailsRepository,
-        },
-        {
-            provide: 'ILessonSlideRepository',
-            useClass: LessonSlideRepository,
-        },
-        {
-            provide: 'ILessonTestRepository',
-            useClass: LessonTestRepository,
-        },
-    ],
-    exports: [LessonDetailsService, LessonDetailsFacade], // Экспортируем фасад
+  imports: [
+    TypeOrmModule.forFeature([
+      LessonDetailsOrmEntity,
+      LessonSlideOrmEntity,
+      LessonTestOrmEntity,
+      LessonOrmEntity,
+    ]),
+    forwardRef(() => MapModule), // Добавляем для избежания циклических зависимостей
+  ],
+  controllers: [LessonDetailsController],
+  providers: [
+    LessonDetailsService,
+    LessonDetailsFacade,
+    {
+      provide: 'ILessonDetailsRepository',
+      useClass: LessonDetailsRepository,
+    },
+    {
+      provide: 'ILessonSlideRepository',
+      useClass: LessonSlideRepository,
+    },
+    {
+      provide: 'ILessonTestRepository',
+      useClass: LessonTestRepository,
+    },
+  ],
+  exports: [LessonDetailsService, LessonDetailsFacade], // Экспортируем фасад
 })
 export class LessonDetailsModule {}

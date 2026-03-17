@@ -18,9 +18,13 @@ export class JwtService {
     private readonly nestJwtService: NestJwtService,
     private readonly configService: ConfigService,
   ) {
-    this.jwtSecret = this.configService.get<string>('JWT_SECRET') || 'super-secret-key-change-in-production';
-    this.accessTokenExpiresIn = this.configService.get<string>('JWT_ACCESS_EXPIRES') || '15m';
-    this.refreshTokenExpiresIn = this.configService.get<string>('JWT_REFRESH_EXPIRES') || '7d';
+    this.jwtSecret =
+      this.configService.get<string>('JWT_SECRET') ||
+      'super-secret-key-change-in-production';
+    this.accessTokenExpiresIn =
+      this.configService.get<string>('JWT_ACCESS_EXPIRES') || '1d';
+    this.refreshTokenExpiresIn =
+      this.configService.get<string>('JWT_REFRESH_EXPIRES') || '7d';
   }
 
   async hashPassword(password: string): Promise<string> {
@@ -28,7 +32,10 @@ export class JwtService {
     return bcrypt.hash(password, salt);
   }
 
-  async comparePasswords(plainPassword: string, hashedPassword: string): Promise<boolean> {
+  async comparePasswords(
+    plainPassword: string,
+    hashedPassword: string,
+  ): Promise<boolean> {
     return bcrypt.compare(plainPassword, hashedPassword);
   }
 
@@ -56,55 +63,57 @@ export class JwtService {
     }
   }
 
-// В методе createAuthResponse можно оставить возвращение refreshToken для внутреннего использования
-async createAuthResponse(
-  userId: string,
-  email: string,
-  role: UserRole,
-  client?: Client,
-  admin?: Admin,
-): Promise<AuthResponseDto & { refreshToken: string }> {  
-  const payload = {
-    sub: userId,
-    email,
-    role,
-  };
+  // В методе createAuthResponse можно оставить возвращение refreshToken для внутреннего использования
+  async createAuthResponse(
+    userId: string,
+    email: string,
+    role: UserRole,
+    client?: Client,
+    admin?: Admin,
+  ): Promise<AuthResponseDto & { refreshToken: string }> {
+    const payload = {
+      sub: userId,
+      email,
+      role,
+    };
 
-  const [accessToken, refreshToken] = await Promise.all([
-    this.generateAccessToken(payload),
-    this.generateRefreshToken(payload),
-  ]);
+    const [accessToken, refreshToken] = await Promise.all([
+      this.generateAccessToken(payload),
+      this.generateRefreshToken(payload),
+    ]);
 
-  const decoded = this.nestJwtService.decode(accessToken) as any;
-  const expiresIn = decoded ? new Date(decoded.exp * 1000) : new Date(Date.now() + 15 * 60 * 1000);
+    const decoded = this.nestJwtService.decode(accessToken);
+    const expiresIn = decoded
+      ? new Date(decoded.exp * 1000)
+      : new Date(Date.now() + 15 * 60 * 1000);
 
-  let fullName = '';
-  if (role === UserRole.CLIENT && client) {
-    fullName = client.getFullName();
-  } else if (role === UserRole.ADMIN && admin) {
-    fullName = admin.getFullName();
+    let fullName = '';
+    if (role === UserRole.CLIENT && client) {
+      fullName = client.getFullName();
+    } else if (role === UserRole.ADMIN && admin) {
+      fullName = admin.getFullName();
+    }
+
+    return {
+      accessToken,
+      refreshToken,
+      expiresIn,
+      tokenType: 'Bearer',
+      userId,
+      email,
+      role,
+      fullName,
+    };
   }
-
-  return {
-    accessToken,
-    refreshToken, 
-    expiresIn,
-    tokenType: 'Bearer',
-    userId,
-    email,
-    role,
-    fullName,
-  };
-}
 
   isTokenExpired(token: string): boolean {
     try {
-      const decoded = this.nestJwtService.decode(token) as any;
+      const decoded = this.nestJwtService.decode(token);
       if (!decoded || !decoded.exp) {
         return true;
       }
-      
-      const expirationTime = decoded.exp * 1000;  
+
+      const expirationTime = decoded.exp * 1000;
       return Date.now() >= expirationTime;
     } catch (error) {
       return true;

@@ -1,6 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
-import { MapElementType, PositioningType } from '../../domain/entities/map-element-types.enum';
+import {
+  MapElementType,
+  PositioningType,
+} from '../../domain/entities/map-element-types.enum';
 
 export class MapElementDto {
   @ApiProperty({

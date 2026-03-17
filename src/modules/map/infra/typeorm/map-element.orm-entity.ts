@@ -1,12 +1,12 @@
-import { 
-  Entity, 
-  PrimaryColumn, 
-  Column, 
-  CreateDateColumn, 
+import {
+  Entity,
+  PrimaryColumn,
+  Column,
+  CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
-  Index 
+  Index,
 } from 'typeorm';
 import { CourseMapOrmEntity } from './course-map.orm-entity';
 import { MapElementType, PositioningType } from './map-element-types.enum';
@@ -62,7 +62,7 @@ export class MapElementOrmEntity {
   @Column({
     type: 'enum',
     enum: ['left', 'center', 'right', 'free'],
-    default: 'free'
+    default: 'free',
   })
   positioning: PositioningType;
 
@@ -97,8 +97,8 @@ export class MapElementOrmEntity {
   updatedAt: Date;
 
   // Связь многие-к-одному с картой курса
-  @ManyToOne(() => CourseMapOrmEntity, courseMap => courseMap.elements, {
-    onDelete: 'CASCADE'
+  @ManyToOne(() => CourseMapOrmEntity, (courseMap) => courseMap.elements, {
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'courseMapId' })
   courseMap: CourseMapOrmEntity;

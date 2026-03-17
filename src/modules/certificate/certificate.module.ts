@@ -15,7 +15,7 @@ import { AuditoryOrmEntity } from '../auth/infra/typeorm/auditory.orm-entity';
       AuditoryOrmEntity,
     ]),
   ],
-  controllers: [CertificateController],  
+  controllers: [CertificateController],
   providers: [
     CertificateService,
     {
@@ -23,9 +23,6 @@ import { AuditoryOrmEntity } from '../auth/infra/typeorm/auditory.orm-entity';
       useClass: CertificateRepository,
     },
   ],
-  exports: [
-    CertificateService,
-    TypeOrmModule,
-  ],
+  exports: [CertificateService, TypeOrmModule],
 })
 export class CertificateModule {}

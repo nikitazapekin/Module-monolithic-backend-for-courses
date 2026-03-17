@@ -25,27 +25,39 @@ export class StudentsRepository {
     const queryBuilder = this.clientRepository
       .createQueryBuilder('client')
       .leftJoin('client.auditory', 'auditory')
-      .addSelect(['auditory.id', 'auditory.email', 'auditory.role', 'auditory.isActive', 'auditory.lastLoginAt']);
+      .addSelect([
+        'auditory.id',
+        'auditory.email',
+        'auditory.role',
+        'auditory.isActive',
+        'auditory.lastLoginAt',
+      ]);
 
     if (search) {
       const searchTerms = search.trim().split(/\s+/).filter(Boolean);
 
       if (searchTerms.length > 0) {
-        const searchQuery = searchTerms.map((term, index) => {
-          return `(
+        const searchQuery = searchTerms
+          .map((term, index) => {
+            return `(
             CAST(client.firstName AS text) ILIKE :term${index} OR
             CAST(client.lastName AS text) ILIKE :term${index} OR
             CAST(client.middleName AS text) ILIKE :term${index} OR
             CAST(client.id AS text) ILIKE :term${index} OR
             CAST(client.auditoryId AS text) ILIKE :term${index}
           )`;
-        }).join(' AND ');
+          })
+          .join(' AND ');
 
-        queryBuilder.andWhere(searchQuery,
-          searchTerms.reduce((acc, term, index) => {
-            acc[`term${index}`] = `%${term}%`;
-            return acc;
-          }, {} as Record<string, string>)
+        queryBuilder.andWhere(
+          searchQuery,
+          searchTerms.reduce(
+            (acc, term, index) => {
+              acc[`term${index}`] = `%${term}%`;
+              return acc;
+            },
+            {} as Record<string, string>,
+          ),
         );
       }
     }
@@ -60,7 +72,9 @@ export class StudentsRepository {
     return { students, total };
   }
 
-  async findStudentByAuditoryId(auditoryId: string): Promise<ClientOrmEntity | null> {
+  async findStudentByAuditoryId(
+    auditoryId: string,
+  ): Promise<ClientOrmEntity | null> {
     return this.clientRepository.findOne({
       where: { auditoryId },
       relations: ['auditory'],

@@ -1,6 +1,11 @@
 import { IsIn, IsNotEmpty, IsString } from 'class-validator';
 
-export type SupportedLanguage = 'javascript' | 'python' | 'csharp' | 'golang' | 'java';
+export type SupportedLanguage =
+  | 'javascript'
+  | 'python'
+  | 'csharp'
+  | 'golang'
+  | 'java';
 
 export class ExecuteCodeDto {
   @IsString()
@@ -11,4 +16,3 @@ export class ExecuteCodeDto {
   @IsNotEmpty()
   code: string;
 }
-

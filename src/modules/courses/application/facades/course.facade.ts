@@ -9,7 +9,10 @@ import { CourseStatus } from '../../domain/entities/course.entity';
 export class CourseFacade {
   constructor(private readonly courseService: CourseService) {}
 
-  async createCourse(dto: CreateCourseDto, adminId: string): Promise<CourseResponseDto> {
+  async createCourse(
+    dto: CreateCourseDto,
+    adminId: string,
+  ): Promise<CourseResponseDto> {
     return this.courseService.createCourse(dto, adminId);
   }
 
@@ -23,19 +26,34 @@ export class CourseFacade {
     page?: number;
     limit?: number;
     search?: string;
-  }): Promise<{ courses: CourseResponseDto[]; total: number; page: number; pages: number }> {
+  }): Promise<{
+    courses: CourseResponseDto[];
+    total: number;
+    page: number;
+    pages: number;
+  }> {
     return this.courseService.getCourses(options);
   }
 
-  async updateCourse(id: string, dto: UpdateCourseDto, adminId?: string): Promise<CourseResponseDto> {
+  async updateCourse(
+    id: string,
+    dto: UpdateCourseDto,
+    adminId?: string,
+  ): Promise<CourseResponseDto> {
     return this.courseService.updateCourse(id, dto, adminId);
   }
 
-  async deleteCourse(id: string, adminId?: string): Promise<{ success: boolean }> {
+  async deleteCourse(
+    id: string,
+    adminId?: string,
+  ): Promise<{ success: boolean }> {
     return this.courseService.deleteCourse(id, adminId);
   }
 
-  async publishCourse(id: string, adminId?: string): Promise<CourseResponseDto> {
+  async publishCourse(
+    id: string,
+    adminId?: string,
+  ): Promise<CourseResponseDto> {
     return this.courseService.publishCourse(id, adminId);
   }
 

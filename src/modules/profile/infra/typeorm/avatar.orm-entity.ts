@@ -1,4 +1,12 @@
-import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToOne,
+  JoinColumn,
+} from 'typeorm';
 import { AuditoryOrmEntity } from '../../../auth/infra/typeorm/auditory.orm-entity';
 
 @Entity('avatar')

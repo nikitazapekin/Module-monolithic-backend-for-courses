@@ -2,7 +2,7 @@ export enum CheckpointType {
   QUIZ = 'quiz',
   PRACTICAL_TASK = 'practical_task',
   EXAM = 'exam',
-  PROJECT = 'project'
+  PROJECT = 'project',
 }
 
 export class Checkpoint {
@@ -29,7 +29,7 @@ export class Checkpoint {
     timeLimit?: number,
     instructions?: string,
     isPublished: boolean = false,
-    id?: string
+    id?: string,
   ) {
     if (id) {
       this.id = id;
@@ -58,7 +58,7 @@ export class Checkpoint {
     if (data.timeLimit !== undefined) this.timeLimit = data.timeLimit;
     if (data.instructions !== undefined) this.instructions = data.instructions;
     if (data.isPublished !== undefined) this.isPublished = data.isPublished;
-    
+
     this.updatedAt = new Date();
   }
 

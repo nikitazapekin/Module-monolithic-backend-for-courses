@@ -19,13 +19,13 @@ export class AuthRepository implements IAuthRepository {
     @InjectRepository(AdminOrmEntity)
     private readonly adminRepository: Repository<AdminOrmEntity>,
   ) {}
- 
+
   async findAuditoryByEmail(email: string): Promise<Auditory | null> {
     const entity = await this.auditoryRepository.findOne({
       where: { email: email.toLowerCase() },
       relations: ['client', 'admin'],
     });
-    
+
     return entity ? this.toAuditoryDomain(entity) : null;
   }
 
@@ -34,7 +34,7 @@ export class AuthRepository implements IAuthRepository {
       where: { id },
       relations: ['client', 'admin'],
     });
-    
+
     return entity ? this.toAuditoryDomain(entity) : null;
   }
 
@@ -44,13 +44,16 @@ export class AuthRepository implements IAuthRepository {
     return this.toAuditoryDomain(saved);
   }
 
-/*   async updateAuditory(id: string, updates: Partial<Auditory>): Promise<boolean> {
+  /*   async updateAuditory(id: string, updates: Partial<Auditory>): Promise<boolean> {
     const result = await this.auditoryRepository.update(id, updates);
     return result.affected > 0;
   } */
 
-      async updateAuditory(id: string, updates: Partial<Auditory>): Promise<boolean> {
-   return false
+  async updateAuditory(
+    id: string,
+    updates: Partial<Auditory>,
+  ): Promise<boolean> {
+    return false;
   }
 
   // Client методы
@@ -58,7 +61,7 @@ export class AuthRepository implements IAuthRepository {
     const entity = await this.clientRepository.findOne({
       where: { auditoryId },
     });
-    
+
     return entity ? this.toClientDomain(entity) : null;
   }
 
@@ -68,22 +71,21 @@ export class AuthRepository implements IAuthRepository {
     return this.toClientDomain(saved);
   }
 
- /*  async updateClient(id: string, updates: Partial<Client>): Promise<boolean> {
+  /*  async updateClient(id: string, updates: Partial<Client>): Promise<boolean> {
     const result = await this.clientRepository.update(id, updates);
     return result.affected > 0;
   } */
 
-     async updateClient(id: string, updates: Partial<Client>): Promise<boolean> {
-  return true
+  async updateClient(id: string, updates: Partial<Client>): Promise<boolean> {
+    return true;
   }
-
 
   // Admin методы
   async findAdminByAuditoryId(auditoryId: string): Promise<Admin | null> {
     const entity = await this.adminRepository.findOne({
       where: { auditoryId },
     });
-    
+
     return entity ? this.toAdminDomain(entity) : null;
   }
 
@@ -93,23 +95,23 @@ export class AuthRepository implements IAuthRepository {
     return this.toAdminDomain(saved);
   }
 
-/*   async updateAdmin(id: string, updates: Partial<Admin>): Promise<boolean> {
+  /*   async updateAdmin(id: string, updates: Partial<Admin>): Promise<boolean> {
     const result = await this.adminRepository.update(id, updates);
     return result.affected > 0;
   }
  */
   async updateAdmin(id: string, updates: Partial<Admin>): Promise<boolean> {
-   return true
+    return true;
   }
 
   // Общие методы
   async deactivateUser(auditoryId: string): Promise<boolean> {
-   /*  const result = await this.auditoryRepository.update(auditoryId, {
+    /*  const result = await this.auditoryRepository.update(auditoryId, {
       isActive: false,
       updatedAt: new Date(),
     });
     return result.affected > 0; */
-    return true
+    return true;
   }
 
   // Преобразования Domain ↔ ORM
@@ -117,9 +119,9 @@ export class AuthRepository implements IAuthRepository {
     const auditory = new Auditory(
       entity.email,
       entity.password,
-      entity.role as UserRole
+      entity.role as UserRole,
     );
- 
+
     Object.assign(auditory, {
       id: entity.id,
       isActive: entity.isActive,
@@ -127,7 +129,7 @@ export class AuthRepository implements IAuthRepository {
       updatedAt: entity.updatedAt,
       lastLoginAt: entity.lastLoginAt,
     });
-    
+
     return auditory;
   }
 
@@ -141,7 +143,7 @@ export class AuthRepository implements IAuthRepository {
     entity.createdAt = auditory.createdAt;
     entity.updatedAt = auditory.updatedAt;
     entity.lastLoginAt = auditory.lastLoginAt!;
-    
+
     return entity;
   }
 
@@ -153,15 +155,15 @@ export class AuthRepository implements IAuthRepository {
       entity.phone,
       entity.country,
       entity.middleName,
-      entity.description
+      entity.description,
     );
-    
+
     Object.assign(client, {
       id: entity.id,
       registeredAt: entity.registeredAt,
       updatedAt: entity.updatedAt,
     });
-    
+
     return client;
   }
 
@@ -177,7 +179,7 @@ export class AuthRepository implements IAuthRepository {
     entity.description = client.description!;
     entity.registeredAt = client.registeredAt;
     entity.updatedAt = client.updatedAt;
-    
+
     return entity;
   }
 
@@ -190,15 +192,15 @@ export class AuthRepository implements IAuthRepository {
       entity.country,
       entity.permissions,
       entity.middleName,
-      entity.description
+      entity.description,
     );
-    
+
     Object.assign(admin, {
       id: entity.id,
       registeredAt: entity.registeredAt,
       updatedAt: entity.updatedAt,
     });
-    
+
     return admin;
   }
 
@@ -215,7 +217,7 @@ export class AuthRepository implements IAuthRepository {
     entity.permissions = admin.permissions;
     entity.registeredAt = admin.registeredAt;
     entity.updatedAt = admin.updatedAt;
-    
+
     return entity;
   }
 }

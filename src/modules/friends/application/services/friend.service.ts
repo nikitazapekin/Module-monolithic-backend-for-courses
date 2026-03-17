@@ -1,4 +1,10 @@
-import { Injectable, Inject, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { IFriendRepository } from '../../domain/interfaces/friend.repository.interface';
@@ -23,7 +29,9 @@ export class FriendService {
     });
 
     if (!client) {
-      throw new NotFoundException(`Client with auditory ID ${auditoryId} not found`);
+      throw new NotFoundException(
+        `Client with auditory ID ${auditoryId} not found`,
+      );
     }
 
     return client.id;
@@ -32,13 +40,17 @@ export class FriendService {
   /**
    * Get client entity by auditoryId
    */
-  private async getClientByAuditoryId(auditoryId: string): Promise<ClientOrmEntity> {
+  private async getClientByAuditoryId(
+    auditoryId: string,
+  ): Promise<ClientOrmEntity> {
     const client = await this.clientRepository.findOne({
       where: { auditoryId },
     });
 
     if (!client) {
-      throw new NotFoundException(`Client with auditory ID ${auditoryId} not found`);
+      throw new NotFoundException(
+        `Client with auditory ID ${auditoryId} not found`,
+      );
     }
 
     return client;
@@ -47,7 +59,10 @@ export class FriendService {
   /**
    * Add a friend
    */
-  async addFriend(clientAuditoryId: string, friendAuditoryId: string): Promise<Friend> {
+  async addFriend(
+    clientAuditoryId: string,
+    friendAuditoryId: string,
+  ): Promise<Friend> {
     try {
       // Get client IDs from auditory IDs
       const client = await this.getClientByAuditoryId(clientAuditoryId);
@@ -59,7 +74,10 @@ export class FriendService {
       }
 
       // Check if friendship already exists
-      const existing = await this.friendRepository.findByClientIdAndFriendId(client.id, friend.id);
+      const existing = await this.friendRepository.findByClientIdAndFriendId(
+        client.id,
+        friend.id,
+      );
       if (existing) {
         throw new ConflictException('Friendship already exists');
       }
@@ -71,7 +89,10 @@ export class FriendService {
 
       return saved;
     } catch (error) {
-      if (error instanceof BadRequestException || error instanceof ConflictException) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof ConflictException
+      ) {
         throw error;
       }
       console.error('Error adding friend:', error);
@@ -123,11 +144,14 @@ export class FriendService {
   /**
    * Search friends by name
    */
-  async searchFriends(clientAuditoryId: string, query: string): Promise<Friend[]> {
+  async searchFriends(
+    clientAuditoryId: string,
+    query: string,
+  ): Promise<Friend[]> {
     const clientId = await this.getClientIdFromAuditoryId(clientAuditoryId);
-    
+
     const friends = await this.friendRepository.findByClientId(clientId);
-    
+
     // Get client details for each friend and filter by name
     const friendDetails = await Promise.all(
       friends.map(async (friendship) => {
@@ -135,14 +159,14 @@ export class FriendService {
           where: { id: friendship.friendId },
         });
         return { friendship, friendClient };
-      })
+      }),
     );
 
     // Filter by query (firstName, lastName, or middleName)
     const lowerQuery = query.toLowerCase();
     const filtered = friendDetails.filter(({ friendClient }) => {
       if (!friendClient) return false;
-      
+
       const firstName = friendClient.firstName?.toLowerCase() || '';
       const lastName = friendClient.lastName?.toLowerCase() || '';
       const middleName = friendClient.middleName?.toLowerCase() || '';
@@ -160,11 +184,17 @@ export class FriendService {
   /**
    * Remove a friend
    */
-  async removeFriend(clientAuditoryId: string, friendAuditoryId: string): Promise<boolean> {
+  async removeFriend(
+    clientAuditoryId: string,
+    friendAuditoryId: string,
+  ): Promise<boolean> {
     const clientId = await this.getClientIdFromAuditoryId(clientAuditoryId);
     const friendId = await this.getClientIdFromAuditoryId(friendAuditoryId);
 
-    const friendship = await this.friendRepository.findByClientIdAndFriendId(clientId, friendId);
+    const friendship = await this.friendRepository.findByClientIdAndFriendId(
+      clientId,
+      friendId,
+    );
     if (!friendship) {
       throw new NotFoundException('Friendship not found');
     }
@@ -193,7 +223,9 @@ export class FriendService {
   /**
    * Remove all friends of a client by auditoryId
    */
-  async removeAllFriendsByAuditoryId(clientAuditoryId: string): Promise<boolean> {
+  async removeAllFriendsByAuditoryId(
+    clientAuditoryId: string,
+  ): Promise<boolean> {
     const clientId = await this.getClientIdFromAuditoryId(clientAuditoryId);
     return this.removeAllFriends(clientId);
   }
@@ -201,7 +233,10 @@ export class FriendService {
   /**
    * Check if friendship exists
    */
-  async isFriend(clientAuditoryId: string, friendAuditoryId: string): Promise<boolean> {
+  async isFriend(
+    clientAuditoryId: string,
+    friendAuditoryId: string,
+  ): Promise<boolean> {
     const clientId = await this.getClientIdFromAuditoryId(clientAuditoryId);
     const friendId = await this.getClientIdFromAuditoryId(friendAuditoryId);
     return this.friendRepository.exists(clientId, friendId);
@@ -215,15 +250,27 @@ export class FriendService {
 
     const queryBuilder = this.clientRepository
       .createQueryBuilder('client')
-      .select(['client.id', 'client.firstName', 'client.lastName', 'client.middleName', 'client.auditoryId'])
+      .select([
+        'client.id',
+        'client.firstName',
+        'client.lastName',
+        'client.middleName',
+        'client.auditoryId',
+      ])
       .limit(50);
 
     // If query is empty, return all users
     if (lowerQuery) {
       queryBuilder
-        .where('LOWER(client.firstName) LIKE :query', { query: `%${lowerQuery}%` })
-        .orWhere('LOWER(client.lastName) LIKE :query', { query: `%${lowerQuery}%` })
-        .orWhere('LOWER(client.middleName) LIKE :query', { query: `%${lowerQuery}%` });
+        .where('LOWER(client.firstName) LIKE :query', {
+          query: `%${lowerQuery}%`,
+        })
+        .orWhere('LOWER(client.lastName) LIKE :query', {
+          query: `%${lowerQuery}%`,
+        })
+        .orWhere('LOWER(client.middleName) LIKE :query', {
+          query: `%${lowerQuery}%`,
+        });
     }
 
     return queryBuilder.getMany();

@@ -16,15 +16,22 @@ export class LessonFacade {
     return this.lessonService.getLesson(id);
   }
 
-  async getLessonByMapElementId(mapElementId: string): Promise<LessonResponseDto> {
+  async getLessonByMapElementId(
+    mapElementId: string,
+  ): Promise<LessonResponseDto> {
     return this.lessonService.getLessonByMapElementId(mapElementId);
   }
 
-  async getLessonsByCourseMapId(courseMapId: string): Promise<LessonResponseDto[]> {
+  async getLessonsByCourseMapId(
+    courseMapId: string,
+  ): Promise<LessonResponseDto[]> {
     return this.lessonService.getLessonsByCourseMapId(courseMapId);
   }
 
-  async updateLesson(id: string, dto: UpdateLessonDto): Promise<LessonResponseDto> {
+  async updateLesson(
+    id: string,
+    dto: UpdateLessonDto,
+  ): Promise<LessonResponseDto> {
     return this.lessonService.updateLesson(id, dto);
   }
 
@@ -32,7 +39,9 @@ export class LessonFacade {
     return this.lessonService.deleteLesson(id);
   }
 
-  async deleteLessonByMapElementId(mapElementId: string): Promise<{ success: boolean }> {
+  async deleteLessonByMapElementId(
+    mapElementId: string,
+  ): Promise<{ success: boolean }> {
     return this.lessonService.deleteLessonByMapElementId(mapElementId);
   }
 }

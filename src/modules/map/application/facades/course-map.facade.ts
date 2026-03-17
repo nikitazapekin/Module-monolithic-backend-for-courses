@@ -11,7 +11,9 @@ import { MapElementType } from '../../domain/entities/map-element-types.enum';
 export class CourseMapFacade {
   constructor(private readonly courseMapService: CourseMapService) {}
 
-  async createCourseMap(dto: CreateCourseMapDto): Promise<CourseMapResponseDto> {
+  async createCourseMap(
+    dto: CreateCourseMapDto,
+  ): Promise<CourseMapResponseDto> {
     return this.courseMapService.createCourseMap(dto);
   }
 
@@ -19,11 +21,16 @@ export class CourseMapFacade {
     return this.courseMapService.getCourseMap(id);
   }
 
-  async getCourseMapByCourseId(courseId: string): Promise<CourseMapResponseDto> {
+  async getCourseMapByCourseId(
+    courseId: string,
+  ): Promise<CourseMapResponseDto> {
     return this.courseMapService.getCourseMapByCourseId(courseId);
   }
 
-  async updateCourseMap(id: string, dto: UpdateCourseMapDto): Promise<CourseMapResponseDto> {
+  async updateCourseMap(
+    id: string,
+    dto: UpdateCourseMapDto,
+  ): Promise<CourseMapResponseDto> {
     return this.courseMapService.updateCourseMap(id, dto);
   }
 
@@ -32,7 +39,10 @@ export class CourseMapFacade {
   }
 
   // Элементы карты
-  async addMapElement(mapId: string, dto: CreateMapElementDto): Promise<MapElementDto> {
+  async addMapElement(
+    mapId: string,
+    dto: CreateMapElementDto,
+  ): Promise<MapElementDto> {
     return this.courseMapService.addMapElement(mapId, dto);
   }
 
@@ -44,11 +54,17 @@ export class CourseMapFacade {
     return this.courseMapService.getMapElements(mapId);
   }
 
-  async getMapElementsByType(mapId: string, type: MapElementType): Promise<MapElementDto[]> {
+  async getMapElementsByType(
+    mapId: string,
+    type: MapElementType,
+  ): Promise<MapElementDto[]> {
     return this.courseMapService.getMapElementsByType(mapId, type);
   }
 
-  async updateMapElement(elementId: string, dto: Partial<CreateMapElementDto>): Promise<MapElementDto> {
+  async updateMapElement(
+    elementId: string,
+    dto: Partial<CreateMapElementDto>,
+  ): Promise<MapElementDto> {
     return this.courseMapService.updateMapElement(elementId, dto);
   }
 

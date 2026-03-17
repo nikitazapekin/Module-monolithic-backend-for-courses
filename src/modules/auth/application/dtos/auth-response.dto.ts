@@ -4,7 +4,7 @@ import { Expose } from 'class-transformer';
 
 export enum UserRole {
   CLIENT = 'client',
-  ADMIN = 'admin'
+  ADMIN = 'admin',
 }
 
 export class AuthResponseDto {

@@ -9,7 +9,7 @@ import { UnauthorizedException } from '@nestjs/common';
 export class LoginHandler implements ICommandHandler<LoginCommand> {
   constructor(
     private readonly userService: UserService,
- //   private readonly authService: AuthService,
+    //   private readonly authService: AuthService,
   ) {}
 
   async execute(command: LoginCommand): Promise<any> {
@@ -28,8 +28,8 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
       throw new UnauthorizedException('Invalid credentials');
     }
     // Create JWT token
-//    const token = this.authService.login(user);
-return ""
-   // return token;
+    //    const token = this.authService.login(user);
+    return '';
+    // return token;
   }
 }

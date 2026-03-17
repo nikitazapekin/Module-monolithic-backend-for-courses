@@ -7,11 +7,7 @@ export class StudentResult {
   public createdAt: Date;
   public updatedAt: Date;
 
-  constructor(
-    clientId: string,
-    lessonId: string,
-    countOfStars: number
-  ) {
+  constructor(clientId: string, lessonId: string, countOfStars: number) {
     this.id = this.generateId();
     this.clientId = clientId;
     this.lessonId = lessonId;

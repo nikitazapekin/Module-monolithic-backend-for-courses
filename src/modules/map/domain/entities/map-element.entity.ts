@@ -1,7 +1,7 @@
 import { MapElementType, PositioningType } from './map-element-types.enum';
 
 export class MapElement {
- public id: string;
+  public id: string;
   public type: MapElementType;
   public courseMapId: string;
   public title?: string;
@@ -23,12 +23,15 @@ export class MapElement {
   public rotation: number;
   public isActive?: boolean;
   public stars?: number;
-  public breakpoints?: Record<string, {
-    hidden?: boolean;
-    positioning?: PositioningType;
-    offsetX?: number;
-    offsetY?: number;
-  }>;
+  public breakpoints?: Record<
+    string,
+    {
+      hidden?: boolean;
+      positioning?: PositioningType;
+      offsetX?: number;
+      offsetY?: number;
+    }
+  >;
   public createdAt: Date;
   public updatedAt: Date;
 
@@ -55,9 +58,9 @@ export class MapElement {
     isActive?: boolean,
     stars?: number,
     breakpoints?: Record<string, any>,
-    id?: string 
+    id?: string,
   ) {
-  if (id) {
+    if (id) {
       this.id = id;
     } else {
       this.id = this.generateId();
@@ -110,7 +113,7 @@ export class MapElement {
     if (data.isActive !== undefined) this.isActive = data.isActive;
     if (data.stars !== undefined) this.stars = data.stars;
     if (data.breakpoints !== undefined) this.breakpoints = data.breakpoints;
-    
+
     this.updatedAt = new Date();
   }
 

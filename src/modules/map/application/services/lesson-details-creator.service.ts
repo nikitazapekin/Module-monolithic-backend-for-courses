@@ -4,11 +4,12 @@ import { LessonDetailsFacade } from '../../../lesson-details/application/facades
 
 @Injectable()
 export class LessonDetailsCreatorService {
-  constructor(
-    private readonly lessonDetailsFacade: LessonDetailsFacade,
-  ) {}
+  constructor(private readonly lessonDetailsFacade: LessonDetailsFacade) {}
 
-  async createLessonDetailsForLesson(lessonId: string, mapElementId: string): Promise<void> {
+  async createLessonDetailsForLesson(
+    lessonId: string,
+    mapElementId: string,
+  ): Promise<void> {
     try {
       // Проверяем, существует ли уже lesson-details
       try {
@@ -21,15 +22,20 @@ export class LessonDetailsCreatorService {
           await this.lessonDetailsFacade.createLessonDetails({
             lessonId,
             slides: [],
-            tests: []
+            tests: [],
           });
-          console.log(`✅ Lesson details created for lesson: ${lessonId} (map element: ${mapElementId})`);
+          console.log(
+            `✅ Lesson details created for lesson: ${lessonId} (map element: ${mapElementId})`,
+          );
         } else {
           throw error;
         }
       }
     } catch (error) {
-      console.error(`❌ Failed to create lesson details for lesson ${lessonId}:`, error);
+      console.error(
+        `❌ Failed to create lesson details for lesson ${lessonId}:`,
+        error,
+      );
       // Не прокидываем ошибку дальше, чтобы не прерывать создание элемента
     }
   }

@@ -1,3 +1,3 @@
 export class GetUserByNameQuery {
-    constructor(public readonly name: string) { }
+  constructor(public readonly name: string) {}
 }

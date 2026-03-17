@@ -7,7 +7,12 @@ import {
   Post,
   Delete,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { ProfileInfoService } from '../../application/services/profile-info.service';
 import { CourseSubscriptionService } from '../../application/services/course-subscription.service';
 import { FullClientInfoDto } from '../../application/dtos/full-client-info.dto';
@@ -25,27 +30,37 @@ export class ProfileInfoController {
 
   @Get('auditory/:auditoryId/full')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Получение полной информации о клиенте по auditoryId с использованием JOIN' })
+  @ApiOperation({
+    summary:
+      'Получение полной информации о клиенте по auditoryId с использованием JOIN',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Полная информация о клиенте получена',
     type: FullClientInfoDto,
   })
   @ApiBearerAuth()
-  async getFullClientInfoByAuditoryId(@Param('auditoryId') auditoryId: string): Promise<FullClientInfoDto> {
+  async getFullClientInfoByAuditoryId(
+    @Param('auditoryId') auditoryId: string,
+  ): Promise<FullClientInfoDto> {
     return this.profileInfoService.getFullClientInfoByAuditoryId(auditoryId);
   }
 
   @Get(':clientId/full')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Получение полной информации о клиенте по clientId с использованием JOIN' })
+  @ApiOperation({
+    summary:
+      'Получение полной информации о клиенте по clientId с использованием JOIN',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Полная информация о клиенте получена',
     type: FullClientInfoDto,
   })
   @ApiBearerAuth()
-  async getFullClientInfoByClientId(@Param('clientId') clientId: string): Promise<FullClientInfoDto> {
+  async getFullClientInfoByClientId(
+    @Param('clientId') clientId: string,
+  ): Promise<FullClientInfoDto> {
     return this.profileInfoService.getFullClientInfoByClientId(clientId);
   }
 
@@ -97,7 +112,9 @@ export class ProfileInfoController {
     type: [StudentCourseResponseDto],
   })
   @ApiBearerAuth()
-  async getCoursesByAuditoryId(@Param('auditoryId') auditoryId: string): Promise<StudentCourseResponseDto[]> {
+  async getCoursesByAuditoryId(
+    @Param('auditoryId') auditoryId: string,
+  ): Promise<StudentCourseResponseDto[]> {
     return this.courseSubscriptionService.getCoursesByAuditoryId(auditoryId);
   }
 }

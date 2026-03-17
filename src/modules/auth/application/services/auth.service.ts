@@ -1,4 +1,10 @@
-import { Injectable, Inject, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  UnauthorizedException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { IAuthRepository } from '../../domain/interfaces/auth.repository.interface';
 import { Auditory, UserRole } from '../../domain/entities/auditory.entity';
 import { Client } from '../../domain/entities/client.entity';
@@ -18,27 +24,31 @@ export class AuthService {
 
   async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
     // Проверяем, существует ли пользователь
-    const existingUser = await this.authRepository.findAuditoryByEmail(registerDto.email);
+    const existingUser = await this.authRepository.findAuditoryByEmail(
+      registerDto.email,
+    );
     if (existingUser) {
       throw new ConflictException('User with this email already exists');
     }
 
     // Определяем роль на основе email
     let userRole = registerDto.role || UserRole.CLIENT;
-    
+
     // Если email начинается с "admin", автоматически присваиваем роль ADMIN
     if (registerDto.email.toLowerCase().startsWith('admin')) {
       userRole = UserRole.ADMIN;
     }
 
     // Хешируем пароль
-    const hashedPassword = await this.jwtService.hashPassword(registerDto.password);
+    const hashedPassword = await this.jwtService.hashPassword(
+      registerDto.password,
+    );
 
     // Создаем аудиторию
     const auditory = new Auditory(
       registerDto.email,
       hashedPassword,
-      userRole  // Используем определенную роль
+      userRole, // Используем определенную роль
     );
 
     // Сохраняем аудиторию
@@ -53,7 +63,7 @@ export class AuthService {
         registerDto.phone,
         registerDto.country,
         registerDto.middleName,
-        registerDto.description
+        registerDto.description,
       );
       await this.authRepository.saveClient(client);
     } else if (savedAuditory.role === UserRole.ADMIN) {
@@ -63,15 +73,17 @@ export class AuthService {
         registerDto.lastName,
         registerDto.phone,
         registerDto.country,
-        ['read', 'write', 'delete', 'manage_users'],  // Добавляем больше прав для админов
+        ['read', 'write', 'delete', 'manage_users'], // Добавляем больше прав для админов
         registerDto.middleName,
-        registerDto.description
+        registerDto.description,
       );
       await this.authRepository.saveAdmin(admin);
     }
 
     // Получаем полные данные пользователя
-    const fullAuditory = await this.authRepository.findAuditoryById(savedAuditory.id);
+    const fullAuditory = await this.authRepository.findAuditoryById(
+      savedAuditory.id,
+    );
     if (!fullAuditory) {
       throw new Error('Failed to retrieve created user');
     }
@@ -80,7 +92,9 @@ export class AuthService {
     let admin: Admin | null = null;
 
     if (fullAuditory.role === UserRole.CLIENT) {
-      client = await this.authRepository.findClientByAuditoryId(fullAuditory.id);
+      client = await this.authRepository.findClientByAuditoryId(
+        fullAuditory.id,
+      );
     } else {
       admin = await this.authRepository.findAdminByAuditoryId(fullAuditory.id);
     }
@@ -91,14 +105,16 @@ export class AuthService {
       fullAuditory.email,
       fullAuditory.role,
       client!,
-      admin!
+      admin!,
     );
   }
 
   // Остальные методы без изменений...
   async login(loginDto: LoginDto): Promise<AuthResponseDto> {
     // Находим пользователя по email
-    const auditory = await this.authRepository.findAuditoryByEmail(loginDto.email);
+    const auditory = await this.authRepository.findAuditoryByEmail(
+      loginDto.email,
+    );
     if (!auditory) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -111,7 +127,7 @@ export class AuthService {
     // Проверяем пароль
     const isPasswordValid = await this.jwtService.comparePasswords(
       loginDto.password,
-      auditory.password
+      auditory.password,
     );
 
     if (!isPasswordValid) {
@@ -139,7 +155,7 @@ export class AuthService {
       auditory.email,
       auditory.role,
       client!,
-      admin!
+      admin!,
     );
   }
 
@@ -175,7 +191,7 @@ export class AuthService {
       auditory.email,
       auditory.role,
       client!,
-      admin!
+      admin!,
     );
   }
 
@@ -184,7 +200,9 @@ export class AuthService {
     return { success: true };
   }
 
-  async validateToken(accessToken: string): Promise<{ isValid: boolean; payload?: any }> {
+  async validateToken(
+    accessToken: string,
+  ): Promise<{ isValid: boolean; payload?: any }> {
     if (!accessToken) {
       return { isValid: false };
     }

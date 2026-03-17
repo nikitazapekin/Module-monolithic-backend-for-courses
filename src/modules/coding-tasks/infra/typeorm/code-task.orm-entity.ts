@@ -9,6 +9,28 @@ import {
 } from 'typeorm';
 import { AdminOrmEntity } from '@modules/auth/infra/typeorm/admin.orm-entity';
 
+export interface TestCaseArgument {
+  index: number;
+  value: string;
+  objectValues?: Record<string, string>;
+}
+
+export interface TestCase {
+  input: string;
+  expectedOutput: string;
+  args?: TestCaseArgument[];
+}
+
+export interface ArgumentSchema {
+  name: string;
+  type: string;
+  className?: string;
+  arrayElementType?: string;
+  arrayElementClassName?: string;
+  objectFields?: { name: string; type: string; value: string }[];
+  arrayElementObjectFields?: { name: string; type: string; value: string }[];
+}
+
 @Entity('code_tasks')
 export class CodeTaskOrmEntity {
   @PrimaryColumn()
@@ -27,10 +49,19 @@ export class CodeTaskOrmEntity {
   startCodes: Record<string, string>;
 
   @Column({ type: 'jsonb', default: '[]' })
-  testCases: Array<{ input: string; expectedOutput: string }>;
+  testCases: TestCase[];
+
+  @Column({ type: 'jsonb', default: '{}' })
+  testCasesByLanguage: Record<string, TestCase[]>;
 
   @Column({ type: 'jsonb', default: '[]' })
   constraints: Array<{ type: string; value: any }>;
+
+  @Column({ type: 'jsonb', default: '[]' })
+  argumentScheme: ArgumentSchema[];
+
+  @Column({ type: 'varchar', default: 'int' })
+  returnType: string;
 
   @Column({
     type: 'enum',

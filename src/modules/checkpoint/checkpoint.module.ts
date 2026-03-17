@@ -20,9 +20,6 @@ import { MapElementOrmEntity } from '../map/infra/typeorm/map-element.orm-entity
       useClass: CheckpointRepository,
     },
   ],
-  exports: [
-    CheckpointService,
-    CheckpointFacade,
-  ],
+  exports: [CheckpointService, CheckpointFacade],
 })
 export class CheckpointModule {}

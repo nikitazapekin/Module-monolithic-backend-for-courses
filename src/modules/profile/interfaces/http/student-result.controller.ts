@@ -11,7 +11,12 @@ import {
   Query,
   NotFoundException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { StudentResultService } from '../../application/services/student-result.service';
 import { CreateStudentResultDto } from '../../application/dtos/create-student-result.dto';
 import { UpdateStudentResultDto } from '../../application/dtos/update-student-result.dto';
@@ -32,9 +37,10 @@ export class StudentResultController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Создание результата прохождения урока',
-    description: 'Для создания результата необходимо передать auditoryId (ID аккаунта). Контроллер автоматически найдет clientId по auditoryId.',
+    description:
+      'Для создания результата необходимо передать auditoryId (ID аккаунта). Контроллер автоматически найдет clientId по auditoryId.',
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -51,7 +57,9 @@ export class StudentResultController {
     });
 
     if (!client) {
-      throw new NotFoundException(`Client with auditoryId ${createStudentResultDto.auditoryId} not found`);
+      throw new NotFoundException(
+        `Client with auditoryId ${createStudentResultDto.auditoryId} not found`,
+      );
     }
 
     // Создаем объект с правильным clientId (первичный ключ clients)
@@ -86,9 +94,11 @@ export class StudentResultController {
     type: [StudentResultResponseDto],
   })
   @ApiBearerAuth()
-  async findByClientId(@Param('clientId') clientId: string): Promise<StudentResultResponseDto[]> {
+  async findByClientId(
+    @Param('clientId') clientId: string,
+  ): Promise<StudentResultResponseDto[]> {
     const results = await this.studentResultService.findByClientId(clientId);
-    return results.map(result => this.mapToResponse(result));
+    return results.map((result) => this.mapToResponse(result));
   }
 
   @Get('lesson/:lessonId')
@@ -99,13 +109,18 @@ export class StudentResultController {
     type: [StudentResultResponseDto],
   })
   @ApiBearerAuth()
-  async findByLessonId(@Param('lessonId') lessonId: string): Promise<StudentResultResponseDto[]> {
+  async findByLessonId(
+    @Param('lessonId') lessonId: string,
+  ): Promise<StudentResultResponseDto[]> {
     const results = await this.studentResultService.findByLessonId(lessonId);
-    return results.map(result => this.mapToResponse(result));
+    return results.map((result) => this.mapToResponse(result));
   }
 
   @Get('client/:clientId/lesson/:lessonId/best')
-  @ApiOperation({ summary: 'Получение лучшего результата студента по уроку (с наибольшим количеством звезд)' })
+  @ApiOperation({
+    summary:
+      'Получение лучшего результата студента по уроку (с наибольшим количеством звезд)',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Лучший результат найден',
@@ -120,21 +135,35 @@ export class StudentResultController {
     @Param('clientId') clientId: string,
     @Param('lessonId') lessonId: string,
   ): Promise<StudentResultResponseDto | null> {
-    const result = await this.studentResultService.getBestResultByClientAndLesson(clientId, lessonId);
+    const result =
+      await this.studentResultService.getBestResultByClientAndLesson(
+        clientId,
+        lessonId,
+      );
     return result ? this.mapToResponse(result) : null;
   }
 
   @Post('client/:clientId/course-progress')
   @ApiOperation({
     summary: 'Получение лучших результатов студента по всем урокам курса',
-    description: 'Возвращает лучшие результаты (с наибольшим количеством звезд) для каждого урока конкретного курса. Если для урока нет результатов, возвращается null. В качестве clientId передается auditoryId (первичный ключ из таблицы auditory).',
+    description:
+      'Возвращает лучшие результаты (с наибольшим количеством звезд) для каждого урока конкретного курса. Если для урока нет результатов, возвращается null. В качестве clientId передается auditoryId (первичный ключ из таблицы auditory).',
   })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Лучшие результаты получены',
     schema: {
       example: [
-        { lessonId: 'lesson_1', orderIndex: 1, bestResult: { id: '1', clientId: 'client_1', lessonId: 'lesson_1', countOfStars: 5 } },
+        {
+          lessonId: 'lesson_1',
+          orderIndex: 1,
+          bestResult: {
+            id: '1',
+            clientId: 'client_1',
+            lessonId: 'lesson_1',
+            countOfStars: 5,
+          },
+        },
         { lessonId: 'lesson_2', orderIndex: 2, bestResult: null },
       ],
     },
@@ -143,20 +172,31 @@ export class StudentResultController {
   async getBestResultsForCourse(
     @Param('clientId') auditoryId: string,
     @Body('courseId') courseId: string,
-  ): Promise<{ lessonId: string; orderIndex: number; bestResult: StudentResultResponseDto | null }[]> {
+  ): Promise<
+    {
+      lessonId: string;
+      orderIndex: number;
+      bestResult: StudentResultResponseDto | null;
+    }[]
+  > {
     // Получаем clientId (первичный ключ clients) по auditoryId
 
-console.log("GEEET")
+    console.log('GEEET');
 
     const client = await this.clientRepository.findOne({
       where: { auditoryId },
     });
 
     if (!client) {
-      throw new NotFoundException(`Client with auditoryId ${auditoryId} not found`);
+      throw new NotFoundException(
+        `Client with auditoryId ${auditoryId} not found`,
+      );
     }
 
-    const results = await this.studentResultService.getBestResultsForCourse(client.id, courseId);
+    const results = await this.studentResultService.getBestResultsForCourse(
+      client.id,
+      courseId,
+    );
     return results.map(({ lessonId, orderIndex, bestResult }) => ({
       lessonId,
       orderIndex,
@@ -176,10 +216,11 @@ console.log("GEEET")
     averageStars: number;
     results: StudentResultResponseDto[];
   }> {
-    const progress = await this.studentResultService.getStudentProgress(clientId);
+    const progress =
+      await this.studentResultService.getStudentProgress(clientId);
     return {
       ...progress,
-      results: progress.results.map(result => this.mapToResponse(result)),
+      results: progress.results.map((result) => this.mapToResponse(result)),
     };
   }
 
@@ -195,7 +236,10 @@ console.log("GEEET")
     @Param('id') id: string,
     @Body() updateStudentResultDto: UpdateStudentResultDto,
   ): Promise<StudentResultResponseDto> {
-    const result = await this.studentResultService.update(id, updateStudentResultDto);
+    const result = await this.studentResultService.update(
+      id,
+      updateStudentResultDto,
+    );
     return this.mapToResponse(result);
   }
 

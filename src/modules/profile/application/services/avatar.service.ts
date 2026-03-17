@@ -1,4 +1,9 @@
-import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { IAvatarRepository } from '../../domain/interfaces/avatar.repository.interface';
 import { Avatar } from '../../domain/entities/avatar.entity';
 import { CreateAvatarDto } from '../dtos/create-avatar.dto';
@@ -7,7 +12,13 @@ import { UpdateAvatarDto } from '../dtos/update-avatar.dto';
 @Injectable()
 export class AvatarService {
   private readonly MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-  private readonly ALLOWED_MIME_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
+  private readonly ALLOWED_MIME_TYPES = [
+    'image/png',
+    'image/jpeg',
+    'image/jpg',
+    'image/gif',
+    'image/webp',
+  ];
 
   constructor(
     @Inject('IAvatarRepository')
@@ -31,9 +42,13 @@ export class AvatarService {
     }
 
     // Check if avatar already exists for this user
-    const existingAvatar = await this.avatarRepository.findByAuditoryId(createAvatarDto.auditoryId);
+    const existingAvatar = await this.avatarRepository.findByAuditoryId(
+      createAvatarDto.auditoryId,
+    );
     if (existingAvatar) {
-      throw new BadRequestException('Avatar already exists for this user. Use update endpoint instead.');
+      throw new BadRequestException(
+        'Avatar already exists for this user. Use update endpoint instead.',
+      );
     }
 
     const avatar = new Avatar(
@@ -73,7 +88,10 @@ export class AvatarService {
       const imageData = updateAvatarDto.imageData || avatar.imageData;
 
       // Validate MIME type if provided
-      if (updateAvatarDto.mimeType && !this.ALLOWED_MIME_TYPES.includes(mimeType)) {
+      if (
+        updateAvatarDto.mimeType &&
+        !this.ALLOWED_MIME_TYPES.includes(mimeType)
+      ) {
         throw new BadRequestException(
           `Invalid image type. Allowed types: ${this.ALLOWED_MIME_TYPES.join(', ')}`,
         );
@@ -100,7 +118,10 @@ export class AvatarService {
     return this.findById(id);
   }
 
-  async updateByAuditoryId(auditoryId: string, updateAvatarDto: UpdateAvatarDto): Promise<Avatar> {
+  async updateByAuditoryId(
+    auditoryId: string,
+    updateAvatarDto: UpdateAvatarDto,
+  ): Promise<Avatar> {
     const avatar = await this.findByAuditoryId(auditoryId);
     return this.update(avatar.id, updateAvatarDto);
   }

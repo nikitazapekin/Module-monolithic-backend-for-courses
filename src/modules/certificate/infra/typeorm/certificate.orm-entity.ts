@@ -1,4 +1,12 @@
-import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { ClientOrmEntity } from '../../../auth/infra/typeorm/client.orm-entity';
 
 @Entity('certificates')

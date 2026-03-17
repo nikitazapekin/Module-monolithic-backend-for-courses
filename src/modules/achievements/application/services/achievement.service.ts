@@ -1,9 +1,19 @@
-import { Injectable, Inject, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { QueryFailedError } from 'typeorm';
 import { IAchievementRepository } from '../../domain/interfaces/achievement.repository.interface';
-import { Achievement, AchievementType, AchievementTier } from '../../domain/entities/achievement.entity';
+import {
+  Achievement,
+  AchievementType,
+  AchievementTier,
+} from '../../domain/entities/achievement.entity';
 import { CreateAchievementDto } from '../dtos/create-achievement.dto';
 import { UpdateAchievementDto } from '../dtos/update-achievement.dto';
 import { ClientOrmEntity } from '../../../auth/infra/typeorm/client.orm-entity';
@@ -52,7 +62,7 @@ export const ACHIEVEMENT_DEFINITIONS: {
     type: AchievementType.STUDENT_RESULTS,
     threshold: 100,
   },
- 
+
   [AchievementTier.BEGINNER]: {
     title: 'Beginner',
     description: 'Решил 5 задач',
@@ -108,7 +118,9 @@ export class AchievementService {
     });
 
     if (!client) {
-      throw new NotFoundException(`Client with auditory ID ${auditoryId} not found`);
+      throw new NotFoundException(
+        `Client with auditory ID ${auditoryId} not found`,
+      );
     }
 
     return client.id;
@@ -162,7 +174,10 @@ export class AchievementService {
       const definition = ACHIEVEMENT_DEFINITIONS[tier];
       if (definition.type !== AchievementType.STUDENT_RESULTS) continue;
 
-      const alreadyHas = await this.achievementRepository.exists(clientId, tier);
+      const alreadyHas = await this.achievementRepository.exists(
+        clientId,
+        tier,
+      );
       if (!alreadyHas && studentResultsCount >= definition.threshold) {
         const achievement = new Achievement(
           clientId,
@@ -180,8 +195,9 @@ export class AchievementService {
           // PostgreSQL: 23505, SQLite: SQLITE_CONSTRAINT
           const isUniqueViolation =
             error instanceof QueryFailedError &&
-            (error.driverError?.code === '23505' || error.driverError?.code?.includes('SQLITE_CONSTRAINT'));
-          
+            (error.driverError?.code === '23505' ||
+              error.driverError?.code?.includes('SQLITE_CONSTRAINT'));
+
           if (!isUniqueViolation) {
             throw error;
           }
@@ -201,7 +217,10 @@ export class AchievementService {
       const definition = ACHIEVEMENT_DEFINITIONS[tier];
       if (definition.type !== AchievementType.SOLVED_TASKS) continue;
 
-      const alreadyHas = await this.achievementRepository.exists(clientId, tier);
+      const alreadyHas = await this.achievementRepository.exists(
+        clientId,
+        tier,
+      );
       if (!alreadyHas && solvedTasksCount >= definition.threshold) {
         const achievement = new Achievement(
           clientId,
@@ -219,8 +238,9 @@ export class AchievementService {
           // PostgreSQL: 23505, SQLite: SQLITE_CONSTRAINT
           const isUniqueViolation =
             error instanceof QueryFailedError &&
-            (error.driverError?.code === '23505' || error.driverError?.code?.includes('SQLITE_CONSTRAINT'));
-          
+            (error.driverError?.code === '23505' ||
+              error.driverError?.code?.includes('SQLITE_CONSTRAINT'));
+
           if (!isUniqueViolation) {
             throw error;
           }
@@ -234,9 +254,13 @@ export class AchievementService {
   /**
    * Manually create an achievement
    */
-  async create(createAchievementDto: CreateAchievementDto): Promise<Achievement> {
+  async create(
+    createAchievementDto: CreateAchievementDto,
+  ): Promise<Achievement> {
     try {
-      const clientId = await this.getClientIdFromAuditoryId(createAchievementDto.auditoryId);
+      const clientId = await this.getClientIdFromAuditoryId(
+        createAchievementDto.auditoryId,
+      );
 
       const achievement = new Achievement(
         clientId,
@@ -244,7 +268,9 @@ export class AchievementService {
         createAchievementDto.tier,
         createAchievementDto.title,
         createAchievementDto.description,
-        createAchievementDto.image || ACHIEVEMENT_DEFINITIONS[createAchievementDto.tier]?.image || '',
+        createAchievementDto.image ||
+          ACHIEVEMENT_DEFINITIONS[createAchievementDto.tier]?.image ||
+          '',
       );
 
       const saved = await this.achievementRepository.save(achievement);
@@ -253,7 +279,9 @@ export class AchievementService {
       return this.findById(saved.id);
     } catch (error) {
       console.error('Error creating achievement:', error);
-      throw new BadRequestException(`Failed to create achievement: ${error.message}`);
+      throw new BadRequestException(
+        `Failed to create achievement: ${error.message}`,
+      );
     }
   }
 
@@ -274,7 +302,10 @@ export class AchievementService {
     return this.findByClientId(clientId);
   }
 
-  async update(id: string, updateAchievementDto: UpdateAchievementDto): Promise<Achievement> {
+  async update(
+    id: string,
+    updateAchievementDto: UpdateAchievementDto,
+  ): Promise<Achievement> {
     const achievement = await this.achievementRepository.findById(id);
     if (!achievement) {
       throw new NotFoundException(`Achievement with ID ${id} not found`);

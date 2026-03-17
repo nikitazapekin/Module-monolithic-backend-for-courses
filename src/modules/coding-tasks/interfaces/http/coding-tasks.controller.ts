@@ -11,7 +11,12 @@ import {
   Req,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CodingTasksService } from '../../application/services/coding-tasks.service';
@@ -51,7 +56,11 @@ export class CodingTasksController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Обновить задачу (только автор)' })
-  async updateTask(@Param('id') id: string, @Body() dto: UpdateCodeTaskDto, @Req() req: any) {
+  async updateTask(
+    @Param('id') id: string,
+    @Body() dto: UpdateCodeTaskDto,
+    @Req() req: any,
+  ) {
     const auditoryId = this.extractAuditoryId(req);
     const admin = await this.findAdmin(auditoryId);
     return this.codingTasksService.updateTask(id, dto, admin.id);
@@ -92,7 +101,10 @@ export class CodingTasksController {
   @Get('student-level/:clientId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Получить уровень студента по clientId (для просмотра прогресса других пользователей)' })
+  @ApiOperation({
+    summary:
+      'Получить уровень студента по clientId (для просмотра прогресса других пользователей)',
+  })
   async getStudentLevelByClientId(@Param('clientId') clientId: string) {
     return this.codingTasksService.getStudentLevel(clientId);
   }
@@ -110,7 +122,12 @@ export class CodingTasksController {
   async submitSolution(@Body() dto: SubmitSolutionDto, @Req() req: any) {
     const auditoryId = this.extractAuditoryId(req);
     const client = await this.findClient(auditoryId);
-    return this.codingTasksService.submitSolution(client.id, dto.taskId, dto.code, dto.language);
+    return this.codingTasksService.submitSolution(
+      client.id,
+      dto.taskId,
+      dto.code,
+      dto.language,
+    );
   }
 
   private extractAuditoryId(req: any): string {

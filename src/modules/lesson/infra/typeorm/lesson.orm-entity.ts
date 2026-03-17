@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
   OneToOne,
   JoinColumn,
-  ManyToOne
+  ManyToOne,
 } from 'typeorm';
 import { MapElementOrmEntity } from '@modules/map/infra/typeorm/map-element.orm-entity';
 import { CourseMapOrmEntity } from '@modules/map/infra/typeorm/course-map.orm-entity';

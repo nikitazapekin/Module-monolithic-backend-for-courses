@@ -23,7 +23,9 @@ export class AdminService {
     return admins.map(this.mapToResponse);
   }
 
-  async getAdminByAuditoryId(auditoryId: string): Promise<AdminResponseDto | null> {
+  async getAdminByAuditoryId(
+    auditoryId: string,
+  ): Promise<AdminResponseDto | null> {
     const admin = await this.adminRepository.findOne({
       where: { auditoryId },
       relations: ['auditory'],

@@ -1,9 +1,9 @@
-import { 
-  Injectable, 
-  Inject, 
-  NotFoundException, 
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
   ConflictException,
-  BadRequestException 
+  BadRequestException,
 } from '@nestjs/common';
 import { ICheckpointRepository } from '../../domain/interfaces/checkpoint.repository.interface';
 import { Checkpoint } from '../../domain/entities/checkpoint.entity';
@@ -18,11 +18,16 @@ export class CheckpointService {
     private readonly checkpointRepository: ICheckpointRepository,
   ) {}
 
-  async createCheckpoint(dto: CreateCheckpointDto): Promise<CheckpointResponseDto> {
+  async createCheckpoint(
+    dto: CreateCheckpointDto,
+  ): Promise<CheckpointResponseDto> {
     // Проверяем, нет ли уже контрольной точки с таким mapElementId
-    const existingCheckpoint = await this.checkpointRepository.findByMapElementId(dto.mapElementId);
+    const existingCheckpoint =
+      await this.checkpointRepository.findByMapElementId(dto.mapElementId);
     if (existingCheckpoint) {
-      throw new ConflictException('Checkpoint already exists for this map element');
+      throw new ConflictException(
+        'Checkpoint already exists for this map element',
+      );
     }
 
     const checkpoint = new Checkpoint(
@@ -34,10 +39,11 @@ export class CheckpointService {
       dto.maxAttempts,
       dto.timeLimit,
       dto.instructions,
-      dto.isPublished || false
+      dto.isPublished || false,
     );
 
-    const createdCheckpoint = await this.checkpointRepository.create(checkpoint);
+    const createdCheckpoint =
+      await this.checkpointRepository.create(checkpoint);
     return this.toResponseDto(createdCheckpoint);
   }
 
@@ -49,20 +55,29 @@ export class CheckpointService {
     return this.toResponseDto(checkpoint);
   }
 
-  async getCheckpointByMapElementId(mapElementId: string): Promise<CheckpointResponseDto> {
-    const checkpoint = await this.checkpointRepository.findByMapElementId(mapElementId);
+  async getCheckpointByMapElementId(
+    mapElementId: string,
+  ): Promise<CheckpointResponseDto> {
+    const checkpoint =
+      await this.checkpointRepository.findByMapElementId(mapElementId);
     if (!checkpoint) {
       throw new NotFoundException('Checkpoint not found for this map element');
     }
     return this.toResponseDto(checkpoint);
   }
 
-  async getCheckpointsByCourseMapId(courseMapId: string): Promise<CheckpointResponseDto[]> {
-    const checkpoints = await this.checkpointRepository.findAllByCourseMapId(courseMapId);
-    return checkpoints.map(checkpoint => this.toResponseDto(checkpoint));
+  async getCheckpointsByCourseMapId(
+    courseMapId: string,
+  ): Promise<CheckpointResponseDto[]> {
+    const checkpoints =
+      await this.checkpointRepository.findAllByCourseMapId(courseMapId);
+    return checkpoints.map((checkpoint) => this.toResponseDto(checkpoint));
   }
 
-  async updateCheckpoint(id: string, dto: UpdateCheckpointDto): Promise<CheckpointResponseDto> {
+  async updateCheckpoint(
+    id: string,
+    dto: UpdateCheckpointDto,
+  ): Promise<CheckpointResponseDto> {
     const checkpoint = await this.checkpointRepository.findById(id);
     if (!checkpoint) {
       throw new NotFoundException('Checkpoint not found');
@@ -70,9 +85,12 @@ export class CheckpointService {
 
     // Если пытаемся изменить mapElementId, проверяем, что он уникален
     if (dto.mapElementId && dto.mapElementId !== checkpoint.mapElementId) {
-      const existingCheckpoint = await this.checkpointRepository.findByMapElementId(dto.mapElementId);
+      const existingCheckpoint =
+        await this.checkpointRepository.findByMapElementId(dto.mapElementId);
       if (existingCheckpoint && existingCheckpoint.id !== id) {
-        throw new ConflictException('Another checkpoint already uses this map element');
+        throw new ConflictException(
+          'Another checkpoint already uses this map element',
+        );
       }
     }
 
@@ -96,8 +114,11 @@ export class CheckpointService {
     return { success: deleted };
   }
 
-  async deleteCheckpointByMapElementId(mapElementId: string): Promise<{ success: boolean }> {
-    const deleted = await this.checkpointRepository.deleteByMapElementId(mapElementId);
+  async deleteCheckpointByMapElementId(
+    mapElementId: string,
+  ): Promise<{ success: boolean }> {
+    const deleted =
+      await this.checkpointRepository.deleteByMapElementId(mapElementId);
     return { success: deleted };
   }
 

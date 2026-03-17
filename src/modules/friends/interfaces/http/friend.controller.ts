@@ -9,7 +9,12 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { FriendService } from '../../application/services/friend.service';
 import { CreateFriendDto } from '../../application/dtos/create-friend.dto';
 import { SearchFriendsDto } from '../../application/dtos/search-friends.dto';
@@ -29,7 +34,9 @@ export class FriendController {
     type: FriendResponseDto,
   })
   @ApiBearerAuth()
-  async addFriend(@Body() createFriendDto: CreateFriendDto): Promise<FriendResponseDto> {
+  async addFriend(
+    @Body() createFriendDto: CreateFriendDto,
+  ): Promise<FriendResponseDto> {
     const friendship = await this.friendService.addFriend(
       createFriendDto.clientAuditoryId,
       createFriendDto.friendAuditoryId,
@@ -39,7 +46,9 @@ export class FriendController {
 
   // Specific routes MUST come before parameterized routes (:id, :clientId, etc.)
   @Get('search-users')
-  @ApiOperation({ summary: 'Поиск пользователей по имени для добавления в друзья' })
+  @ApiOperation({
+    summary: 'Поиск пользователей по имени для добавления в друзья',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Пользователи найдены',
@@ -50,7 +59,7 @@ export class FriendController {
     @Query('query') query: string,
   ): Promise<FriendResponseDto[]> {
     const users = await this.friendService.searchUsers(query);
-    return users.map(user => {
+    return users.map((user) => {
       const response = new FriendResponseDto();
       response.friendId = user.auditoryId;
       response.friendFirstName = user.firstName;
@@ -72,7 +81,10 @@ export class FriendController {
     @Query('clientAuditoryId') clientAuditoryId: string,
     @Query('query') query: string,
   ): Promise<FriendResponseDto[]> {
-    const friendships = await this.friendService.searchFriends(clientAuditoryId, query);
+    const friendships = await this.friendService.searchFriends(
+      clientAuditoryId,
+      query,
+    );
     return this.mapToResponseWithDetails(friendships);
   }
 
@@ -87,7 +99,10 @@ export class FriendController {
     @Query('clientAuditoryId') clientAuditoryId: string,
     @Query('friendAuditoryId') friendAuditoryId: string,
   ): Promise<{ isFriend: boolean }> {
-    const result = await this.friendService.isFriend(clientAuditoryId, friendAuditoryId);
+    const result = await this.friendService.isFriend(
+      clientAuditoryId,
+      friendAuditoryId,
+    );
     return { isFriend: result };
   }
 
@@ -99,7 +114,9 @@ export class FriendController {
     type: [FriendResponseDto],
   })
   @ApiBearerAuth()
-  async findByClientId(@Param('clientId') clientId: string): Promise<FriendResponseDto[]> {
+  async findByClientId(
+    @Param('clientId') clientId: string,
+  ): Promise<FriendResponseDto[]> {
     const friendships = await this.friendService.findByClientId(clientId);
     return this.mapToResponseWithDetails(friendships);
   }
@@ -115,12 +132,15 @@ export class FriendController {
   async findByClientAuditoryId(
     @Param('clientAuditoryId') clientAuditoryId: string,
   ): Promise<FriendResponseDto[]> {
-    const friendships = await this.friendService.findByClientAuditoryId(clientAuditoryId);
+    const friendships =
+      await this.friendService.findByClientAuditoryId(clientAuditoryId);
     return this.mapToResponseWithDetails(friendships);
   }
 
   @Get('inverse/:friendAuditoryId')
-  @ApiOperation({ summary: 'Получить всех, кто добавил этого клиента в друзья' })
+  @ApiOperation({
+    summary: 'Получить всех, кто добавил этого клиента в друзья',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Записи о дружбе найдены',
@@ -130,7 +150,8 @@ export class FriendController {
   async findByFriendAuditoryId(
     @Param('friendAuditoryId') friendAuditoryId: string,
   ): Promise<FriendResponseDto[]> {
-    const friendships = await this.friendService.findByFriendAuditoryId(friendAuditoryId);
+    const friendships =
+      await this.friendService.findByFriendAuditoryId(friendAuditoryId);
     return this.mapToResponseWithDetails(friendships, true);
   }
 
@@ -224,8 +245,12 @@ export class FriendController {
         response.updatedAt = friendship.updatedAt;
 
         // Get friend client details
-        const friendClientId = inverse ? friendship.clientId : friendship.friendId;
-        const friendClient = await this.friendService['clientRepository'].findOne({
+        const friendClientId = inverse
+          ? friendship.clientId
+          : friendship.friendId;
+        const friendClient = await this.friendService[
+          'clientRepository'
+        ].findOne({
           where: { id: friendClientId },
         });
 

@@ -1,4 +1,9 @@
-import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { IStudentResultRepository } from '../../domain/interfaces/student-result.repository.interface';
 import { StudentResult } from '../../domain/entities/student-result.entity';
 import { CreateStudentResultDto } from '../dtos/create-student-result.dto';
@@ -17,10 +22,12 @@ export class StudentResultService {
     private readonly courseMapRepository: ICourseMapRepository,
   ) {}
 
-  async create(createStudentResultDto: CreateStudentResultDto): Promise<StudentResult> {
+  async create(
+    createStudentResultDto: CreateStudentResultDto,
+  ): Promise<StudentResult> {
     // Используем clientId из DTO
     const clientId = createStudentResultDto.clientId!;
-    
+
     const result = new StudentResult(
       clientId,
       createStudentResultDto.lessonId,
@@ -46,7 +53,10 @@ export class StudentResultService {
     return this.studentResultRepository.findByLessonId(lessonId);
   }
 
-  async update(id: string, updateStudentResultDto: UpdateStudentResultDto): Promise<StudentResult> {
+  async update(
+    id: string,
+    updateStudentResultDto: UpdateStudentResultDto,
+  ): Promise<StudentResult> {
     const result = await this.studentResultRepository.findById(id);
     if (!result) {
       throw new NotFoundException(`Student result with ID ${id} not found`);
@@ -82,7 +92,7 @@ export class StudentResultService {
     results: StudentResult[];
   }> {
     const results = await this.findByClientId(clientId);
-    
+
     if (results.length === 0) {
       return {
         totalLessons: 0,
@@ -91,7 +101,10 @@ export class StudentResultService {
       };
     }
 
-    const totalStars = results.reduce((sum, result) => sum + result.countOfStars, 0);
+    const totalStars = results.reduce(
+      (sum, result) => sum + result.countOfStars,
+      0,
+    );
     const averageStars = totalStars / results.length;
 
     return {
@@ -101,34 +114,50 @@ export class StudentResultService {
     };
   }
 
-  async getBestResultByClientAndLesson(clientId: string, lessonId: string): Promise<StudentResult | null> {
-    const results = await this.studentResultRepository.findByClientIdAndLessonId(clientId, lessonId);
-    
+  async getBestResultByClientAndLesson(
+    clientId: string,
+    lessonId: string,
+  ): Promise<StudentResult | null> {
+    const results =
+      await this.studentResultRepository.findByClientIdAndLessonId(
+        clientId,
+        lessonId,
+      );
+
     if (!results || results.length === 0) {
       return null;
     }
 
     // Возвращаем результат с наибольшим количеством звезд
-    return results.reduce((best, current) => 
-      current.countOfStars > best.countOfStars ? current : best
+    return results.reduce((best, current) =>
+      current.countOfStars > best.countOfStars ? current : best,
     );
   }
 
-  async getBestResultsForCourse(clientId: string, courseId: string): Promise<{
-    lessonId: string;
-    orderIndex: number;
-    bestResult: StudentResult | null;
-  }[]> {
+  async getBestResultsForCourse(
+    clientId: string,
+    courseId: string,
+  ): Promise<
+    {
+      lessonId: string;
+      orderIndex: number;
+      bestResult: StudentResult | null;
+    }[]
+  > {
     // Получаем карту курса по courseId
     const courseMap = await this.courseMapRepository.findByCourseId(courseId);
 
     if (!courseMap) {
-      throw new NotFoundException(`Course map for course ${courseId} not found`);
+      throw new NotFoundException(
+        `Course map for course ${courseId} not found`,
+      );
     }
 
     // Получаем все уроки для этого курса
-    const lessons = await this.lessonRepository.findAllByCourseMapId(courseMap.id);
-    const lessonIds = lessons.map(lesson => lesson.id);
+    const lessons = await this.lessonRepository.findAllByCourseMapId(
+      courseMap.id,
+    );
+    const lessonIds = lessons.map((lesson) => lesson.id);
 
     // Получаем все результаты студента
     const results = await this.studentResultRepository.findByClientId(clientId);
@@ -148,18 +177,19 @@ export class StudentResultService {
     }
 
     // Для каждого урока находим лучший результат
-    return lessonIds.map(lessonId => {
+    return lessonIds.map((lessonId) => {
       const lessonResults = resultsByLesson.get(lessonId) || [];
-      const bestResult = lessonResults.length > 0
-        ? lessonResults.reduce((best, current) =>
-            current.countOfStars > best.countOfStars ? current : best
-          )
-        : null;
+      const bestResult =
+        lessonResults.length > 0
+          ? lessonResults.reduce((best, current) =>
+              current.countOfStars > best.countOfStars ? current : best,
+            )
+          : null;
 
-      return { 
-        lessonId, 
+      return {
+        lessonId,
         orderIndex: lessonOrderIndexMap.get(lessonId) || 0,
-        bestResult 
+        bestResult,
       };
     });
   }

@@ -1,7 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty, IsEnum } from 'class-validator';
 import { Expose } from 'class-transformer';
-import { AchievementType, AchievementTier } from '../../domain/entities/achievement.entity';
+import {
+  AchievementType,
+  AchievementTier,
+} from '../../domain/entities/achievement.entity';
 
 export class CreateAchievementDto {
   @ApiProperty({

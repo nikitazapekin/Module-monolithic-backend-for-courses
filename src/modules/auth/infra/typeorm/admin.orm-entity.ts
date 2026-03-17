@@ -1,4 +1,12 @@
-import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToOne,
+  OneToMany,
+} from 'typeorm';
 import { AuditoryOrmEntity } from './auditory.orm-entity';
 import { CourseOrmEntity } from '@modules/courses/infra/typeorm/course.orm-entity';
 import { CodeTaskOrmEntity } from '@modules/coding-tasks/infra/typeorm/code-task.orm-entity';
@@ -37,14 +45,13 @@ export class AdminOrmEntity {
 
   @UpdateDateColumn()
   updatedAt: Date;
- 
-  @OneToOne(() => AuditoryOrmEntity, auditory => auditory.admin)
+
+  @OneToOne(() => AuditoryOrmEntity, (auditory) => auditory.admin)
   auditory: AuditoryOrmEntity;
 
-
-    @OneToMany(() => CourseOrmEntity, course => course.admin)
+  @OneToMany(() => CourseOrmEntity, (course) => course.admin)
   courses: CourseOrmEntity[];
 
-  @OneToMany(() => CodeTaskOrmEntity, task => task.admin)
+  @OneToMany(() => CodeTaskOrmEntity, (task) => task.admin)
   codeTasks: CodeTaskOrmEntity[];
 }

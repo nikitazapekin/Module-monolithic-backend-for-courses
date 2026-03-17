@@ -1,4 +1,11 @@
-import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToOne,
+} from 'typeorm';
 import { AuditoryOrmEntity } from './auditory.orm-entity';
 import { StudentLevelOrmEntity } from '@modules/coding-tasks/infra/typeorm/student-level.orm-entity';
 
@@ -34,9 +41,9 @@ export class ClientOrmEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToOne(() => AuditoryOrmEntity, auditory => auditory.client)
+  @OneToOne(() => AuditoryOrmEntity, (auditory) => auditory.client)
   auditory: AuditoryOrmEntity;
 
-  @OneToOne(() => StudentLevelOrmEntity, studentLevel => studentLevel.client)
+  @OneToOne(() => StudentLevelOrmEntity, (studentLevel) => studentLevel.client)
   studentLevel: StudentLevelOrmEntity;
 }

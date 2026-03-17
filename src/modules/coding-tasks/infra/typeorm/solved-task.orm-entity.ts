@@ -17,7 +17,9 @@ export class SolvedTaskOrmEntity {
   @Column()
   studentLevelId: string;
 
-  @ManyToOne(() => StudentLevelOrmEntity, (sl) => sl.solvedTasks, { onDelete: 'CASCADE' })
+  @ManyToOne(() => StudentLevelOrmEntity, (sl) => sl.solvedTasks, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'studentLevelId' })
   studentLevel: StudentLevelOrmEntity;
 

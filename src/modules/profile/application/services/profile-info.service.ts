@@ -8,18 +8,31 @@ import { StudentResultResponseDto } from '../dtos/student-result-response.dto';
 export class ProfileInfoService {
   constructor(private readonly profileInfoRepository: ProfileInfoRepository) {}
 
-  async getFullClientInfoByAuditoryId(auditoryId: string): Promise<FullClientInfoDto> {
-    const data = await this.profileInfoRepository.findFullClientInfoByAuditoryId(auditoryId);
+  async getFullClientInfoByAuditoryId(
+    auditoryId: string,
+  ): Promise<FullClientInfoDto> {
+    const data =
+      await this.profileInfoRepository.findFullClientInfoByAuditoryId(
+        auditoryId,
+      );
 
     if (!data) {
-      throw new NotFoundException(`Client with auditory ID ${auditoryId} not found`);
+      throw new NotFoundException(
+        `Client with auditory ID ${auditoryId} not found`,
+      );
     }
 
     const { client, auditory, avatar, studentResults } = data;
 
     const totalLessons = studentResults.length;
-    const totalStars = studentResults.reduce((sum, r) => sum + r.countOfStars, 0);
-    const averageStars = totalLessons > 0 ? Math.round((totalStars / totalLessons) * 100) / 100 : 0;
+    const totalStars = studentResults.reduce(
+      (sum, r) => sum + r.countOfStars,
+      0,
+    );
+    const averageStars =
+      totalLessons > 0
+        ? Math.round((totalStars / totalLessons) * 100) / 100
+        : 0;
 
     return {
       clientId: client.id,
@@ -36,14 +49,19 @@ export class ProfileInfoService {
       registeredAt: client.registeredAt,
       lastLoginAt: auditory.lastLoginAt,
       avatar: avatar ? this.mapAvatarToResponse(avatar) : undefined,
-      studentResults: studentResults.map(result => this.mapStudentResultToResponse(result)),
+      studentResults: studentResults.map((result) =>
+        this.mapStudentResultToResponse(result),
+      ),
       totalLessons,
       averageStars,
     };
   }
 
-  async getFullClientInfoByClientId(clientId: string): Promise<FullClientInfoDto> {
-    const data = await this.profileInfoRepository.findFullClientInfoByClientId(clientId);
+  async getFullClientInfoByClientId(
+    clientId: string,
+  ): Promise<FullClientInfoDto> {
+    const data =
+      await this.profileInfoRepository.findFullClientInfoByClientId(clientId);
 
     if (!data) {
       throw new NotFoundException(`Client with ID ${clientId} not found`);
@@ -52,8 +70,14 @@ export class ProfileInfoService {
     const { client, auditory, avatar, studentResults } = data;
 
     const totalLessons = studentResults.length;
-    const totalStars = studentResults.reduce((sum, r) => sum + r.countOfStars, 0);
-    const averageStars = totalLessons > 0 ? Math.round((totalStars / totalLessons) * 100) / 100 : 0;
+    const totalStars = studentResults.reduce(
+      (sum, r) => sum + r.countOfStars,
+      0,
+    );
+    const averageStars =
+      totalLessons > 0
+        ? Math.round((totalStars / totalLessons) * 100) / 100
+        : 0;
 
     return {
       clientId: client.id,
@@ -70,7 +94,9 @@ export class ProfileInfoService {
       registeredAt: client.registeredAt,
       lastLoginAt: auditory.lastLoginAt,
       avatar: avatar ? this.mapAvatarToResponse(avatar) : undefined,
-      studentResults: studentResults.map(result => this.mapStudentResultToResponse(result)),
+      studentResults: studentResults.map((result) =>
+        this.mapStudentResultToResponse(result),
+      ),
       totalLessons,
       averageStars,
     };

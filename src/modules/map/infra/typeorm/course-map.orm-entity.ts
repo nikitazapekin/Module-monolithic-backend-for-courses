@@ -1,12 +1,12 @@
-import { 
-  Entity, 
-  PrimaryColumn, 
-  Column, 
-  CreateDateColumn, 
+import {
+  Entity,
+  PrimaryColumn,
+  Column,
+  CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
   JoinColumn,
-  ManyToOne 
+  ManyToOne,
 } from 'typeorm';
 import { CourseOrmEntity } from '@modules/courses/infra/typeorm/course.orm-entity';
 import { MapElementOrmEntity } from './map-element.orm-entity';
@@ -44,14 +44,14 @@ export class CourseMapOrmEntity {
   updatedAt: Date;
 
   // Связь один-к-одному с курсом
-  @ManyToOne(() => CourseOrmEntity, course => course.map)
+  @ManyToOne(() => CourseOrmEntity, (course) => course.map)
   @JoinColumn({ name: 'courseId' })
   course: CourseOrmEntity;
 
   // Связь один-ко-многим с элементами карты
-  @OneToMany(() => MapElementOrmEntity, element => element.courseMap, {
+  @OneToMany(() => MapElementOrmEntity, (element) => element.courseMap, {
     cascade: true,
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   elements: MapElementOrmEntity[];
 }

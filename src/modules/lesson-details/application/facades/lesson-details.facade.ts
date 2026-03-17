@@ -6,32 +6,39 @@ import { LessonDetailsResponseDto } from '../dtos/lesson-details-response.dto';
 
 @Injectable()
 export class LessonDetailsFacade {
-    constructor(private readonly service: LessonDetailsService) { }
+  constructor(private readonly service: LessonDetailsService) {}
 
-    createLessonDetails(dto: CreateLessonDetailsDto): Promise<LessonDetailsResponseDto> {
+  createLessonDetails(
+    dto: CreateLessonDetailsDto,
+  ): Promise<LessonDetailsResponseDto> {
+    console.log('FACADDDDDDDDDDDDDDEEEEEEEEEEEEEEEEEEE');
+    return this.service.createLessonDetails(dto);
+  }
 
+  getLessonDetailsById(id: string): Promise<LessonDetailsResponseDto> {
+    return this.service.getLessonDetailsById(id);
+  }
 
-        console.log("FACADDDDDDDDDDDDDDEEEEEEEEEEEEEEEEEEE")
-        return this.service.createLessonDetails(dto);
-    }
+  getLessonDetailsByLessonId(
+    lessonId: string,
+  ): Promise<LessonDetailsResponseDto> {
+    return this.service.getLessonDetailsByLessonId(lessonId);
+  }
 
-    getLessonDetailsById(id: string): Promise<LessonDetailsResponseDto> {
-        return this.service.getLessonDetailsById(id);
-    }
+  updateLessonDetails(
+    id: string,
+    dto: UpdateLessonDetailsDto,
+  ): Promise<LessonDetailsResponseDto> {
+    return this.service.updateLessonDetails(id, dto);
+  }
 
-    getLessonDetailsByLessonId(lessonId: string): Promise<LessonDetailsResponseDto> {
-        return this.service.getLessonDetailsByLessonId(lessonId);
-    }
+  deleteLessonDetails(id: string): Promise<{ success: boolean }> {
+    return this.service.deleteLessonDetails(id);
+  }
 
-    updateLessonDetails(id: string, dto: UpdateLessonDetailsDto): Promise<LessonDetailsResponseDto> {
-        return this.service.updateLessonDetails(id, dto);
-    }
-
-    deleteLessonDetails(id: string): Promise<{ success: boolean }> {
-        return this.service.deleteLessonDetails(id);
-    }
-
-    deleteLessonDetailsByLessonId(lessonId: string): Promise<{ success: boolean }> {
-        return this.service.deleteLessonDetailsByLessonId(lessonId);
-    }
+  deleteLessonDetailsByLessonId(
+    lessonId: string,
+  ): Promise<{ success: boolean }> {
+    return this.service.deleteLessonDetailsByLessonId(lessonId);
+  }
 }

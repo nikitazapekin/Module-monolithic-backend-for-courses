@@ -1,4 +1,12 @@
-import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { AuditoryOrmEntity } from '@modules/auth/infra/typeorm/auditory.orm-entity';
 
 @Entity('course_subscriptions')
@@ -21,7 +29,10 @@ export class CourseSubscriptionOrmEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => AuditoryOrmEntity, auditory => auditory.courseSubscriptions)
+  @ManyToOne(
+    () => AuditoryOrmEntity,
+    (auditory) => auditory.courseSubscriptions,
+  )
   @JoinColumn({ name: 'auditoryId' })
   auditory: AuditoryOrmEntity;
 }

@@ -14,7 +14,8 @@ export class UpdateCertificateDto {
   date?: string;
 
   @ApiProperty({
-    description: 'Base64 encoded image data (without data:image/...;base64, prefix)',
+    description:
+      'Base64 encoded image data (without data:image/...;base64, prefix)',
     required: false,
   })
   @IsString()

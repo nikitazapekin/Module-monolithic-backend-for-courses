@@ -1,10 +1,10 @@
-import { 
-  Injectable, 
-  Inject, 
-  NotFoundException, 
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
   ConflictException,
   ForbiddenException,
-  BadRequestException 
+  BadRequestException,
 } from '@nestjs/common';
 import { ICourseRepository } from '../../domain/interfaces/course.repository.interface';
 import { Course, CourseStatus } from '../../domain/entities/course.entity';
@@ -18,19 +18,20 @@ export class CourseService {
   constructor(
     @Inject('ICourseRepository')
     private readonly courseRepository: ICourseRepository,
-      private readonly courseMapService: CourseMapService,
-
-
-      
-      
+    private readonly courseMapService: CourseMapService,
   ) {}
- async createCourse(createCourseDto: CreateCourseDto, adminId: string): Promise<CourseResponseDto> {
+  async createCourse(
+    createCourseDto: CreateCourseDto,
+    adminId: string,
+  ): Promise<CourseResponseDto> {
     // Проверка на уникальность названия
-    const exists = await this.courseRepository.existsByTitle(createCourseDto.title);
+    const exists = await this.courseRepository.existsByTitle(
+      createCourseDto.title,
+    );
     if (exists) {
       throw new ConflictException('Course with this title already exists');
     }
-    console.log("ADMIIN IN SERVICES", adminId)
+    console.log('ADMIIN IN SERVICES', adminId);
 
     const course = new Course(
       createCourseDto.title,
@@ -40,7 +41,7 @@ export class CourseService {
       createCourseDto.tags || [],
       createCourseDto.logo,
       adminId,
-      createCourseDto.status || 'draft'
+      createCourseDto.status || 'draft',
     );
 
     const createdCourse = await this.courseRepository.create(course);
@@ -53,7 +54,7 @@ export class CourseService {
         height: 600,
         backgroundColor: '#ffffff',
         backgroundRepeat: 'no-repeat',
-        backgroundSize: 'cover'
+        backgroundSize: 'cover',
       });
     } catch (error) {
       console.error('Failed to create course map:', error);
@@ -63,8 +64,6 @@ export class CourseService {
     return this.toResponseDto(createdCourse);
   }
 
-
-  
   async getCourseById(id: string): Promise<CourseResponseDto> {
     const course = await this.courseRepository.findById(id);
     if (!course) {
@@ -79,7 +78,12 @@ export class CourseService {
     page?: number;
     limit?: number;
     search?: string;
-  }): Promise<{ courses: CourseResponseDto[]; total: number; page: number; pages: number }> {
+  }): Promise<{
+    courses: CourseResponseDto[];
+    total: number;
+    page: number;
+    pages: number;
+  }> {
     const page = options?.page || 1;
     const limit = options?.limit || 10;
     const skip = (page - 1) * limit;
@@ -92,7 +96,7 @@ export class CourseService {
       search: options?.search,
     });
 
-    const responseCourses = courses.map(course => this.toResponseDto(course));
+    const responseCourses = courses.map((course) => this.toResponseDto(course));
     const pages = Math.ceil(total / limit);
 
     return {
@@ -103,7 +107,11 @@ export class CourseService {
     };
   }
 
-  async updateCourse(id: string, updateCourseDto: UpdateCourseDto, adminId?: string): Promise<CourseResponseDto> {
+  async updateCourse(
+    id: string,
+    updateCourseDto: UpdateCourseDto,
+    adminId?: string,
+  ): Promise<CourseResponseDto> {
     const course = await this.courseRepository.findById(id);
     if (!course) {
       throw new NotFoundException('Course not found');
@@ -116,14 +124,16 @@ export class CourseService {
 
     // Проверка на уникальность названия (если изменяется)
     if (updateCourseDto.title && updateCourseDto.title !== course.title) {
-      const exists = await this.courseRepository.existsByTitle(updateCourseDto.title);
+      const exists = await this.courseRepository.existsByTitle(
+        updateCourseDto.title,
+      );
       if (exists) {
         throw new ConflictException('Course with this title already exists');
       }
     }
 
     course.update(updateCourseDto);
-    
+
     const updated = await this.courseRepository.update(id, course);
     if (!updated) {
       throw new BadRequestException('Failed to update course');
@@ -134,7 +144,10 @@ export class CourseService {
     return this.toResponseDto(updatedCourse!);
   }
 
-  async deleteCourse(id: string, adminId?: string): Promise<{ success: boolean }> {
+  async deleteCourse(
+    id: string,
+    adminId?: string,
+  ): Promise<{ success: boolean }> {
     const course = await this.courseRepository.findById(id);
     if (!course) {
       throw new NotFoundException('Course not found');
@@ -149,7 +162,10 @@ export class CourseService {
     return { success: deleted };
   }
 
-  async publishCourse(id: string, adminId?: string): Promise<CourseResponseDto> {
+  async publishCourse(
+    id: string,
+    adminId?: string,
+  ): Promise<CourseResponseDto> {
     const course = await this.courseRepository.findById(id);
     if (!course) {
       throw new NotFoundException('Course not found');
@@ -160,7 +176,7 @@ export class CourseService {
     }
 
     course.publish();
-    
+
     const updated = await this.courseRepository.update(id, course);
     if (!updated) {
       throw new BadRequestException('Failed to publish course');
@@ -172,17 +188,17 @@ export class CourseService {
 
   async getAdminCourses(adminId: string): Promise<CourseResponseDto[]> {
     const courses = await this.courseRepository.findByAdminId(adminId);
-    return courses.map(course => this.toResponseDto(course));
+    return courses.map((course) => this.toResponseDto(course));
   }
 
   async getCoursesByTag(tag: string): Promise<CourseResponseDto[]> {
     const courses = await this.courseRepository.findByTag(tag);
-    return courses.map(course => this.toResponseDto(course));
+    return courses.map((course) => this.toResponseDto(course));
   }
 
   async getPublishedCourses(): Promise<CourseResponseDto[]> {
     const courses = await this.courseRepository.findByStatus('published');
-    return courses.map(course => this.toResponseDto(course));
+    return courses.map((course) => this.toResponseDto(course));
   }
 
   private toResponseDto(course: Course): CourseResponseDto {

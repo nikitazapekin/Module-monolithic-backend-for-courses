@@ -15,18 +15,24 @@ export class CodeController {
     schema: {
       properties: {
         output: { type: 'string' },
-        error: { type: 'string', description: 'Compile or runtime error (stderr)' },
+        error: {
+          type: 'string',
+          description: 'Compile or runtime error (stderr)',
+        },
       },
     },
   })
-  async execute(@Body() dto: ExecuteCodeDto): Promise<{ output: string; error?: string }> {
+  async execute(
+    @Body() dto: ExecuteCodeDto,
+  ): Promise<{ output: string; error?: string }> {
     return this.codeExecutionService.executeCode(dto.language, dto.code);
   }
 
   @Get('health')
-  @ApiOperation({ summary: 'Проверка доступности языков и временной директории' })
+  @ApiOperation({
+    summary: 'Проверка доступности языков и временной директории',
+  })
   async health() {
     return this.codeExecutionService.getHealth();
   }
 }
-

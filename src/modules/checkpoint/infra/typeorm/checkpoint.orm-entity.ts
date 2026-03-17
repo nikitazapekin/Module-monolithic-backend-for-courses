@@ -1,11 +1,11 @@
-import { 
-  Entity, 
-  PrimaryColumn, 
-  Column, 
-  CreateDateColumn, 
+import {
+  Entity,
+  PrimaryColumn,
+  Column,
+  CreateDateColumn,
   UpdateDateColumn,
   OneToOne,
-  JoinColumn
+  JoinColumn,
 } from 'typeorm';
 import { MapElementOrmEntity } from '@modules/map/infra/typeorm/map-element.orm-entity';
 
@@ -13,7 +13,7 @@ export enum CheckpointType {
   QUIZ = 'quiz',
   PRACTICAL_TASK = 'practical_task',
   EXAM = 'exam',
-  PROJECT = 'project'
+  PROJECT = 'project',
 }
 
 @Entity('checkpoints')

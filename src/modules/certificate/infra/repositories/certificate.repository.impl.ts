@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ICertificateRepository, CertificateSearchParams, CertificateSearchResult } from '../../domain/interfaces/certificate.repository.interface';
+import {
+  ICertificateRepository,
+  CertificateSearchParams,
+  CertificateSearchResult,
+} from '../../domain/interfaces/certificate.repository.interface';
 import { Certificate } from '../../domain/entities/certificate.entity';
 import { CertificateOrmEntity } from '../typeorm/certificate.orm-entity';
 import { ClientOrmEntity } from '../../../auth/infra/typeorm/client.orm-entity';
@@ -29,8 +33,10 @@ export class CertificateRepository implements ICertificateRepository {
       order: { date: 'DESC' },
     });
 
-    const certificates = entities.map(entity => this.toDomain(entity));
-    return Promise.all(certificates.map(cert => this.enrichWithClientInfo(cert)));
+    const certificates = entities.map((entity) => this.toDomain(entity));
+    return Promise.all(
+      certificates.map((cert) => this.enrichWithClientInfo(cert)),
+    );
   }
 
   async findByAuditoryId(auditoryId: string): Promise<Certificate[]> {
@@ -47,8 +53,10 @@ export class CertificateRepository implements ICertificateRepository {
       order: { date: 'DESC' },
     });
 
-    const certificates = entities.map(entity => this.toDomain(entity));
-    return Promise.all(certificates.map(cert => this.enrichWithClientInfo(cert)));
+    const certificates = entities.map((entity) => this.toDomain(entity));
+    return Promise.all(
+      certificates.map((cert) => this.enrichWithClientInfo(cert)),
+    );
   }
 
   async save(certificate: Certificate): Promise<Certificate> {
@@ -72,30 +80,54 @@ export class CertificateRepository implements ICertificateRepository {
     return (result.affected ?? 0) > 0;
   }
 
-  async search(params: CertificateSearchParams): Promise<CertificateSearchResult> {
-    const { firstName, lastName, courseName, dateFrom, dateTo, page = 1, limit = 10 } = params;
+  async search(
+    params: CertificateSearchParams,
+  ): Promise<CertificateSearchResult> {
+    const {
+      firstName,
+      lastName,
+      courseName,
+      dateFrom,
+      dateTo,
+      page = 1,
+      limit = 10,
+    } = params;
 
-    const queryBuilder = this.certificateRepository.createQueryBuilder('cert')
+    const queryBuilder = this.certificateRepository
+      .createQueryBuilder('cert')
       .leftJoinAndSelect('cert.client', 'client');
 
     if (firstName) {
-      queryBuilder.andWhere('(client.firstName ILIKE :firstName OR cert.firstName ILIKE :firstName)', { firstName: `%${firstName}%` });
+      queryBuilder.andWhere(
+        '(client.firstName ILIKE :firstName OR cert.firstName ILIKE :firstName)',
+        { firstName: `%${firstName}%` },
+      );
     }
 
     if (lastName) {
-      queryBuilder.andWhere('(client.lastName ILIKE :lastName OR cert.lastName ILIKE :lastName)', { lastName: `%${lastName}%` });
+      queryBuilder.andWhere(
+        '(client.lastName ILIKE :lastName OR cert.lastName ILIKE :lastName)',
+        { lastName: `%${lastName}%` },
+      );
     }
 
     if (dateFrom) {
-      queryBuilder.andWhere('cert.date >= :dateFrom', { dateFrom: new Date(dateFrom) });
+      queryBuilder.andWhere('cert.date >= :dateFrom', {
+        dateFrom: new Date(dateFrom),
+      });
     }
 
     if (dateTo) {
-      queryBuilder.andWhere('cert.date <= :dateTo', { dateTo: new Date(dateTo) });
+      queryBuilder.andWhere('cert.date <= :dateTo', {
+        dateTo: new Date(dateTo),
+      });
     }
 
     if (courseName) {
-      queryBuilder.andWhere('(EXISTS (SELECT 1 FROM courses c WHERE c.id = cert.courseId AND c.title ILIKE :courseName) OR cert.courseName ILIKE :courseName)', { courseName: `%${courseName}%` });
+      queryBuilder.andWhere(
+        '(EXISTS (SELECT 1 FROM courses c WHERE c.id = cert.courseId AND c.title ILIKE :courseName) OR cert.courseName ILIKE :courseName)',
+        { courseName: `%${courseName}%` },
+      );
     }
 
     const total = await queryBuilder.getCount();
@@ -108,10 +140,12 @@ export class CertificateRepository implements ICertificateRepository {
       .getMany();
 
     return {
-      certificates: await Promise.all(entities.map(async entity => {
-        const cert = this.toDomain(entity);
-        return this.enrichWithClientInfo(cert);
-      })),
+      certificates: await Promise.all(
+        entities.map(async (entity) => {
+          const cert = this.toDomain(entity);
+          return this.enrichWithClientInfo(cert);
+        }),
+      ),
       total,
       page,
       limit,
@@ -142,7 +176,9 @@ export class CertificateRepository implements ICertificateRepository {
     return certificate;
   }
 
-  private async enrichWithClientInfo(certificate: Certificate): Promise<Certificate> {
+  private async enrichWithClientInfo(
+    certificate: Certificate,
+  ): Promise<Certificate> {
     if (!certificate.firstName || !certificate.lastName) {
       const client = await this.clientRepository.findOne({
         where: { id: certificate.clientId },
@@ -150,7 +186,8 @@ export class CertificateRepository implements ICertificateRepository {
       if (client) {
         certificate.firstName = certificate.firstName || client.firstName || '';
         certificate.lastName = certificate.lastName || client.lastName || '';
-        certificate.middleName = certificate.middleName || client.middleName || '';
+        certificate.middleName =
+          certificate.middleName || client.middleName || '';
       }
     }
     return certificate;

@@ -8,19 +8,19 @@ import { TodoCreatedEvent } from '../../domain/events/todo-created.event';
 export class CreateTodoHandler implements ICommandHandler<CreateTodoCommand> {
   constructor(
     private readonly todoService: TodoService,
-    private readonly eventBus: EventBus  // Для публикации событий
+    private readonly eventBus: EventBus, // Для публикации событий
   ) {}
 
   async execute(command: CreateTodoCommand): Promise<any> {
     // 1. Вызываем сервис для создания
 
-    console.log("COMMAND", command)
+    console.log('COMMAND', command);
     const todo = await this.todoService.createTodo(
       command.title,
-      command.description
+      command.description,
     );
-    
-  /*   // 2. Публикуем событие (для других модулей)
+
+    /*   // 2. Публикуем событие (для других модулей)
     await this.eventBus.publish(
       new TodoCreatedEvent(todo.id, todo.title, new Date())
     );

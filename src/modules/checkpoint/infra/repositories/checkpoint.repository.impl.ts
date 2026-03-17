@@ -3,7 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ICheckpointRepository } from '../../domain/interfaces/checkpoint.repository.interface';
 import { Checkpoint } from '../../domain/entities/checkpoint.entity';
-import { CheckpointOrmEntity, CheckpointType as OrmCheckpointType } from '../typeorm/checkpoint.orm-entity';
+import {
+  CheckpointOrmEntity,
+  CheckpointType as OrmCheckpointType,
+} from '../typeorm/checkpoint.orm-entity';
 
 @Injectable()
 export class CheckpointRepository implements ICheckpointRepository {
@@ -20,14 +23,14 @@ export class CheckpointRepository implements ICheckpointRepository {
 
   async findById(id: string): Promise<Checkpoint | null> {
     const entity = await this.checkpointRepository.findOne({
-      where: { id }
+      where: { id },
     });
     return entity ? this.toDomain(entity) : null;
   }
 
   async findByMapElementId(mapElementId: string): Promise<Checkpoint | null> {
     const entity = await this.checkpointRepository.findOne({
-      where: { mapElementId }
+      where: { mapElementId },
     });
     return entity ? this.toDomain(entity) : null;
   }
@@ -39,22 +42,22 @@ export class CheckpointRepository implements ICheckpointRepository {
       .where('mapElement.courseMapId = :courseMapId', { courseMapId })
       .orderBy('checkpoint.createdAt', 'ASC')
       .getMany();
-    
-    return entities.map(entity => this.toDomain(entity));
+
+    return entities.map((entity) => this.toDomain(entity));
   }
 
   async update(id: string, updates: Partial<Checkpoint>): Promise<boolean> {
     const entity = await this.checkpointRepository.findOne({
-      where: { id }
+      where: { id },
     });
-    
+
     if (!entity) {
       return false;
     }
-    
+
     Object.assign(entity, updates);
     entity.updatedAt = new Date();
-    
+
     await this.checkpointRepository.save(entity);
     return true;
   }
@@ -80,7 +83,7 @@ export class CheckpointRepository implements ICheckpointRepository {
       entity.timeLimit,
       entity.instructions,
       entity.isPublished,
-      entity.id
+      entity.id,
     );
   }
 
@@ -98,7 +101,7 @@ export class CheckpointRepository implements ICheckpointRepository {
     entity.isPublished = checkpoint.isPublished;
     entity.createdAt = checkpoint.createdAt;
     entity.updatedAt = checkpoint.updatedAt;
-    
+
     return entity;
   }
 }

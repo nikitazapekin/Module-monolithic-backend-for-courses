@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { IFriendRequestRepository } from '../../domain/interfaces/friend-request.repository.interface';
-import { FriendRequest, FriendRequestStatus } from '../../domain/entities/friend-request.entity';
+import {
+  FriendRequest,
+  FriendRequestStatus,
+} from '../../domain/entities/friend-request.entity';
 import { FriendRequestOrmEntity } from '../typeorm/friend-request.orm-entity';
 
 @Injectable()
@@ -28,7 +31,7 @@ export class FriendRequestRepository implements IFriendRequestRepository {
       relations: ['sender', 'receiver'],
     });
 
-    return entities.map(entity => this.toDomain(entity));
+    return entities.map((entity) => this.toDomain(entity));
   }
 
   async findByReceiverId(receiverId: string): Promise<FriendRequest[]> {
@@ -38,7 +41,7 @@ export class FriendRequestRepository implements IFriendRequestRepository {
       relations: ['sender', 'receiver'],
     });
 
-    return entities.map(entity => this.toDomain(entity));
+    return entities.map((entity) => this.toDomain(entity));
   }
 
   async findBySenderIdAndReceiverId(
@@ -67,7 +70,7 @@ export class FriendRequestRepository implements IFriendRequestRepository {
       relations: ['sender', 'receiver'],
     });
 
-    return entities.map(entity => this.toDomain(entity));
+    return entities.map((entity) => this.toDomain(entity));
   }
 
   async save(request: FriendRequest): Promise<FriendRequest> {

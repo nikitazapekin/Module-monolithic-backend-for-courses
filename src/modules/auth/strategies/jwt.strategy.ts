@@ -15,14 +15,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_SECRET') || 'super-secret-key-change-in-production',
+      secretOrKey:
+        configService.get<string>('JWT_SECRET') ||
+        'super-secret-key-change-in-production',
     });
   }
 
   async validate(payload: any) {
- 
     const auditory = await this.authRepository.findAuditoryById(payload.sub);
-    
+
     if (!auditory) {
       throw new Error('User not found');
     }
@@ -30,7 +31,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!auditory.isActive) {
       throw new Error('User is deactivated');
     }
- 
+
     let profile: any;
     if (auditory.role === UserRole.CLIENT) {
       profile = await this.authRepository.findClientByAuditoryId(auditory.id);
@@ -41,7 +42,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return {
       userId: auditory.id,
       email: auditory.email,
-      role: auditory.role as UserRole,
+      role: auditory.role,
       profile,
     };
   }

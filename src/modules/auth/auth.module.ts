@@ -25,7 +25,9 @@ import { AdminOrmEntity } from './infra/typeorm/admin.orm-entity';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'super-secret-key-change-in-production',
+        secret:
+          configService.get<string>('JWT_SECRET') ||
+          'super-secret-key-change-in-production',
         signOptions: {
           expiresIn: configService.get<string>('JWT_ACCESS_EXPIRES') || '15m',
         },
@@ -43,11 +45,6 @@ import { AdminOrmEntity } from './infra/typeorm/admin.orm-entity';
       useClass: AuthRepository,
     },
   ],
-  exports: [
-    AuthService,
-    JwtService,
-    JwtAuthGuard,
-    JwtStrategy,
-  ],
+  exports: [AuthService, JwtService, JwtAuthGuard, JwtStrategy],
 })
 export class AuthModule {}

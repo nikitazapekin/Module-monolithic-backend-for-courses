@@ -9,7 +9,12 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { AchievementService } from '../../application/services/achievement.service';
 import { CreateAchievementDto } from '../../application/dtos/create-achievement.dto';
 import { UpdateAchievementDto } from '../../application/dtos/update-achievement.dto';
@@ -33,7 +38,8 @@ export class AchievementController {
   async create(
     @Body() createAchievementDto: CreateAchievementDto,
   ): Promise<AchievementResponseDto> {
-    const achievement = await this.achievementService.create(createAchievementDto);
+    const achievement =
+      await this.achievementService.create(createAchievementDto);
     return this.mapToResponse(achievement);
   }
 
@@ -49,8 +55,9 @@ export class AchievementController {
   async checkAndAward(
     @Body('auditoryId') auditoryId: string,
   ): Promise<AchievementResponseDto[]> {
-    const achievements = await this.achievementService.checkAndAwardAchievements(auditoryId);
-    return achievements.map(achv => this.mapToResponse(achv));
+    const achievements =
+      await this.achievementService.checkAndAwardAchievements(auditoryId);
+    return achievements.map((achv) => this.mapToResponse(achv));
   }
 
   @Get('definitions')
@@ -96,9 +103,11 @@ export class AchievementController {
     type: [AchievementResponseDto],
   })
   @ApiBearerAuth()
-  async findByClientId(@Param('clientId') clientId: string): Promise<AchievementResponseDto[]> {
+  async findByClientId(
+    @Param('clientId') clientId: string,
+  ): Promise<AchievementResponseDto[]> {
     const achievements = await this.achievementService.findByClientId(clientId);
-    return achievements.map(achv => this.mapToResponse(achv));
+    return achievements.map((achv) => this.mapToResponse(achv));
   }
 
   @Get('auditory/:auditoryId')
@@ -109,9 +118,12 @@ export class AchievementController {
     type: [AchievementResponseDto],
   })
   @ApiBearerAuth()
-  async findByAuditoryId(@Param('auditoryId') auditoryId: string): Promise<AchievementResponseDto[]> {
-    const achievements = await this.achievementService.findByAuditoryId(auditoryId);
-    return achievements.map(achv => this.mapToResponse(achv));
+  async findByAuditoryId(
+    @Param('auditoryId') auditoryId: string,
+  ): Promise<AchievementResponseDto[]> {
+    const achievements =
+      await this.achievementService.findByAuditoryId(auditoryId);
+    return achievements.map((achv) => this.mapToResponse(achv));
   }
 
   @Put(':id')
@@ -126,7 +138,10 @@ export class AchievementController {
     @Param('id') id: string,
     @Body() updateAchievementDto: UpdateAchievementDto,
   ): Promise<AchievementResponseDto> {
-    const achievement = await this.achievementService.update(id, updateAchievementDto);
+    const achievement = await this.achievementService.update(
+      id,
+      updateAchievementDto,
+    );
     return this.mapToResponse(achievement);
   }
 

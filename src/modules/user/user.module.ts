@@ -17,7 +17,7 @@ import { TodoModule } from '@modules/todo/todo.module';
     TypeOrmModule.forFeature([UserTypeOrmEntity]),
     CqrsModule,
     TodoModule,
-  //  forwardRef(() => AuthModule),
+    //  forwardRef(() => AuthModule),
   ],
   controllers: [UserController, AuthController],
   providers: [

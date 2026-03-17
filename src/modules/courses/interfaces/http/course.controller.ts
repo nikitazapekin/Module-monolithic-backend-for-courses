@@ -16,7 +16,13 @@ import {
   UnauthorizedException,
   Inject,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CourseService } from '../../application/services/course.service';
@@ -44,11 +50,8 @@ export class CourseController {
   ) {}
 
   @Post('test')
-  async testCreateCourse(
-    @Req() req: Request,
-    @Body() body: any,
-  ) {
-    console.log("TESYTTTTTT")
+  async testCreateCourse(@Req() req: Request, @Body() body: any) {
+    console.log('TESYTTTTTT');
     return {
       message: 'pong',
       timestamp: new Date().toISOString(),
@@ -62,35 +65,35 @@ export class CourseController {
     @Body() createCourseDto: CreateCourseDto,
     @Req() req: any,
   ): Promise<CourseResponseDto> {
-    console.log("=== CREATE COURSE CONTROLLER ===");
-    
+    console.log('=== CREATE COURSE CONTROLLER ===');
+
     // 1. Получаем auditoryId из JWT токена
     const auditoryId = this.extractAuditoryIdFromToken(req);
-    console.log("Extracted auditoryId:", auditoryId);
-    
+    console.log('Extracted auditoryId:', auditoryId);
+
     if (!auditoryId) {
       throw new UnauthorizedException('Invalid token or user not found');
     }
-    
+
     // 2. Находим администратора по auditoryId
     const admin = await this.findAdminByAuditoryId(auditoryId);
-    console.log("Found admin:", admin);
-    
+    console.log('Found admin:', admin);
+
     if (!admin) {
       throw new UnauthorizedException('Admin not found for this user');
     }
-    
+
     // 3. Проверяем роль пользователя
     const auditory = await this.auditoryRepository.findOne({
-      where: { id: auditoryId }
+      where: { id: auditoryId },
     });
-    
+
     if (!auditory || auditory.role !== 'admin') {
       throw new UnauthorizedException('Only admins can create courses');
     }
-    
-    console.log("Using adminId for course:", admin.id);
-    
+
+    console.log('Using adminId for course:', admin.id);
+
     // 4. Создаем курс с admin.id (а не auditory.id!)
     return this.courseService.createCourse(createCourseDto, admin.id);
   }
@@ -137,7 +140,9 @@ export class CourseController {
     description: 'Список курсов по тегу',
     type: [CourseResponseDto],
   })
-  async getCoursesByTag(@Param('tag') tag: string): Promise<CourseResponseDto[]> {
+  async getCoursesByTag(
+    @Param('tag') tag: string,
+  ): Promise<CourseResponseDto[]> {
     return this.courseService.getCoursesByTag(tag);
   }
 
@@ -155,11 +160,11 @@ export class CourseController {
     // Находим adminId по auditoryId
     const auditoryId = user.id || user.sub;
     const admin = await this.findAdminByAuditoryId(auditoryId);
-    
+
     if (!admin) {
       throw new UnauthorizedException('Admin not found');
     }
-    
+
     return this.courseService.getAdminCourses(admin.id);
   }
 
@@ -195,11 +200,11 @@ export class CourseController {
   ): Promise<CourseResponseDto> {
     const auditoryId = this.extractAuditoryIdFromToken(req);
     const admin = await this.findAdminByAuditoryId(auditoryId);
-    
+
     if (!admin) {
       throw new UnauthorizedException('Admin not found');
     }
-    
+
     return this.courseService.updateCourse(id, updateCourseDto, admin.id);
   }
 
@@ -219,11 +224,11 @@ export class CourseController {
   ): Promise<{ success: boolean }> {
     const auditoryId = this.extractAuditoryIdFromToken(req);
     const admin = await this.findAdminByAuditoryId(auditoryId);
-    
+
     if (!admin) {
       throw new UnauthorizedException('Admin not found');
     }
-    
+
     return this.courseService.deleteCourse(id, admin.id);
   }
 
@@ -243,11 +248,11 @@ export class CourseController {
   ): Promise<CourseResponseDto> {
     const auditoryId = this.extractAuditoryIdFromToken(req);
     const admin = await this.findAdminByAuditoryId(auditoryId);
-    
+
     if (!admin) {
       throw new UnauthorizedException('Admin not found');
     }
-    
+
     return this.courseService.publishCourse(id, admin.id);
   }
 
@@ -255,32 +260,34 @@ export class CourseController {
 
   private extractAuditoryIdFromToken(req: any): string {
     const authHeader = req.headers.authorization;
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       throw new UnauthorizedException('Token is required');
     }
-    
+
     const token = authHeader.substring(7);
-    
+
     try {
       const base64Payload = token.split('.')[1];
       const payload = JSON.parse(
-        Buffer.from(base64Payload, 'base64').toString()
+        Buffer.from(base64Payload, 'base64').toString(),
       );
-      
+
       return payload.sub; // auditory.id из JWT
     } catch (error) {
-      console.error("Token decode error:", error);
+      console.error('Token decode error:', error);
       throw new UnauthorizedException('Invalid token');
     }
   }
 
-  private async findAdminByAuditoryId(auditoryId: string): Promise<AdminOrmEntity | null> {
+  private async findAdminByAuditoryId(
+    auditoryId: string,
+  ): Promise<AdminOrmEntity | null> {
     // Находим администратора через связь с auditory
     const admin = await this.adminRepository.findOne({
-      where: { auditoryId: auditoryId }
+      where: { auditoryId: auditoryId },
     });
-    
+
     return admin;
   }
 }

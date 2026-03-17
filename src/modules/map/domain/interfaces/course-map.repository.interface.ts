@@ -9,13 +9,19 @@ export interface ICourseMapRepository {
   findByCourseId(courseId: string): Promise<CourseMap | null>;
   update(id: string, updates: Partial<CourseMap>): Promise<boolean>;
   delete(id: string): Promise<boolean>;
-  
+
   // MapElement methods
   createElement(element: MapElement): Promise<MapElement>;
   findElementById(elementId: string): Promise<MapElement | null>;
   findElementsByMapId(mapId: string): Promise<MapElement[]>;
-  findElementsByType(mapId: string, type: MapElementType): Promise<MapElement[]>;
-  updateElement(elementId: string, updates: Partial<MapElement>): Promise<boolean>;
+  findElementsByType(
+    mapId: string,
+    type: MapElementType,
+  ): Promise<MapElement[]>;
+  updateElement(
+    elementId: string,
+    updates: Partial<MapElement>,
+  ): Promise<boolean>;
   deleteElement(elementId: string): Promise<boolean>;
   deleteElementsByMapId(mapId: string): Promise<boolean>;
 }

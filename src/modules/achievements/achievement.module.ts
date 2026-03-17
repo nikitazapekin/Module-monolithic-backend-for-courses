@@ -27,9 +27,6 @@ import { SolvedTaskOrmEntity } from '../coding-tasks/infra/typeorm/solved-task.o
       useClass: AchievementRepository,
     },
   ],
-  exports: [
-    AchievementService,
-    TypeOrmModule,
-  ],
+  exports: [AchievementService, TypeOrmModule],
 })
 export class AchievementsModule {}

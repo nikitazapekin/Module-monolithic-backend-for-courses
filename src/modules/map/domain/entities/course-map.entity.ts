@@ -1,4 +1,4 @@
-import { MapElement } from "./map-element.entity";
+import { MapElement } from './map-element.entity';
 
 export class CourseMap {
   public id: string;
@@ -20,7 +20,7 @@ export class CourseMap {
     backgroundColor: string = '#ffffff',
     backgroundRepeat: string = 'no-repeat',
     backgroundSize: string = 'cover',
-    backgroundImage?: string
+    backgroundImage?: string,
   ) {
     this.id = this.generateId();
     this.courseId = courseId;
@@ -37,11 +37,15 @@ export class CourseMap {
   public update(data: Partial<CourseMap>): void {
     if (data.width !== undefined) this.width = data.width;
     if (data.height !== undefined) this.height = data.height;
-    if (data.backgroundColor !== undefined) this.backgroundColor = data.backgroundColor;
-    if (data.backgroundImage !== undefined) this.backgroundImage = data.backgroundImage;
-    if (data.backgroundRepeat !== undefined) this.backgroundRepeat = data.backgroundRepeat;
-    if (data.backgroundSize !== undefined) this.backgroundSize = data.backgroundSize;
-    
+    if (data.backgroundColor !== undefined)
+      this.backgroundColor = data.backgroundColor;
+    if (data.backgroundImage !== undefined)
+      this.backgroundImage = data.backgroundImage;
+    if (data.backgroundRepeat !== undefined)
+      this.backgroundRepeat = data.backgroundRepeat;
+    if (data.backgroundSize !== undefined)
+      this.backgroundSize = data.backgroundSize;
+
     this.updatedAt = new Date();
   }
 
@@ -51,18 +55,21 @@ export class CourseMap {
   }
 
   public removeElement(elementId: string): void {
-    this.elements = this.elements.filter(e => e.id !== elementId);
+    this.elements = this.elements.filter((e) => e.id !== elementId);
     this.updatedAt = new Date();
   }
 
   public getElement(elementId: string): MapElement | undefined {
-    return this.elements.find(e => e.id === elementId);
+    return this.elements.find((e) => e.id === elementId);
   }
 
-  public updateElement(elementId: string, updates: Partial<MapElement>): boolean {
+  public updateElement(
+    elementId: string,
+    updates: Partial<MapElement>,
+  ): boolean {
     const element = this.getElement(elementId);
     if (!element) return false;
-    
+
     element.update(updates);
     this.updatedAt = new Date();
     return true;

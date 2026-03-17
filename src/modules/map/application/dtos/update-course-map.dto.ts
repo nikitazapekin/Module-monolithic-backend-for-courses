@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, IsOptional, IsIn, IsArray, ValidateNested } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsIn,
+  IsArray,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { CreateMapElementDto } from './create-map-element.dto';
 import { PartialType } from '@nestjs/swagger';

@@ -13,8 +13,10 @@ export class LessonRepository implements ILessonRepository {
   ) {}
 
   async create(lesson: Lesson): Promise<Lesson> {
-    console.log(`[LessonRepository] Creating lesson with orderIndex: ${lesson.orderIndex}`);
-    
+    console.log(
+      `[LessonRepository] Creating lesson with orderIndex: ${lesson.orderIndex}`,
+    );
+
     // Use query builder to explicitly insert values
     const result = await this.lessonRepository
       .createQueryBuilder()
@@ -38,23 +40,25 @@ export class LessonRepository implements ILessonRepository {
 
     // Fetch the created entity
     const saved = await this.lessonRepository.findOne({
-      where: { id: lesson.id }
+      where: { id: lesson.id },
     });
 
-    console.log(`[LessonRepository] Saved entity orderIndex: ${saved?.orderIndex}`);
+    console.log(
+      `[LessonRepository] Saved entity orderIndex: ${saved?.orderIndex}`,
+    );
     return this.toDomain(saved!);
   }
 
   async findById(id: string): Promise<Lesson | null> {
     const entity = await this.lessonRepository.findOne({
-      where: { id }
+      where: { id },
     });
     return entity ? this.toDomain(entity) : null;
   }
 
   async findByMapElementId(mapElementId: string): Promise<Lesson | null> {
     const entity = await this.lessonRepository.findOne({
-      where: { mapElementId }
+      where: { mapElementId },
     });
     return entity ? this.toDomain(entity) : null;
   }
@@ -68,12 +72,12 @@ export class LessonRepository implements ILessonRepository {
       .orderBy('lesson.orderIndex', 'ASC')
       .getMany();
 
-    return entities.map(entity => this.toDomain(entity));
+    return entities.map((entity) => this.toDomain(entity));
   }
 
   async update(id: string, updates: Partial<Lesson>): Promise<boolean> {
     const entity = await this.lessonRepository.findOne({
-      where: { id }
+      where: { id },
     });
 
     if (!entity) {
@@ -106,7 +110,7 @@ export class LessonRepository implements ILessonRepository {
       entity.content,
       entity.duration,
       entity.isPublished,
-      entity.id
+      entity.id,
     );
   }
 

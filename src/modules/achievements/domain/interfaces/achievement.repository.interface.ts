@@ -11,5 +11,8 @@ export interface IAchievementRepository {
   update(id: string, updates: Partial<Achievement>): Promise<boolean>;
   delete(id: string): Promise<boolean>;
   deleteByClientId(clientId: string): Promise<boolean>;
-  exists(clientId: string, tier: import('../entities/achievement.entity').AchievementTier): Promise<boolean>;
+  exists(
+    clientId: string,
+    tier: import('../entities/achievement.entity').AchievementTier,
+  ): Promise<boolean>;
 }

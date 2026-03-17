@@ -9,7 +9,7 @@ export class Client {
   public description?: string;
   public registeredAt: Date;
   public updatedAt: Date;
-  
+
   constructor(
     auditoryId: string,
     firstName: string,
@@ -17,7 +17,7 @@ export class Client {
     phone: string,
     country: string,
     middleName?: string,
-    description?: string
+    description?: string,
   ) {
     this.id = this.generateId();
     this.auditoryId = auditoryId;
@@ -30,27 +30,29 @@ export class Client {
     this.registeredAt = new Date();
     this.updatedAt = new Date();
   }
-  
+
   public updateProfile(data: Partial<Client>): void {
     if (data.firstName) this.firstName = data.firstName.trim();
     if (data.lastName) this.lastName = data.lastName.trim();
-    if (data.middleName !== undefined) this.middleName = data.middleName?.trim();
+    if (data.middleName !== undefined)
+      this.middleName = data.middleName?.trim();
     if (data.phone) this.phone = this.normalizePhone(data.phone);
     if (data.country) this.country = data.country.trim();
-    if (data.description !== undefined) this.description = data.description?.trim();
-    
+    if (data.description !== undefined)
+      this.description = data.description?.trim();
+
     this.updatedAt = new Date();
   }
-  
+
   public getFullName(): string {
     return `${this.lastName} ${this.firstName} ${this.middleName || ''}`.trim();
   }
-  
+
   private normalizePhone(phone: string): string {
     // Убираем все нецифровые символы кроме +
     return phone.replace(/[^\d+]/g, '');
   }
-  
+
   private generateId(): string {
     return `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }

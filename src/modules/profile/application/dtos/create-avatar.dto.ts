@@ -13,8 +13,10 @@ export class CreateAvatarDto {
   auditoryId: string;
 
   @ApiProperty({
-    description: 'Base64 encoded image data (without data:image/...;base64, prefix)',
-    example: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+    description:
+      'Base64 encoded image data (without data:image/...;base64, prefix)',
+    example:
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
   })
   @IsString()
   @IsNotEmpty()

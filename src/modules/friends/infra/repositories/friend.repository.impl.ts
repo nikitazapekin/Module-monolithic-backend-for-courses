@@ -30,7 +30,7 @@ export class FriendRepository implements IFriendRepository {
       relations: ['friend'],
     });
 
-    return entities.map(entity => this.toDomain(entity));
+    return entities.map((entity) => this.toDomain(entity));
   }
 
   async findByFriendId(friendId: string): Promise<Friend[]> {
@@ -40,7 +40,7 @@ export class FriendRepository implements IFriendRepository {
       relations: ['client'],
     });
 
-    return entities.map(entity => this.toDomain(entity));
+    return entities.map((entity) => this.toDomain(entity));
   }
 
   async findByClientIdAndFriendId(

@@ -1,6 +1,6 @@
 export enum UserRole {
   CLIENT = 'client',
-  ADMIN = 'admin'
+  ADMIN = 'admin',
 }
 
 export class Auditory {
@@ -12,12 +12,16 @@ export class Auditory {
   public createdAt: Date;
   public updatedAt: Date;
   public lastLoginAt: Date | null;
-  
-  constructor(email: string, password: string, role: UserRole = UserRole.CLIENT) {
+
+  constructor(
+    email: string,
+    password: string,
+    role: UserRole = UserRole.CLIENT,
+  ) {
     if (!this.isValidEmail(email)) {
       throw new Error('Invalid email format');
     }
-    
+
     this.id = this.generateId();
     this.email = email.toLowerCase().trim();
     this.password = password; // В реальности должен быть хеш
@@ -27,7 +31,7 @@ export class Auditory {
     this.updatedAt = new Date();
     this.lastLoginAt = null;
   }
-  
+
   public updatePassword(newPassword: string): void {
     if (newPassword.length < 6) {
       throw new Error('Password must be at least 6 characters');
@@ -35,31 +39,31 @@ export class Auditory {
     this.password = newPassword;
     this.updatedAt = new Date();
   }
-  
+
   public markAsLoggedIn(): void {
     this.lastLoginAt = new Date();
   }
-  
+
   public deactivate(): void {
     this.isActive = false;
     this.updatedAt = new Date();
   }
-  
+
   public activate(): void {
     this.isActive = true;
     this.updatedAt = new Date();
   }
-  
+
   public changeRole(newRole: UserRole): void {
     this.role = newRole;
     this.updatedAt = new Date();
   }
-  
+
   private isValidEmail(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   }
-  
+
   private generateId(): string {
     return `auth_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }

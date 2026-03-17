@@ -18,7 +18,7 @@ export class TodoService {
     console.log('TODO', todo);
     // 2. Сохраняем через репозиторий
 
-  /*   return new Promise((resolve, reject)=> resolve({
+    /*   return new Promise((resolve, reject)=> resolve({
   id: 'todo_1770306406619_yq6omv9oo',
   title: 'Тестовая задача',
   description: 'Описание тестовой задачи',
@@ -26,7 +26,7 @@ export class TodoService {
   createdAt: new Date,
  
 }   )) */
-  return this.todoRepository.save(todo);
+    return this.todoRepository.save(todo);
   }
 
   async getTodoById(id: string): Promise<Todo | null> {

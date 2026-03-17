@@ -10,22 +10,22 @@ import { LessonDetailsOrmEntity } from '@modules/lesson-details/infra/typeorm/le
 import { StudentResultOrmEntity } from '@modules/profile/infra/typeorm/student-result.orm-entity';
 
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([
-            LessonCommentOrmEntity,
-            LessonDetailsOrmEntity,
-            StudentResultOrmEntity,
-        ]),
-    ],
-    controllers: [LessonCommentController],
-    providers: [
-        LessonCommentService,
-        LessonCommentFacade,
-        {
-            provide: 'ILessonCommentRepository',
-            useClass: LessonCommentRepository,
-        },
-    ],
-    exports: [LessonCommentService, LessonCommentFacade],
+  imports: [
+    TypeOrmModule.forFeature([
+      LessonCommentOrmEntity,
+      LessonDetailsOrmEntity,
+      StudentResultOrmEntity,
+    ]),
+  ],
+  controllers: [LessonCommentController],
+  providers: [
+    LessonCommentService,
+    LessonCommentFacade,
+    {
+      provide: 'ILessonCommentRepository',
+      useClass: LessonCommentRepository,
+    },
+  ],
+  exports: [LessonCommentService, LessonCommentFacade],
 })
 export class LessonCommentsModule {}

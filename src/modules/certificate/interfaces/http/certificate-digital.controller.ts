@@ -32,12 +32,15 @@ export class CertificateDigitalController {
     try {
       // Убираем .psd если есть
       const cleanId = id.replace('.psd', '');
-      
+
       const certificate = await this.certificateService.findById(cleanId);
       const imageBuffer = Buffer.from(certificate.url, 'base64');
 
       res.setHeader('Content-Type', 'application/octet-stream');
-      res.setHeader('Content-Disposition', `attachment; filename="certificate_${cleanId}.psd"`);
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="certificate_${cleanId}.psd"`,
+      );
       res.setHeader('Content-Length', imageBuffer.length);
 
       res.status(HttpStatus.OK).send(imageBuffer);

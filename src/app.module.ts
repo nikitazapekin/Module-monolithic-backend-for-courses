@@ -41,4 +41,4 @@ import { LessonCommentsModule } from '@modules/lesson-comments/lesson-comments.m
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

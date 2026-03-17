@@ -6,7 +6,9 @@ import { CourseSubscription } from '../../domain/entities/course-subscription.en
 import { CourseSubscriptionOrmEntity } from '../typeorm/course-subscription.orm-entity';
 
 @Injectable()
-export class CourseSubscriptionRepository implements ICourseSubscriptionRepository {
+export class CourseSubscriptionRepository
+  implements ICourseSubscriptionRepository
+{
   constructor(
     @InjectRepository(CourseSubscriptionOrmEntity)
     private readonly repository: Repository<CourseSubscriptionOrmEntity>,
@@ -21,7 +23,10 @@ export class CourseSubscriptionRepository implements ICourseSubscriptionReposito
     return entities.map((entity) => this.toDomain(entity));
   }
 
-  async findByAuditoryIdAndCourseId(auditoryId: string, courseId: string): Promise<CourseSubscription | null> {
+  async findByAuditoryIdAndCourseId(
+    auditoryId: string,
+    courseId: string,
+  ): Promise<CourseSubscription | null> {
     const entity = await this.repository.findOne({
       where: { auditoryId, courseId },
     });
@@ -39,7 +44,10 @@ export class CourseSubscriptionRepository implements ICourseSubscriptionReposito
   }
 
   private toDomain(entity: CourseSubscriptionOrmEntity): CourseSubscription {
-    const subscription = new CourseSubscription(entity.auditoryId, entity.courseId);
+    const subscription = new CourseSubscription(
+      entity.auditoryId,
+      entity.courseId,
+    );
     subscription.id = entity.id;
     subscription.subscribedAt = entity.subscribedAt;
     subscription.createdAt = entity.createdAt;

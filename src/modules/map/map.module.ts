@@ -18,8 +18,8 @@ import { LessonDetailsCreatorService } from './application/services/lesson-detai
 @Module({
   imports: [
     TypeOrmModule.forFeature([
-      CourseMapOrmEntity, 
-      MapElementOrmEntity, 
+      CourseMapOrmEntity,
+      MapElementOrmEntity,
       CourseOrmEntity,
       LessonOrmEntity,
       CheckpointOrmEntity,

@@ -22,12 +22,19 @@ export class StudentCourseResponseDto {
   @ApiProperty({ description: 'URL логотипа курса' })
   logo: string;
 
-  @ApiProperty({ description: 'Статус курса', enum: ['draft', 'published', 'archived'] })
+  @ApiProperty({
+    description: 'Статус курса',
+    enum: ['draft', 'published', 'archived'],
+  })
   status: string;
 
   @ApiProperty({ description: 'Дата подписки на курс' })
   subscribedAt: Date;
 
-  @ApiProperty({ description: 'Дата публикации курса', required: true, nullable: true })
+  @ApiProperty({
+    description: 'Дата публикации курса',
+    required: true,
+    nullable: true,
+  })
   publishedAt: Date | null;
 }

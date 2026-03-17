@@ -23,8 +23,8 @@ export class TodoFacade {
   async getIncompleteTodos(): Promise<TodoDto[]> {
     // Если в сервисе нет такого метода, добавляем
     const todos = await this.todoService.getAllTodos();
-    const incomplete = todos.filter(t => !t.isCompleted);
-    return incomplete.map(t => this.toDto(t));
+    const incomplete = todos.filter((t) => !t.isCompleted);
+    return incomplete.map((t) => this.toDto(t));
   }
 
   // ✅ Преобразование доменной сущности в DTO
@@ -35,7 +35,7 @@ export class TodoFacade {
       description: todo.description,
       isCompleted: todo.isCompleted,
       createdAt: todo.createdAt,
-      updatedAt: todo.updatedAt
+      updatedAt: todo.updatedAt,
     });
   }
 }

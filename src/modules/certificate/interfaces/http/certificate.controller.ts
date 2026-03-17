@@ -12,7 +12,13 @@ import {
   Res,
   NotFoundException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { Response } from 'express';
 import { CertificateService } from '../../application/services/certificate.service';
 import { CreateCertificateDto } from '../../application/dtos/create-certificate.dto';
@@ -27,12 +33,38 @@ export class CertificateController {
   @Get('search')
   @ApiOperation({ summary: 'Поиск сертификатов по параметрам' })
   @ApiQuery({ name: 'firstName', required: false, description: 'Имя студента' })
-  @ApiQuery({ name: 'lastName', required: false, description: 'Фамилия студента' })
-  @ApiQuery({ name: 'courseName', required: false, description: 'Название курса' })
-  @ApiQuery({ name: 'dateFrom', required: false, description: 'Дата с (YYYY-MM-DD)' })
-  @ApiQuery({ name: 'dateTo', required: false, description: 'Дата по (YYYY-MM-DD)' })
-  @ApiQuery({ name: 'page', required: false, description: 'Номер страницы', type: Number })
-  @ApiQuery({ name: 'limit', required: false, description: 'Количество на странице', type: Number })
+  @ApiQuery({
+    name: 'lastName',
+    required: false,
+    description: 'Фамилия студента',
+  })
+  @ApiQuery({
+    name: 'courseName',
+    required: false,
+    description: 'Название курса',
+  })
+  @ApiQuery({
+    name: 'dateFrom',
+    required: false,
+    description: 'Дата с (YYYY-MM-DD)',
+  })
+  @ApiQuery({
+    name: 'dateTo',
+    required: false,
+    description: 'Дата по (YYYY-MM-DD)',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Номер страницы',
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Количество на странице',
+    type: Number,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Найденные сертификаты',
@@ -58,7 +90,7 @@ export class CertificateController {
     });
 
     return {
-      certificates: result.certificates.map(cert => this.mapToResponse(cert)),
+      certificates: result.certificates.map((cert) => this.mapToResponse(cert)),
       total: result.total,
       page: result.page,
       limit: result.limit,
@@ -78,7 +110,8 @@ export class CertificateController {
   async create(
     @Body() createCertificateDto: CreateCertificateDto,
   ): Promise<CertificateResponseDto> {
-    const certificate = await this.certificateService.create(createCertificateDto);
+    const certificate =
+      await this.certificateService.create(createCertificateDto);
     return this.mapToResponse(certificate);
   }
 
@@ -90,9 +123,7 @@ export class CertificateController {
     type: CertificateResponseDto,
   })
   @ApiBearerAuth()
-  async setIsViewed(
-    @Body('id') id: string,
-  ): Promise<CertificateResponseDto> {
+  async setIsViewed(@Body('id') id: string): Promise<CertificateResponseDto> {
     const certificate = await this.certificateService.setIsViewed(id);
     return this.mapToResponse(certificate);
   }
@@ -121,7 +152,7 @@ export class CertificateController {
   ): Promise<void> {
     try {
       const certificate = await this.certificateService.findById(id);
-      
+
       // Конвертируем base64 в буфер
       const imageBuffer = Buffer.from(certificate.url, 'base64');
 
@@ -158,9 +189,11 @@ export class CertificateController {
     type: [CertificateResponseDto],
   })
   @ApiBearerAuth()
-  async findByClientId(@Param('clientId') clientId: string): Promise<CertificateResponseDto[]> {
+  async findByClientId(
+    @Param('clientId') clientId: string,
+  ): Promise<CertificateResponseDto[]> {
     const certificates = await this.certificateService.findByClientId(clientId);
-    return certificates.map(cert => this.mapToResponse(cert));
+    return certificates.map((cert) => this.mapToResponse(cert));
   }
 
   @Get('auditory/:auditoryId')
@@ -171,9 +204,12 @@ export class CertificateController {
     type: [CertificateResponseDto],
   })
   @ApiBearerAuth()
-  async findByAuditoryId(@Param('auditoryId') auditoryId: string): Promise<CertificateResponseDto[]> {
-    const certificates = await this.certificateService.findByAuditoryId(auditoryId);
-    return certificates.map(cert => this.mapToResponse(cert));
+  async findByAuditoryId(
+    @Param('auditoryId') auditoryId: string,
+  ): Promise<CertificateResponseDto[]> {
+    const certificates =
+      await this.certificateService.findByAuditoryId(auditoryId);
+    return certificates.map((cert) => this.mapToResponse(cert));
   }
 
   @Put(':id')
@@ -188,7 +224,10 @@ export class CertificateController {
     @Param('id') id: string,
     @Body() updateCertificateDto: UpdateCertificateDto,
   ): Promise<CertificateResponseDto> {
-    const certificate = await this.certificateService.update(id, updateCertificateDto);
+    const certificate = await this.certificateService.update(
+      id,
+      updateCertificateDto,
+    );
     return this.mapToResponse(certificate);
   }
 
@@ -222,7 +261,9 @@ export class CertificateController {
     response.clientId = certificate.clientId;
     response.courseId = certificate.courseId || '';
     response.date = certificate.date;
-    response.url = certificate.getBase64Data ? certificate.getBase64Data() : certificate.url;
+    response.url = certificate.getBase64Data
+      ? certificate.getBase64Data()
+      : certificate.url;
     response.digital = certificate.digital;
     response.isViewed = certificate.isViewed ?? false;
     response.firstName = certificate.firstName ?? '';

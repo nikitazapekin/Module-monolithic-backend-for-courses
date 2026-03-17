@@ -10,10 +10,21 @@ import {
   HttpStatus,
   Patch,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { FriendRequestService } from '../../application/services/friend-request.service';
-import { CreateFriendRequestDto, UpdateFriendRequestDto } from '../../application/dtos/friend-request.dto';
-import { FriendRequest, FriendRequestStatus } from '../../domain/entities/friend-request.entity';
+import {
+  CreateFriendRequestDto,
+  UpdateFriendRequestDto,
+} from '../../application/dtos/friend-request.dto';
+import {
+  FriendRequest,
+  FriendRequestStatus,
+} from '../../domain/entities/friend-request.entity';
 import { FriendResponseDto } from '../../application/dtos/friend-response.dto';
 
 @ApiTags('friend-requests')
@@ -29,7 +40,9 @@ export class FriendRequestController {
     description: 'Заявка в друзья успешно отправлена',
   })
   @ApiBearerAuth()
-  async sendFriendRequest(@Body() createFriendRequestDto: CreateFriendRequestDto): Promise<FriendRequest> {
+  async sendFriendRequest(
+    @Body() createFriendRequestDto: CreateFriendRequestDto,
+  ): Promise<FriendRequest> {
     return await this.friendRequestService.sendFriendRequest(
       createFriendRequestDto.senderAuditoryId,
       createFriendRequestDto.receiverAuditoryId,
@@ -45,7 +58,9 @@ export class FriendRequestController {
     type: FriendResponseDto,
   })
   @ApiBearerAuth()
-  async acceptFriendRequest(@Param('id') id: string): Promise<FriendResponseDto> {
+  async acceptFriendRequest(
+    @Param('id') id: string,
+  ): Promise<FriendResponseDto> {
     const friendship = await this.friendRequestService.acceptFriendRequest(id);
     return this.mapFriendshipToResponse(friendship);
   }
@@ -73,7 +88,9 @@ export class FriendRequestController {
   async getPendingFriendRequests(
     @Param('userAuditoryId') userAuditoryId: string,
   ): Promise<FriendRequest[]> {
-    return await this.friendRequestService.getPendingFriendRequests(userAuditoryId);
+    return await this.friendRequestService.getPendingFriendRequests(
+      userAuditoryId,
+    );
   }
 
   @Get('pending/sent/:userAuditoryId')
@@ -87,7 +104,9 @@ export class FriendRequestController {
   async getSentFriendRequests(
     @Param('userAuditoryId') userAuditoryId: string,
   ): Promise<FriendRequest[]> {
-    return await this.friendRequestService.getSentFriendRequests(userAuditoryId);
+    return await this.friendRequestService.getSentFriendRequests(
+      userAuditoryId,
+    );
   }
 
   @Delete('cancel')
@@ -102,7 +121,10 @@ export class FriendRequestController {
     @Query('senderAuditoryId') senderAuditoryId: string,
     @Query('receiverAuditoryId') receiverAuditoryId: string,
   ): Promise<void> {
-    await this.friendRequestService.cancelFriendRequest(senderAuditoryId, receiverAuditoryId);
+    await this.friendRequestService.cancelFriendRequest(
+      senderAuditoryId,
+      receiverAuditoryId,
+    );
   }
 
   @Get(':id')
@@ -127,7 +149,10 @@ export class FriendRequestController {
     @Query('senderAuditoryId') senderAuditoryId: string,
     @Query('receiverAuditoryId') receiverAuditoryId: string,
   ): Promise<{ hasRequest: boolean }> {
-    return await this.friendRequestService.hasPendingRequest(senderAuditoryId, receiverAuditoryId);
+    return await this.friendRequestService.hasPendingRequest(
+      senderAuditoryId,
+      receiverAuditoryId,
+    );
   }
 
   private mapFriendshipToResponse(friendship: any): FriendResponseDto {

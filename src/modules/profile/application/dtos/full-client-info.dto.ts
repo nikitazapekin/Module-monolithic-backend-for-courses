@@ -45,7 +45,10 @@ export class FullClientInfoDto {
   @ApiProperty({ description: 'Avatar information', required: false })
   avatar?: AvatarResponseDto;
 
-  @ApiProperty({ description: 'Student results', type: [StudentResultResponseDto] })
+  @ApiProperty({
+    description: 'Student results',
+    type: [StudentResultResponseDto],
+  })
   studentResults: StudentResultResponseDto[];
 
   @ApiProperty({ description: 'Total lessons completed' })

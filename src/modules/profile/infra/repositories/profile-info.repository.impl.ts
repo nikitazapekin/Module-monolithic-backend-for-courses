@@ -28,7 +28,7 @@ export class ProfileInfoRepository {
     studentResults: StudentResultOrmEntity[];
   } | null> {
     console.log('Looking for auditory:', auditoryId);
-    
+
     const auditory = await this.auditoryRepository.findOne({
       where: { id: auditoryId },
     });
@@ -44,7 +44,10 @@ export class ProfileInfoRepository {
       where: { auditoryId },
     });
 
-    console.log('Found client:', client ? { id: client.id, auditoryId: client.auditoryId } : null);
+    console.log(
+      'Found client:',
+      client ? { id: client.id, auditoryId: client.auditoryId } : null,
+    );
 
     if (!client) {
       return null;

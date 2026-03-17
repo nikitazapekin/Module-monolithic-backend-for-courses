@@ -53,7 +53,6 @@ export class CourseResponseDto {
   @Expose()
   logo: string;
 
- 
   @Expose()
   status: CourseStatus;
 

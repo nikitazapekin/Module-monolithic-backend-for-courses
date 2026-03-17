@@ -12,7 +12,7 @@ import { MapModule } from '@modules/map/map.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
-      CourseOrmEntity, 
+      CourseOrmEntity,
       AdminOrmEntity,
       AuditoryOrmEntity, // Добавляем если нужно
     ]),
@@ -27,9 +27,6 @@ import { MapModule } from '@modules/map/map.module';
       useClass: CourseRepository,
     },
   ],
-  exports: [
-    CourseService,
-    CourseFacade,
-  ],
+  exports: [CourseService, CourseFacade],
 })
 export class CoursesModule {}
