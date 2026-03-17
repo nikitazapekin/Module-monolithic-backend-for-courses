@@ -163,6 +163,15 @@ private async runJava(code: string, workDir: string): Promise<{ output: string; 
 
 private async runCSharp(code: string, workDir: string): Promise<{ output: string; error?: string }> {
   const filePath = path.join(workDir, 'Program.cs');
+  
+  // Добавляем Main если его нет и нет класса Runner от клиента
+  const hasMain = code.includes('static void Main') || code.includes('static int Main');
+  const hasRunner = code.includes('class Runner') || code.includes('class Runner {');
+  
+  if (!hasMain && !hasRunner) {
+    code = code.trim() + "\n\nclass EntryPoint {\n    static void Main(string[] args) { }\n}";
+  }
+  
   fs.writeFileSync(filePath, code);
   
   // Создаем csproj файл с net7.0
@@ -187,8 +196,25 @@ private async runCSharp(code: string, workDir: string): Promise<{ output: string
       return { output: '', error: '.NET SDK not found. Please install .NET SDK 7.0' };
     }
     
+    // Сначала компилируем для получения ошибок
+    const buildResult = await execAsync(`dotnet build "${csprojPath}"`, { 
+      cwd: workDir, 
+      timeout: 30000 
+    });
+    
+    console.log('C# build stdout:', buildResult.stdout);
+    console.log('C# build stderr:', buildResult.stderr);
+    
+    // Если есть ошибки компиляции - возвращаем их
+    if (buildResult.stderr && buildResult.stderr.includes('error')) {
+      return {
+        output: '',
+        error: buildResult.stderr
+      };
+    }
+    
     // Запускаем
-    const { stdout, stderr } = await execAsync(`dotnet run --project "${csprojPath}"`, { 
+    const { stdout, stderr } = await execAsync(`dotnet run --project "${csprojPath}" --no-build`, { 
       cwd: workDir, 
       timeout: 30000 
     });
