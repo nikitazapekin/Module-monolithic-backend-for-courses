@@ -82,15 +82,27 @@ export class CodeExecutionService {
     const filePath = path.join(workDir, 'main.py');
     fs.writeFileSync(filePath, code);
     
+    // Определяем правильную команду Python
+    let pythonCmd = 'python3';
+    
+    // Пробуем найти доступный Python
     try {
-      // Пробуем python3, затем python
+      await execAsync('which python3', { timeout: 5000 });
+      pythonCmd = 'python3';
+    } catch {
       try {
-        const { stdout, stderr } = await execAsync(`python3 "${filePath}"`, { cwd: workDir, timeout: 10000 });
-        return { output: stdout.trim(), error: stderr.trim() || undefined };
-      } catch (python3Error) {
-        const { stdout, stderr } = await execAsync(`python "${filePath}"`, { cwd: workDir, timeout: 10000 });
-        return { output: stdout.trim(), error: stderr.trim() || undefined };
+        await execAsync('which python', { timeout: 5000 });
+        pythonCmd = 'python';
+      } catch {
+        return { output: '', error: 'Python not found. Please install Python 3.' };
       }
+    }
+    
+    console.log(`Using Python command: ${pythonCmd}`);
+    
+    try {
+      const { stdout, stderr } = await execAsync(`${pythonCmd} "${filePath}"`, { cwd: workDir, timeout: 10000 });
+      return { output: stdout.trim(), error: stderr.trim() || undefined };
     } finally {
       fs.rmSync(workDir, { recursive: true, force: true });
     }
@@ -270,19 +282,12 @@ private async runCSharp(code: string, workDir: string): Promise<{ output: string
   private async checkLanguage(language: SupportedLanguage): Promise<void> {
     const commands = {
       javascript: 'node --version',
-      python: 'python3 --version',
+      python: 'which python3 || which python',
       golang: 'go version',
       java: 'javac -version',
       csharp: 'dotnet --version'
     };
     
-    try {
-      await execAsync(commands[language], { timeout: 5000 });
-    } catch {
- 
-      if (language === 'python') {
-        await execAsync('python --version', { timeout: 5000 });
-      }
-    }
+    await execAsync(commands[language], { timeout: 5000 });
   }
 }
