@@ -11,7 +11,7 @@ export class LessonDetailsFacade {
   createLessonDetails(
     dto: CreateLessonDetailsDto,
   ): Promise<LessonDetailsResponseDto> {
-    console.log('FACADDDDDDDDDDDDDDEEEEEEEEEEEEEEEEEEE');
+ 
     return this.service.createLessonDetails(dto);
   }
 

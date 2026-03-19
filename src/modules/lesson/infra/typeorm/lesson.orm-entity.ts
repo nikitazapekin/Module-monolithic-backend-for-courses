@@ -43,13 +43,11 @@ export class LessonOrmEntity {
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  // Связь один-к-одному с MapElement
+ 
   @OneToOne(() => MapElementOrmEntity)
   @JoinColumn({ name: 'mapElementId' })
   mapElement: MapElementOrmEntity;
-
-  // Обратная связь один-к-одному с lesson_details
+ 
   @OneToOne(() => LessonDetailsOrmEntity, (ld) => ld.lesson)
   lessonDetails: LessonDetailsOrmEntity;
 }

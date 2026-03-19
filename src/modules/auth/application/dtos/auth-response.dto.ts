@@ -1,4 +1,4 @@
-// src/modules/auth/application/dtos/auth-response.dto.ts
+ 
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 
@@ -57,9 +57,7 @@ export class AuthResponseDto {
   })
   @Expose()
   fullName: string;
-}
-
-// Интерфейс для внутреннего использования с refresh token
+} 
 export interface AuthResponseWithRefreshDto extends AuthResponseDto {
   refreshToken: string;
 }

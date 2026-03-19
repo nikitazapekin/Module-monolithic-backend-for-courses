@@ -62,7 +62,4 @@ export class CourseOrmEntity {
   map: CourseMapOrmEntity;
 }
 
-// Обновляем AdminOrmEntity для связи один-ко-многим:
-// В admin.orm-entity.ts добавляем:
-// @OneToMany(() => CourseOrmEntity, course => course.admin)
-// courses: CourseOrmEntity[];
+ 

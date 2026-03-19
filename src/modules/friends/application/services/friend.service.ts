@@ -20,9 +20,7 @@ export class FriendService {
     private readonly clientRepository: Repository<ClientOrmEntity>,
   ) {}
 
-  /**
-   * Get clientId from auditoryId
-   */
+  
   private async getClientIdFromAuditoryId(auditoryId: string): Promise<string> {
     const client = await this.clientRepository.findOne({
       where: { auditoryId },
@@ -36,10 +34,7 @@ export class FriendService {
 
     return client.id;
   }
-
-  /**
-   * Get client entity by auditoryId
-   */
+ 
   private async getClientByAuditoryId(
     auditoryId: string,
   ): Promise<ClientOrmEntity> {
@@ -55,25 +50,20 @@ export class FriendService {
 
     return client;
   }
-
-  /**
-   * Add a friend
-   */
+ 
   async addFriend(
     clientAuditoryId: string,
     friendAuditoryId: string,
   ): Promise<Friend> {
     try {
-      // Get client IDs from auditory IDs
+    
       const client = await this.getClientByAuditoryId(clientAuditoryId);
       const friend = await this.getClientByAuditoryId(friendAuditoryId);
-
-      // Cannot add yourself as a friend
+ 
       if (client.id === friend.id) {
         throw new BadRequestException('Cannot add yourself as a friend');
       }
-
-      // Check if friendship already exists
+ 
       const existing = await this.friendRepository.findByClientIdAndFriendId(
         client.id,
         friend.id,
@@ -99,10 +89,7 @@ export class FriendService {
       throw new BadRequestException(`Failed to add friend: ${error.message}`);
     }
   }
-
-  /**
-   * Get friend by ID
-   */
+ 
   async findById(id: string): Promise<Friend> {
     const friend = await this.friendRepository.findById(id);
     if (!friend) {
@@ -110,40 +97,25 @@ export class FriendService {
     }
     return friend;
   }
-
-  /**
-   * Get all friends of a client
-   */
+ 
   async findByClientId(clientId: string): Promise<Friend[]> {
     return this.friendRepository.findByClientId(clientId);
   }
-
-  /**
-   * Get all friends of a client by auditoryId
-   */
+ 
   async findByClientAuditoryId(clientAuditoryId: string): Promise<Friend[]> {
     const clientId = await this.getClientIdFromAuditoryId(clientAuditoryId);
     return this.findByClientId(clientId);
   }
-
-  /**
-   * Get all clients who have this client as a friend
-   */
+ 
   async findByFriendId(friendId: string): Promise<Friend[]> {
     return this.friendRepository.findByFriendId(friendId);
   }
-
-  /**
-   * Get all clients who have this client as a friend by auditoryId
-   */
+ 
   async findByFriendAuditoryId(friendAuditoryId: string): Promise<Friend[]> {
     const friendId = await this.getClientIdFromAuditoryId(friendAuditoryId);
     return this.findByFriendId(friendId);
   }
-
-  /**
-   * Search friends by name
-   */
+ 
   async searchFriends(
     clientAuditoryId: string,
     query: string,
@@ -151,8 +123,7 @@ export class FriendService {
     const clientId = await this.getClientIdFromAuditoryId(clientAuditoryId);
 
     const friends = await this.friendRepository.findByClientId(clientId);
-
-    // Get client details for each friend and filter by name
+ 
     const friendDetails = await Promise.all(
       friends.map(async (friendship) => {
         const friendClient = await this.clientRepository.findOne({
@@ -161,8 +132,7 @@ export class FriendService {
         return { friendship, friendClient };
       }),
     );
-
-    // Filter by query (firstName, lastName, or middleName)
+ 
     const lowerQuery = query.toLowerCase();
     const filtered = friendDetails.filter(({ friendClient }) => {
       if (!friendClient) return false;
@@ -180,10 +150,7 @@ export class FriendService {
 
     return filtered.map(({ friendship }) => friendship);
   }
-
-  /**
-   * Remove a friend
-   */
+ 
   async removeFriend(
     clientAuditoryId: string,
     friendAuditoryId: string,
@@ -201,10 +168,7 @@ export class FriendService {
 
     return this.friendRepository.delete(friendship.id);
   }
-
-  /**
-   * Remove friend by friendship ID
-   */
+ 
   async removeFriendById(id: string): Promise<boolean> {
     const friendship = await this.friendRepository.findById(id);
     if (!friendship) {
@@ -212,27 +176,18 @@ export class FriendService {
     }
     return this.friendRepository.delete(id);
   }
-
-  /**
-   * Remove all friends of a client
-   */
+ 
   async removeAllFriends(clientId: string): Promise<boolean> {
     return this.friendRepository.deleteByClientId(clientId);
   }
-
-  /**
-   * Remove all friends of a client by auditoryId
-   */
+ 
   async removeAllFriendsByAuditoryId(
     clientAuditoryId: string,
   ): Promise<boolean> {
     const clientId = await this.getClientIdFromAuditoryId(clientAuditoryId);
     return this.removeAllFriends(clientId);
   }
-
-  /**
-   * Check if friendship exists
-   */
+ 
   async isFriend(
     clientAuditoryId: string,
     friendAuditoryId: string,
@@ -241,10 +196,7 @@ export class FriendService {
     const friendId = await this.getClientIdFromAuditoryId(friendAuditoryId);
     return this.friendRepository.exists(clientId, friendId);
   }
-
-  /**
-   * Search users by name (for adding friends)
-   */
+ 
   async searchUsers(query: string): Promise<ClientOrmEntity[]> {
     const lowerQuery = query.toLowerCase().trim();
 
@@ -259,7 +211,7 @@ export class FriendService {
       ])
       .limit(50);
 
-    // If query is empty, return all users
+    
     if (lowerQuery) {
       queryBuilder
         .where('LOWER(client.firstName) LIKE :query', {

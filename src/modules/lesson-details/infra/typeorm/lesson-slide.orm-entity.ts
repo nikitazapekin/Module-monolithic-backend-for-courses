@@ -26,9 +26,7 @@ export class LessonSlideOrmEntity {
 
   @Column('int')
   orderIndex: number;
-
-  // JSON-поле для хранения массива блоков слайда
-  // (text, codeExample, source, table, image для типа lesson)
+ 
   @Column('simple-json', { nullable: true })
   blocks: object[];
 
@@ -37,8 +35,7 @@ export class LessonSlideOrmEntity {
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  // Связь многие-к-одному с lesson_details
+ 
   @ManyToOne(
     () => require('./lesson-details.orm-entity').LessonDetailsOrmEntity,
     (details: LessonDetailsOrmEntity) => details.slides,

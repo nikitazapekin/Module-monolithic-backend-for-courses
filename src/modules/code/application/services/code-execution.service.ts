@@ -34,7 +34,7 @@ export class CodeExecutionService {
     const workDir = path.join(TEMP_DIR, uniqueId);
 
     try {
-      // Создаем рабочую директорию
+      
       fs.mkdirSync(workDir, { recursive: true });
       console.log(`Work directory created: ${workDir}`);
 
@@ -54,8 +54,7 @@ export class CodeExecutionService {
       }
     } catch (error: any) {
       console.error(`Execution error for ${language}:`, error);
-
-      // Очищаем директорию с игнорированием ошибок
+ 
       try {
         fs.rmSync(workDir, { recursive: true, force: true, maxRetries: 3 });
       } catch (cleanupError) {
@@ -97,11 +96,9 @@ export class CodeExecutionService {
   ): Promise<{ output: string; error?: string }> {
     const filePath = path.join(workDir, 'main.py');
     fs.writeFileSync(filePath, code);
-
-    // Определяем правильную команду Python
+ 
     let pythonCmd = 'python3';
-
-    // Пробуем найти доступный Python
+ 
     try {
       await execAsync('which python3', { timeout: 5000 });
       pythonCmd = 'python3';
@@ -134,12 +131,11 @@ export class CodeExecutionService {
     code: string,
     workDir: string,
   ): Promise<{ output: string; error?: string }> {
-    // Проверяем, есть ли package main
+    
     if (!code.includes('package main')) {
       code = `package main\n\n${code}`;
     }
-
-    // Проверяем, есть ли func main
+ 
     if (!code.includes('func main()')) {
       code = `${code}\n\nfunc main() {\n    \n}`;
     }
@@ -165,8 +161,7 @@ export class CodeExecutionService {
       fs.rmSync(workDir, { recursive: true, force: true });
     }
   }
-  // В code-execution.service.ts - исправленный метод для Java
-
+ 
   private async runJava(
     code: string,
     workDir: string,
@@ -175,7 +170,7 @@ export class CodeExecutionService {
     fs.writeFileSync(filePath, code);
 
     try {
-      // Компилируем
+   
       const { stderr: compileError } = await execAsync(`javac "${filePath}"`, {
         cwd: workDir,
         timeout: 10000,
@@ -185,7 +180,7 @@ export class CodeExecutionService {
         return { output: '', error: compileError };
       }
 
-      // Запускаем Main класс (не Runner!)
+    
       const { stdout, stderr } = await execAsync(`java -cp "${workDir}" Main`, {
         cwd: workDir,
         timeout: 10000,
@@ -212,8 +207,7 @@ export class CodeExecutionService {
     workDir: string,
   ): Promise<{ output: string; error?: string }> {
     const filePath = path.join(workDir, 'Program.cs');
-
-    // Добавляем Main если его нет и нет класса Runner от клиента
+ 
     const hasMain =
       code.includes('static void Main') || code.includes('static int Main');
     const hasRunner =
@@ -226,8 +220,7 @@ export class CodeExecutionService {
     }
 
     fs.writeFileSync(filePath, code);
-
-    // Создаем csproj файл с net7.0
+ 
     const csprojPath = path.join(workDir, 'app.csproj');
     const csprojContent = `<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
@@ -242,7 +235,7 @@ export class CodeExecutionService {
     console.log('Work dir:', workDir);
 
     try {
-      // Сначала проверяем, что dotnet доступен
+    
       try {
         await execAsync('dotnet --version', { timeout: 5000 });
       } catch (e) {
@@ -251,8 +244,7 @@ export class CodeExecutionService {
           error: '.NET SDK not found. Please install .NET SDK 7.0',
         };
       }
-
-      // Сначала компилируем для получения ошибок
+ 
       const buildResult = await execAsync(`dotnet build "${csprojPath}"`, {
         cwd: workDir,
         timeout: 30000,
@@ -261,15 +253,14 @@ export class CodeExecutionService {
       console.log('C# build stdout:', buildResult.stdout);
       console.log('C# build stderr:', buildResult.stderr);
 
-      // Если есть ошибки компиляции - возвращаем их
+     
       if (buildResult.stderr && buildResult.stderr.includes('error')) {
         return {
           output: '',
           error: buildResult.stderr,
         };
       }
-
-      // Запускаем
+ 
       const { stdout, stderr } = await execAsync(
         `dotnet run --project "${csprojPath}" --no-build`,
         {
@@ -296,10 +287,9 @@ export class CodeExecutionService {
           'Ошибка выполнения C#',
       };
     } finally {
-      // Добавляем задержку перед удалением
+     
       await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // Пытаемся удалить с игнорированием ошибок
+ 
       try {
         fs.rmSync(workDir, {
           recursive: true,
@@ -309,7 +299,7 @@ export class CodeExecutionService {
         });
       } catch (cleanupError) {
         console.warn('Cleanup warning (non-critical):', cleanupError);
-        // Не пробрасываем ошибку дальше
+      
       }
     }
   }

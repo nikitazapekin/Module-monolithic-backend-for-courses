@@ -1,4 +1,4 @@
-// map/map.module.ts
+
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CourseMapController } from './interfaces/http/course-map.controller';
@@ -12,8 +12,8 @@ import { LessonRepository } from '../lesson/infra/repositories/lesson.repository
 import { CheckpointRepository } from '../checkpoint/infra/repositories/checkpoint.repository.impl';
 import { LessonOrmEntity } from '../lesson/infra/typeorm/lesson.orm-entity';
 import { CheckpointOrmEntity } from '../checkpoint/infra/typeorm/checkpoint.orm-entity';
-import { LessonDetailsModule } from '../lesson-details/lesson-details.module'; // Импортируем
-import { LessonDetailsCreatorService } from './application/services/lesson-details-creator.service'; // Импортируем
+import { LessonDetailsModule } from '../lesson-details/lesson-details.module';  
+import { LessonDetailsCreatorService } from './application/services/lesson-details-creator.service';  
 
 @Module({
   imports: [

@@ -38,8 +38,7 @@ export class ProfileInfoRepository {
     if (!auditory) {
       return null;
     }
-
-    // Load client separately using auditoryId
+ 
     const client = await this.clientRepository.findOne({
       where: { auditoryId },
     });

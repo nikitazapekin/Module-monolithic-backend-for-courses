@@ -152,15 +152,13 @@ export class CertificateController {
   ): Promise<void> {
     try {
       const certificate = await this.certificateService.findById(id);
-
-      // Конвертируем base64 в буфер
+ 
       const imageBuffer = Buffer.from(certificate.url, 'base64');
-
-      // Устанавливаем заголовки для отображения PNG
+ 
       res.setHeader('Content-Type', 'image/png');
       res.setHeader('Content-Length', imageBuffer.length);
-      res.setHeader('Cache-Control', 'public, max-age=31536000'); // Кэширование на год
-      res.setHeader('Content-Disposition', 'inline'); // Отображать в браузере, а не скачивать
+      res.setHeader('Cache-Control', 'public, max-age=31536000'); 
+      res.setHeader('Content-Disposition', 'inline'); 
 
       res.status(HttpStatus.OK).send(imageBuffer);
     } catch (error) {

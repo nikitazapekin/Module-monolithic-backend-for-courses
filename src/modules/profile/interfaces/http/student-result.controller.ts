@@ -51,7 +51,7 @@ export class StudentResultController {
   async create(
     @Body() createStudentResultDto: CreateStudentResultDto,
   ): Promise<StudentResultResponseDto> {
-    // Получаем clientId по auditoryId из DTO
+  
     const client = await this.clientRepository.findOne({
       where: { auditoryId: createStudentResultDto.auditoryId },
     });
@@ -61,8 +61,7 @@ export class StudentResultController {
         `Client with auditoryId ${createStudentResultDto.auditoryId} not found`,
       );
     }
-
-    // Создаем объект с правильным clientId (первичный ключ clients)
+ 
     const dtoWithClientId = {
       clientId: client.id,
       lessonId: createStudentResultDto.lessonId,
@@ -179,8 +178,7 @@ export class StudentResultController {
       bestResult: StudentResultResponseDto | null;
     }[]
   > {
-    // Получаем clientId (первичный ключ clients) по auditoryId
-
+  
     console.log('GEEET');
 
     const client = await this.clientRepository.findOne({

@@ -26,27 +26,23 @@ export class LessonDetailsOrmEntity {
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  // Связь один-к-одному с таблицей lessons
+ 
   @OneToOne(() => LessonOrmEntity)
   @JoinColumn({ name: 'lessonId' })
   lesson: LessonOrmEntity;
-
-  // Связь один-ко-многим с таблицей lesson__slides
+ 
   @OneToMany(() => LessonSlideOrmEntity, (slide) => slide.lessonDetails, {
     cascade: true,
     eager: true,
   })
   slides: LessonSlideOrmEntity[];
-
-  // Связь один-ко-многим с таблицей lesson__tests
+ 
   @OneToMany(() => LessonTestOrmEntity, (test) => test.lessonDetails, {
     cascade: true,
     eager: true,
   })
   tests: LessonTestOrmEntity[];
-
-  // Связь один-ко-многим с таблицей lesson_comments
+ 
   @OneToMany(() => LessonCommentOrmEntity, (comment) => comment.lessonDetails)
   comments: LessonCommentOrmEntity[];
 }

@@ -25,7 +25,7 @@ export class StudentResultService {
   async create(
     createStudentResultDto: CreateStudentResultDto,
   ): Promise<StudentResult> {
-    // Используем clientId из DTO
+  
     const clientId = createStudentResultDto.clientId!;
 
     const result = new StudentResult(
@@ -127,8 +127,7 @@ export class StudentResultService {
     if (!results || results.length === 0) {
       return null;
     }
-
-    // Возвращаем результат с наибольшим количеством звезд
+ 
     return results.reduce((best, current) =>
       current.countOfStars > best.countOfStars ? current : best,
     );
@@ -144,7 +143,7 @@ export class StudentResultService {
       bestResult: StudentResult | null;
     }[]
   > {
-    // Получаем карту курса по courseId
+  
     const courseMap = await this.courseMapRepository.findByCourseId(courseId);
 
     if (!courseMap) {
@@ -152,31 +151,26 @@ export class StudentResultService {
         `Course map for course ${courseId} not found`,
       );
     }
-
-    // Получаем все уроки для этого курса
+ 
     const lessons = await this.lessonRepository.findAllByCourseMapId(
       courseMap.id,
     );
     const lessonIds = lessons.map((lesson) => lesson.id);
-
-    // Получаем все результаты студента
+ 
     const results = await this.studentResultRepository.findByClientId(clientId);
-
-    // Группируем результаты по lessonId
+ 
     const resultsByLesson = new Map<string, StudentResult[]>();
     for (const result of results) {
       const existing = resultsByLesson.get(result.lessonId) || [];
       existing.push(result);
       resultsByLesson.set(result.lessonId, existing);
     }
-
-    // Создаем мапу lessonId -> orderIndex
+ 
     const lessonOrderIndexMap = new Map<string, number>();
     for (const lesson of lessons) {
       lessonOrderIndexMap.set(lesson.id, lesson.orderIndex);
     }
-
-    // Для каждого урока находим лучший результат
+ 
     return lessonIds.map((lessonId) => {
       const lessonResults = resultsByLesson.get(lessonId) || [];
       const bestResult =

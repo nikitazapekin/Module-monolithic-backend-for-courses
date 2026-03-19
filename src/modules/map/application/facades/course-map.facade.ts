@@ -37,8 +37,7 @@ export class CourseMapFacade {
   async deleteCourseMap(id: string): Promise<{ success: boolean }> {
     return this.courseMapService.deleteCourseMap(id);
   }
-
-  // Элементы карты
+ 
   async addMapElement(
     mapId: string,
     dto: CreateMapElementDto,

@@ -103,8 +103,7 @@ export class CourseMapController {
   ): Promise<{ success: boolean }> {
     return this.courseMapFacade.deleteCourseMap(id);
   }
-
-  // Элементы карты
+ 
   @Post(':mapId/elements')
   @ApiOperation({ summary: 'Добавить элемент на карту курса' })
   @ApiParam({ name: 'mapId', description: 'ID карты курса' })
@@ -118,7 +117,7 @@ export class CourseMapController {
     @Param('mapId') mapId: string,
     @Body() createDto: CreateMapElementDto,
   ): Promise<MapElementDto> {
-    console.log('ELEMENTTTTTTTTT', createDto);
+  
     return this.courseMapFacade.addMapElement(mapId, createDto);
   }
 
@@ -177,21 +176,7 @@ export class CourseMapController {
     console.log('eleeement', elementId);
     return this.courseMapFacade.updateMapElement(elementId, updateDto);
   }
-
-  /*   @Delete('elements/:elementId')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Удалить элемент карты' })
-  @ApiParam({ name: 'elementId', description: 'ID элемента карты' })
-  @ApiResponse({ status: 204, description: 'Элемент удален' })
-  @ApiResponse({ status: 404, description: 'Элемент карты не найден' })
-  async deleteMapElement(@Param('elementId') elementId: string): Promise<{ success: boolean }> {
-
-    console.log("DELETEEEEEEEEEEEE", elementId)
-    return this.courseMapFacade.deleteMapElement(elementId);
-  }
-
- */
-
+ 
   @Delete('elements/:elementId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Удалить элемент карты' })
@@ -201,19 +186,10 @@ export class CourseMapController {
   async deleteMapElement(
     @Param('elementId') elementId: string,
   ): Promise<{ success: boolean }> {
-    // Убираем префикс "elements/" если он есть в ID
+   
     const cleanElementId = elementId.replace(/^elements\//, '');
     console.log('Удаление элемента:', cleanElementId);
     return this.courseMapFacade.deleteMapElement(cleanElementId);
   }
 
-  /*   @Delete('elements/:elementId')
-@HttpCode(HttpStatus.NO_CONTENT)
-@ApiOperation({ summary: 'Удалить элемент карты' })
-@ApiParam({ name: 'elementId', description: 'ID элемента карты' })
-@ApiResponse({ status: 204, description: 'Элемент удален' })
-@ApiResponse({ status: 404, description: 'Элемент карты не найден' })
-async deleteMapElement(@Param('elementId') elementId: string): Promise<{ success: boolean }> {
-  return this.courseMapFacade.deleteMapElement(elementId);
-} */
 }

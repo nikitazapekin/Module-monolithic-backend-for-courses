@@ -11,10 +11,9 @@ export class CompleteTodoHandler
   constructor(private readonly todoService: TodoService) {}
 
   async execute(command: CompleteTodoCommand): Promise<TodoDto> {
-    // 1. Вызываем сервис для завершения задачи
+   
     const todo = await this.todoService.completeTodo(command.todoId);
-
-    // 2. Преобразуем в DTO для ответа
+ 
     return this.toDto(todo);
   }
 

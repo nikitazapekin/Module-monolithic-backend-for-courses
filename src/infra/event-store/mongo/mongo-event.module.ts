@@ -8,33 +8,6 @@ import { EventSchema } from '@infra/schemas/event.schema';
 @Module({})
 export class MongoEventStoreModule {
   static register(): any {
-    /*  
-    static register(): DynamicModule {
-       return {
-            module: MongoEventStoreModule,
-            imports: [
-                ConfigModule,
-                MongooseModule.forRootAsync({
-                    inject: [ConfigService],
-                    useFactory: (configService: ConfigService) => ({
-                        uri: configService.get<string>('MONGO_URL'),
-                    }),
-                }),
-                MongooseModule.forFeature([
-                    {
-                        name: 'Event',
-                        schema: EventSchema,
-                    },
-                ]),
-            ],
-            providers: [
-                {
-                    provide: 'IEventStore',
-                    useClass: MongoEventStore
-                },
-            ],
-            exports: ['IEventStore'],
-        } 
-        */
+   
   }
 }

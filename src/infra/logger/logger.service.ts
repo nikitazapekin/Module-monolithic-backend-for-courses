@@ -28,7 +28,7 @@ export class LoggerService {
             winston.format.colorize(),
             winston.format.simple(),
           ),
-        }), // Console output
+        }),  
         dailyRotateFileTransport,
       ],
     });

@@ -1,4 +1,4 @@
-// КОМАНДА - инструкция "что сделать" (изменить состояние)
+ 
 export class CreateTodoCommand {
   constructor(
     public readonly title: string,

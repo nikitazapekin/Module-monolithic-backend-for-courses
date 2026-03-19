@@ -12,8 +12,7 @@ export interface ICourseRepository {
   }): Promise<{ courses: Course[]; total: number }>;
   update(id: string, updates: Partial<Course>): Promise<boolean>;
   delete(id: string): Promise<boolean>;
-
-  // Специфические запросы
+ 
   findByAdminId(adminId: string): Promise<Course[]>;
   findByStatus(status: CourseStatus): Promise<Course[]>;
   findByTag(tag: string): Promise<Course[]>;

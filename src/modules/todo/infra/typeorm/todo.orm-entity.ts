@@ -1,4 +1,4 @@
-// TypeORM СУЩНОСТЬ - представление в базе данных
+ 
 import {
   Entity,
   PrimaryColumn,

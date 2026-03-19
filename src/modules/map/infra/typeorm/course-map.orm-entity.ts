@@ -29,7 +29,7 @@ export class CourseMapOrmEntity {
   backgroundColor: string;
 
   @Column('text', { nullable: true })
-  backgroundImage?: string; // Base64 encoded
+  backgroundImage?: string;  
 
   @Column({ default: 'no-repeat' })
   backgroundRepeat: string;
@@ -42,22 +42,14 @@ export class CourseMapOrmEntity {
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  // Связь один-к-одному с курсом
+ 
   @ManyToOne(() => CourseOrmEntity, (course) => course.map)
   @JoinColumn({ name: 'courseId' })
   course: CourseOrmEntity;
-
-  // Связь один-ко-многим с элементами карты
+ 
   @OneToMany(() => MapElementOrmEntity, (element) => element.courseMap, {
     cascade: true,
     onDelete: 'CASCADE',
   })
   elements: MapElementOrmEntity[];
 }
-
-// Обновляем CourseOrmEntity для связи один-к-одному:
-// В course.orm-entity.ts добавляем:
-// @OneToOne(() => CourseMapOrmEntity, map => map.course)
-// @JoinColumn()
-// map: CourseMapOrmEntity;

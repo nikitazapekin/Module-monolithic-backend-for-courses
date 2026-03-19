@@ -62,9 +62,6 @@ export class LessonCommentRepository implements ILessonCommentRepository {
     const result = await this.repository.delete({ lessonDetailsId });
     return !!result.affected;
   }
-
-  // ─── helpers ────────────────────────────────────────────────────────────────
-
   private toDomain(entity: LessonCommentOrmEntity): LessonComment {
     const comment = new LessonComment(
       entity.lessonDetailsId,

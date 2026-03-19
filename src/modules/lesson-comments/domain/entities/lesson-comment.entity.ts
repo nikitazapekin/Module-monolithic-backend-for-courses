@@ -37,14 +37,13 @@ export class LessonComment {
   }
 
   public addLike(userId: string): void {
-    // Remove from dislikes if exists
+   
     const dislikeIndex = this.dislikedByUsers.indexOf(userId);
     if (dislikeIndex !== -1) {
       this.dislikedByUsers.splice(dislikeIndex, 1);
       this.dislikes--;
     }
-
-    // Add to likes if not exists
+ 
     const likeIndex = this.likedByUsers.indexOf(userId);
     if (likeIndex === -1) {
       this.likedByUsers.push(userId);
@@ -63,14 +62,13 @@ export class LessonComment {
   }
 
   public addDislike(userId: string): void {
-    // Remove from likes if exists
+ 
     const likeIndex = this.likedByUsers.indexOf(userId);
     if (likeIndex !== -1) {
       this.likedByUsers.splice(likeIndex, 1);
       this.likes--;
     }
-
-    // Add to dislikes if not exists
+ 
     const dislikeIndex = this.dislikedByUsers.indexOf(userId);
     if (dislikeIndex === -1) {
       this.dislikedByUsers.push(userId);

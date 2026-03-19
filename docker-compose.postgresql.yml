@@ -36,9 +36,9 @@ services:
     image: postgres:16
     container_name: postgres
     ports:
-      - "5433:5432"  # Изменяем порт чтобы не конфликтовал с локальным PostgreSQL
+      - "5433:5432"   
     environment:
-      POSTGRES_DB: platform          # ← Создаем БД platform
+      POSTGRES_DB: platform       
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: Belorus2010
     volumes:
@@ -54,7 +54,7 @@ services:
     image: mongo:6
     container_name: mongodb
     ports:
-      - "27018:27017"  # Изменяем порт чтобы не конфликтовал
+      - "27018:27017"  
     volumes:
       - mongo-data:/data/db
     restart: unless-stopped

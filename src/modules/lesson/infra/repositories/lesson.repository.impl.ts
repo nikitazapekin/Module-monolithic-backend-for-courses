@@ -16,8 +16,7 @@ export class LessonRepository implements ILessonRepository {
     console.log(
       `[LessonRepository] Creating lesson with orderIndex: ${lesson.orderIndex}`,
     );
-
-    // Use query builder to explicitly insert values
+ 
     const result = await this.lessonRepository
       .createQueryBuilder()
       .insert()
@@ -37,8 +36,7 @@ export class LessonRepository implements ILessonRepository {
       .execute();
 
     console.log(`[LessonRepository] Insert result:`, result);
-
-    // Fetch the created entity
+ 
     const saved = await this.lessonRepository.findOne({
       where: { id: lesson.id },
     });
@@ -64,7 +62,7 @@ export class LessonRepository implements ILessonRepository {
   }
 
   async findAllByCourseMapId(courseMapId: string): Promise<Lesson[]> {
-    // Используем query builder для связи через map_element
+    
     const entities = await this.lessonRepository
       .createQueryBuilder('lesson')
       .leftJoin('lesson.mapElement', 'mapElement')
@@ -122,7 +120,7 @@ export class LessonRepository implements ILessonRepository {
     entity.description = lesson.description;
     entity.content = lesson.content;
     entity.duration = lesson.duration;
-    entity.orderIndex = lesson.orderIndex ?? 1; // Ensure orderIndex is never null/undefined
+    entity.orderIndex = lesson.orderIndex ?? 1;  
     entity.isPublished = lesson.isPublished;
     entity.createdAt = lesson.createdAt;
     entity.updatedAt = lesson.updatedAt;

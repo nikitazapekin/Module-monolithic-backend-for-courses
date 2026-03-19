@@ -65,7 +65,7 @@ export class MapElement {
     } else {
       this.id = this.generateId();
     }
-    // this.id = this.generateId();
+ 
     this.type = type;
     this.courseMapId = courseMapId;
     this.title = title;

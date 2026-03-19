@@ -6,7 +6,7 @@ export class CourseMap {
   public width: number;
   public height: number;
   public backgroundColor: string;
-  public backgroundImage?: string; // Base64 encoded
+  public backgroundImage?: string;  
   public backgroundRepeat: string;
   public backgroundSize: string;
   public createdAt: Date;

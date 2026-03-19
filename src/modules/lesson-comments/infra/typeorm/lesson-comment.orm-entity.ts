@@ -44,8 +44,7 @@ export class LessonCommentOrmEntity {
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  // Связь многие-к-одному с lesson_details
+ 
   @ManyToOne(
     () => LessonDetailsOrmEntity,
     (lessonDetails) => lessonDetails.comments,
@@ -55,16 +54,14 @@ export class LessonCommentOrmEntity {
   )
   @JoinColumn({ name: 'lessonDetailsId' })
   lessonDetails: LessonDetailsOrmEntity;
-
-  // Связь многие-к-одному с родительским комментарием (для ответов)
+ 
   @ManyToOne(() => LessonCommentOrmEntity, (parent) => parent.replies, {
     onDelete: 'CASCADE',
     nullable: true,
   })
   @JoinColumn({ name: 'parentId' })
   parent: LessonCommentOrmEntity;
-
-  // Связь один-ко-многим с ответами
+ 
   @OneToMany(() => LessonCommentOrmEntity, (reply) => reply.parent)
   replies: LessonCommentOrmEntity[];
 }

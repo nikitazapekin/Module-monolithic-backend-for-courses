@@ -1,4 +1,4 @@
-// ДОМЕННОЕ СОБЫТИЕ - что-то важное произошло в домене
+ 
 export class TodoCreatedEvent {
   constructor(
     public readonly todoId: string,

@@ -27,10 +27,7 @@ export class CertificateService {
     @InjectRepository(AuditoryOrmEntity)
     private readonly auditoryRepository: Repository<AuditoryOrmEntity>,
   ) {}
-
-  /**
-   * Get clientId from auditoryId
-   */
+ 
   private async getClientIdFromAuditoryId(auditoryId: string): Promise<string> {
     const client = await this.clientRepository.findOne({
       where: { auditoryId },
@@ -44,10 +41,7 @@ export class CertificateService {
 
     return client.id;
   }
-
-  /**
-   * Generate certificate image using Puppeteer
-   */
+ 
   private async generateCertificateImage(
     studentName: string,
     courseName: string,
@@ -80,8 +74,7 @@ export class CertificateService {
       await page.setContent(html, {
         waitUntil: 'networkidle0',
       });
-
-      // Wait for images to load
+ 
       await page
         .evaluate(() => {
           return Promise.all(
@@ -97,7 +90,7 @@ export class CertificateService {
           );
         })
         .catch(() =>
-          console.log('⚠️ Some images failed to load, continuing...'),
+          console.log(' Some images failed to load, continuing...'),
         );
 
       const screenshot = await page.screenshot({
@@ -111,18 +104,14 @@ export class CertificateService {
       });
 
       await browser.close();
-
-      // Convert buffer to base64 (without prefix)
+ 
       return Buffer.from(screenshot).toString('base64');
     } catch (error) {
       console.error('Error generating certificate image:', error);
       throw new BadRequestException('Failed to generate certificate image');
     }
   }
-
-  /**
-   * Create HTML template for certificate
-   */
+ 
   private createCertificateHTML(
     name: string,
     course: string,
@@ -346,12 +335,9 @@ export class CertificateService {
 </body>
 </html>`;
   }
-
-  /**
-   * Generate certificate URL (для отображения PNG)
-   */
+ 
   private generateCertificateUrl(certificateId: string): string {
-    // Используем переменную окружения или localhost по умолчанию
+   
     const baseUrl = process.env.API_URL || 'http://localhost:3002';
     return `${baseUrl}/certificates/${certificateId}`;
   }
@@ -536,10 +522,7 @@ export class CertificateService {
   ): Promise<CertificateSearchResult> {
     return this.certificateRepository.search(params);
   }
-
-  /**
-   * Проверка валидности base64 изображения
-   */
+ 
   validateBase64Image(base64String: string): boolean {
     try {
       const buffer = Buffer.from(base64String, 'base64');
@@ -548,10 +531,7 @@ export class CertificateService {
       return false;
     }
   }
-
-  /**
-   * Получение размера изображения в байтах
-   */
+ 
   getImageSize(id: string): Promise<number> {
     return this.findById(id).then(
       (cert) => Buffer.from(cert.url, 'base64').length,

@@ -1,9 +1,9 @@
 export class Avatar {
   public id: string;
   public auditoryId: string;
-  public imageData: string; // base64 encoded image
+  public imageData: string;  
   public mimeType: string;
-  public fileSize: number; // in bytes
+  public fileSize: number; 
   public createdAt: Date;
   public updatedAt: Date;
 

@@ -3,7 +3,7 @@ import {
   Inject,
   NotFoundException,
   BadRequestException,
-  ConflictException,
+ 
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
@@ -20,10 +20,7 @@ import { ClientOrmEntity } from '../../../auth/infra/typeorm/client.orm-entity';
 import { StudentResultOrmEntity } from '../../../profile/infra/typeorm/student-result.orm-entity';
 import { StudentLevelOrmEntity } from '../../../coding-tasks/infra/typeorm/student-level.orm-entity';
 import { SolvedTaskOrmEntity } from '../../../coding-tasks/infra/typeorm/solved-task.orm-entity';
-
-/**
- * Achievement definitions configuration
- */
+ 
 export const ACHIEVEMENT_DEFINITIONS: {
   [key in AchievementTier]: {
     title: string;
@@ -33,7 +30,7 @@ export const ACHIEVEMENT_DEFINITIONS: {
     threshold: number;
   };
 } = {
-  // Student Results achievements (based on countOfStars > 1)
+  
   [AchievementTier.NOVICE]: {
     title: 'Novice',
     description: 'Выполнил хотя бы 1 урок с более чем 1 звездой',
@@ -108,10 +105,7 @@ export class AchievementService {
     private readonly solvedTaskRepository: Repository<SolvedTaskOrmEntity>,
     private readonly dataSource: DataSource,
   ) {}
-
-  /**
-   * Get clientId from auditoryId
-   */
+ 
   private async getClientIdFromAuditoryId(auditoryId: string): Promise<string> {
     const client = await this.clientRepository.findOne({
       where: { auditoryId },
@@ -125,10 +119,7 @@ export class AchievementService {
 
     return client.id;
   }
-
-  /**
-   * Get student results count with countOfStars > 1
-   */
+ 
   private async getStudentResultsCount(clientId: string): Promise<number> {
     const count = await this.studentResultRepository
       .createQueryBuilder('student_result')
@@ -138,10 +129,7 @@ export class AchievementService {
 
     return count;
   }
-
-  /**
-   * Get solved tasks count for a client
-   */
+ 
   private async getSolvedTasksCount(clientId: string): Promise<number> {
     const studentLevel = await this.studentLevelRepository.findOne({
       where: { clientId },
@@ -154,15 +142,12 @@ export class AchievementService {
 
     return studentLevel.solvedTasks?.length || 0;
   }
-
-  /**
-   * Check and award achievements for a client
-   */
+ 
   async checkAndAwardAchievements(auditoryId: string): Promise<Achievement[]> {
     const clientId = await this.getClientIdFromAuditoryId(auditoryId);
     const awardedAchievements: Achievement[] = [];
 
-    // Check student results achievements
+    
     const studentResultsCount = await this.getStudentResultsCount(clientId);
 
     for (const tier of [
@@ -191,8 +176,7 @@ export class AchievementService {
           const saved = await this.achievementRepository.save(achievement);
           awardedAchievements.push(saved);
         } catch (error) {
-          // Игнорируем ошибку уникального ограничения, если достижение уже было создано
-          // PostgreSQL: 23505, SQLite: SQLITE_CONSTRAINT
+         
           const isUniqueViolation =
             error instanceof QueryFailedError &&
             (error.driverError?.code === '23505' ||
@@ -204,8 +188,7 @@ export class AchievementService {
         }
       }
     }
-
-    // Check solved tasks achievements
+ 
     const solvedTasksCount = await this.getSolvedTasksCount(clientId);
 
     for (const tier of [
@@ -234,8 +217,7 @@ export class AchievementService {
           const saved = await this.achievementRepository.save(achievement);
           awardedAchievements.push(saved);
         } catch (error) {
-          // Игнорируем ошибку уникального ограничения, если достижение уже было создано
-          // PostgreSQL: 23505, SQLite: SQLITE_CONSTRAINT
+         
           const isUniqueViolation =
             error instanceof QueryFailedError &&
             (error.driverError?.code === '23505' ||
@@ -250,10 +232,7 @@ export class AchievementService {
 
     return awardedAchievements;
   }
-
-  /**
-   * Manually create an achievement
-   */
+ 
   async create(
     createAchievementDto: CreateAchievementDto,
   ): Promise<Achievement> {
@@ -336,17 +315,11 @@ export class AchievementService {
   async deleteByClientId(clientId: string): Promise<boolean> {
     return this.achievementRepository.deleteByClientId(clientId);
   }
-
-  /**
-   * Get all achievement definitions
-   */
+ 
   getAchievementDefinitions(): typeof ACHIEVEMENT_DEFINITIONS {
     return ACHIEVEMENT_DEFINITIONS;
   }
-
-  /**
-   * Get progress towards achievements for a client
-   */
+ 
   async getAchievementProgress(auditoryId: string): Promise<{
     studentResults: {
       current: number;

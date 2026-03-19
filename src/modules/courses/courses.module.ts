@@ -14,9 +14,9 @@ import { MapModule } from '@modules/map/map.module';
     TypeOrmModule.forFeature([
       CourseOrmEntity,
       AdminOrmEntity,
-      AuditoryOrmEntity, // Добавляем если нужно
+      AuditoryOrmEntity, 
     ]),
-    MapModule, // Импортируем MapModule
+    MapModule, 
   ],
   controllers: [CourseController],
   providers: [

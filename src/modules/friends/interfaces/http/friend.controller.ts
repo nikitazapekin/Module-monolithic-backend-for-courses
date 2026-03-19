@@ -43,8 +43,7 @@ export class FriendController {
     );
     return this.mapToResponse(friendship);
   }
-
-  // Specific routes MUST come before parameterized routes (:id, :clientId, etc.)
+ 
   @Get('search-users')
   @ApiOperation({
     summary: 'Поиск пользователей по имени для добавления в друзья',
@@ -243,8 +242,7 @@ export class FriendController {
         response.friendId = friendship.friendId;
         response.createdAt = friendship.createdAt;
         response.updatedAt = friendship.updatedAt;
-
-        // Get friend client details
+ 
         const friendClientId = inverse
           ? friendship.clientId
           : friendship.friendId;

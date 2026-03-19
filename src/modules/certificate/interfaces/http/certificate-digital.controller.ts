@@ -30,7 +30,7 @@ export class CertificateDigitalController {
     @Res() res: Response,
   ): Promise<void> {
     try {
-      // Убираем .psd если есть
+     
       const cleanId = id.replace('.psd', '');
 
       const certificate = await this.certificateService.findById(cleanId);

@@ -1,4 +1,4 @@
-// РЕАЛИЗАЦИЯ РЕПОЗИТОРИЯ - адаптер для TypeORM
+ 
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -14,8 +14,7 @@ export class TodoRepository implements ITodoRepository {
   ) {}
 
   async save(todo: Todo): Promise<any> {
-    // return "TESTTT"
-    // Преобразуем доменную сущность в ORM сущность
+    
     const ormEntity = this.toOrmEntity(todo);
     const saved = await this.ormRepository.save(ormEntity);
     return this.toDomain(saved);
@@ -40,11 +39,7 @@ export class TodoRepository implements ITodoRepository {
   async delete(id: string): Promise<boolean> {
     return false;
   }
-  /*  async delete(id: string): Promise<boolean> {
-    const result = await this.ormRepository.delete(id);
-    return result.affected > 0;
-  }
- */
+  
   async findIncomplete(): Promise<Todo[]> {
     return this.findByStatus(false);
   }
@@ -52,18 +47,7 @@ export class TodoRepository implements ITodoRepository {
   async markAllAsCompleted(): Promise<number> {
     return 1;
   }
-  /*   async markAllAsCompleted(): Promise<number> {
-    const result = await this.ormRepository
-      .createQueryBuilder()
-      .update()
-      .set({ isCompleted: true })
-      .where('isCompleted = :completed', { completed: false })
-      .execute();
-    
-    return result.affected;
-  } */
-
-  // ✅ ПРЕОБРАЗОВАНИЯ (маппинг)
+ 
   private toOrmEntity(todo: Todo): TodoOrmEntity {
     const entity = new TodoOrmEntity();
     entity.id = todo.id;
@@ -77,13 +61,11 @@ export class TodoRepository implements ITodoRepository {
 
   private toDomain(entity: TodoOrmEntity): Todo {
     const todo = new Todo(entity.title, entity.description, entity.id);
-
-    // Восстанавливаем состояние
+ 
     if (entity.isCompleted) {
       todo.complete();
     }
-
-    // Восстанавливаем даты (приватные поля, нужен рефлексия или сеттеры)
+ 
     Object.assign(todo, {
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,

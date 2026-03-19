@@ -1,4 +1,4 @@
-// lesson-comments/lesson-comments.module.ts
+ 
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LessonCommentController } from './interfaces/http/lesson-comment.controller';

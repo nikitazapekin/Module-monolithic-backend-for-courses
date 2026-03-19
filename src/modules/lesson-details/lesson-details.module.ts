@@ -1,4 +1,4 @@
-// lesson-details/lesson-details.module.ts
+
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LessonDetailsController } from './interfaces/http/lesson-details.controller';
@@ -21,7 +21,7 @@ import { MapModule } from '@modules/map/map.module';
       LessonTestOrmEntity,
       LessonOrmEntity,
     ]),
-    forwardRef(() => MapModule), // Добавляем для избежания циклических зависимостей
+    forwardRef(() => MapModule),  
   ],
   controllers: [LessonDetailsController],
   providers: [
@@ -40,6 +40,6 @@ import { MapModule } from '@modules/map/map.module';
       useClass: LessonTestRepository,
     },
   ],
-  exports: [LessonDetailsService, LessonDetailsFacade], // Экспортируем фасад
+  exports: [LessonDetailsService, LessonDetailsFacade],  
 })
 export class LessonDetailsModule {}

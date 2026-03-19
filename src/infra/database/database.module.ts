@@ -9,7 +9,7 @@ import { DatabaseFactory } from './database.config';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        //    const dbType: string = configService.get<string>('DB_TYPE') || 'sqlite'
+       
 
         const dbType: string = 'postgres';
         return DatabaseFactory.createDatabaseConnection(dbType, configService);

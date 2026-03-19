@@ -62,8 +62,7 @@ export class JwtService {
       return null;
     }
   }
-
-  // В методе createAuthResponse можно оставить возвращение refreshToken для внутреннего использования
+ 
   async createAuthResponse(
     userId: string,
     email: string,

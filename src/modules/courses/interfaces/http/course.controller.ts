@@ -51,7 +51,7 @@ export class CourseController {
 
   @Post('test')
   async testCreateCourse(@Req() req: Request, @Body() body: any) {
-    console.log('TESYTTTTTT');
+  
     return {
       message: 'pong',
       timestamp: new Date().toISOString(),
@@ -66,16 +66,13 @@ export class CourseController {
     @Req() req: any,
   ): Promise<CourseResponseDto> {
     console.log('=== CREATE COURSE CONTROLLER ===');
-
-    // 1. Получаем auditoryId из JWT токена
+ 
     const auditoryId = this.extractAuditoryIdFromToken(req);
     console.log('Extracted auditoryId:', auditoryId);
 
     if (!auditoryId) {
       throw new UnauthorizedException('Invalid token or user not found');
-    }
-
-    // 2. Находим администратора по auditoryId
+    } 
     const admin = await this.findAdminByAuditoryId(auditoryId);
     console.log('Found admin:', admin);
 
@@ -83,7 +80,7 @@ export class CourseController {
       throw new UnauthorizedException('Admin not found for this user');
     }
 
-    // 3. Проверяем роль пользователя
+   
     const auditory = await this.auditoryRepository.findOne({
       where: { id: auditoryId },
     });
@@ -93,8 +90,7 @@ export class CourseController {
     }
 
     console.log('Using adminId for course:', admin.id);
-
-    // 4. Создаем курс с admin.id (а не auditory.id!)
+ 
     return this.courseService.createCourse(createCourseDto, admin.id);
   }
 
@@ -157,7 +153,7 @@ export class CourseController {
     type: [CourseResponseDto],
   })
   async getMyCourses(@CurrentUser() user: any): Promise<CourseResponseDto[]> {
-    // Находим adminId по auditoryId
+ 
     const auditoryId = user.id || user.sub;
     const admin = await this.findAdminByAuditoryId(auditoryId);
 
@@ -256,8 +252,7 @@ export class CourseController {
     return this.courseService.publishCourse(id, admin.id);
   }
 
-  // Вспомогательные методы
-
+ 
   private extractAuditoryIdFromToken(req: any): string {
     const authHeader = req.headers.authorization;
 
@@ -273,7 +268,7 @@ export class CourseController {
         Buffer.from(base64Payload, 'base64').toString(),
       );
 
-      return payload.sub; // auditory.id из JWT
+      return payload.sub; 
     } catch (error) {
       console.error('Token decode error:', error);
       throw new UnauthorizedException('Invalid token');
@@ -283,7 +278,7 @@ export class CourseController {
   private async findAdminByAuditoryId(
     auditoryId: string,
   ): Promise<AdminOrmEntity | null> {
-    // Находим администратора через связь с auditory
+ 
     const admin = await this.adminRepository.findOne({
       where: { auditoryId: auditoryId },
     });

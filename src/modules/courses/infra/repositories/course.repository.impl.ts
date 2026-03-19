@@ -54,18 +54,13 @@ export class CourseRepository implements ICourseRepository {
   }
 
   async update(id: string, updates: Partial<Course>): Promise<boolean> {
-    /*    const result = await this.courseRepository.update(id, {
-      ...updates,
-      updatedAt: new Date(),
-    });
-    return result.affected > 0; */
+    
 
     return true;
   }
 
   async delete(id: string): Promise<boolean> {
-    /*   const result = await this.courseRepository.delete(id);
-    return result.affected > 0; */
+   
 
     return true;
   }
@@ -104,8 +99,7 @@ export class CourseRepository implements ICourseRepository {
     });
     return count > 0;
   }
-
-  // Преобразования Domain ↔ ORM
+ 
   private toCourseDomain(entity: CourseOrmEntity): Course {
     const course = new Course(
       entity.title,

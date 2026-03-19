@@ -290,10 +290,7 @@ export class CodingTasksService {
     };
   }
 
-  /**
-   * Level N requires 10^(N-1) experience.
-   * Level 2 = 10, Level 3 = 100, Level 4 = 1000, etc.
-   */
+  
   private getRequiredExperience(level: number): number {
     return Math.pow(10, level - 1);
   }
@@ -345,13 +342,12 @@ export class CodingTasksService {
     const markerEnd = `===RESULT_END_${index}===`;
 
     const argsStr = args ? this.formatArgsForCode(args, 'java', argumentScheme) : input;
-
-    // Проверяем, есть ли уже класс в коде
+ 
     const hasClass = userCode.includes('public class');
     const hasMain = userCode.includes('public static void main');
 
     if (hasMain) {
-      // Если есть main метод, заменяем его на наш тестовый
+    
       return userCode.replace(
         /public\s+static\s+void\s+main\s*\(String\[\]\s*args\)\s*\{[\s\S]*?\}/,
         `public static void main(String[] args) {
@@ -399,7 +395,7 @@ export class CodingTasksService {
         }`,
       );
     } else if (hasClass) {
-      // Если есть класс, добавляем main метод в конец
+     
       const codeWithoutLastBrace = userCode.trim().replace(/\}\s*$/, '');
       return `${codeWithoutLastBrace}
 
@@ -448,7 +444,7 @@ export class CodingTasksService {
     }
 }`;
     } else {
-      // Если нет класса, оборачиваем в класс
+     
       return `public class Main {
 ${userCode}
 
@@ -512,7 +508,6 @@ ${userCode}
 
     const argsStr = args ? this.formatArgsForCode(args, 'csharp', argumentScheme) : input;
 
-    // Проверяем, есть ли уже класс в коде
     const hasClass =
       userCode.includes('class Program') || userCode.includes('class Solution');
     const hasMain =
@@ -527,7 +522,7 @@ using System.Collections.Generic;
 `;
 
     if (hasMain) {
-      // Если есть Main метод, заменяем его на наш тестовый
+      
       return (
         usings +
         userCode.replace(
@@ -576,8 +571,7 @@ using System.Collections.Generic;
         }`,
         )
       );
-    } else if (hasClass) {
-      // Если есть класс, добавляем Main метод
+    } else if (hasClass) { 
       return (
         usings +
         userCode.replace(
@@ -629,7 +623,7 @@ using System.Collections.Generic;
         )
       );
     } else {
-      // Если нет класса, создаём класс Program
+    
       return (
         usings +
         `${userCode}
@@ -748,7 +742,7 @@ func main() {
     const endIdx = output.indexOf(markerEnd);
 
     if (startIdx === -1 || endIdx === -1) {
-      // Если не нашли маркеры с индексом, пробуем без индекса
+      
       const startIdx2 = output.indexOf('===RESULT_START===');
       const endIdx2 = output.indexOf('===RESULT_END===');
       if (startIdx2 === -1 || endIdx2 === -1) return output.trim();
@@ -904,7 +898,7 @@ func main() {
     language: string,
     argumentScheme?: ArgumentSchema[],
   ): string {
-    // Для Java и C# используем специальное форматирование
+   
     if (language === 'java' || language === 'csharp') {
       return this.formatArgsForTypedLanguages(args, language, argumentScheme);
     }
@@ -942,31 +936,27 @@ func main() {
 
         const cleanVal = cleanValue(arg.value);
 
-        // Если есть objectValues и схема с типом object
+      
         if (arg.objectValues && Object.keys(arg.objectValues).length > 0 && scheme?.type === 'object') {
           const fields = Object.values(arg.objectValues).join(', ');
-
-          // Используем имя класса из схемы или генерируем
+ 
           const className = scheme.className || scheme.name.charAt(0).toUpperCase() + scheme.name.slice(1);
 
           return `new ${className}(${fields})`;
         }
-
-        // Строки в кавычках
+ 
         if (arg.value && arg.value.startsWith('"')) {
           return cleanVal;
         }
 
-        // Булевы
+       
         if (cleanVal.toLowerCase() === 'true') return 'true';
         if (cleanVal.toLowerCase() === 'false') return 'false';
-
-        // Числа
+ 
         if (/^-?\d+(\.\d+)?$/.test(cleanVal)) {
           return cleanVal;
         }
-
-        // Строки без кавычек - добавляем кавычки
+ 
         if (cleanVal && !cleanVal.startsWith('[') && !cleanVal.startsWith('{')) {
           return `"${cleanVal}"`;
         }

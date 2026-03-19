@@ -44,19 +44,14 @@ export class AuthRepository implements IAuthRepository {
     return this.toAuditoryDomain(saved);
   }
 
-  /*   async updateAuditory(id: string, updates: Partial<Auditory>): Promise<boolean> {
-    const result = await this.auditoryRepository.update(id, updates);
-    return result.affected > 0;
-  } */
-
+ 
   async updateAuditory(
     id: string,
     updates: Partial<Auditory>,
   ): Promise<boolean> {
     return false;
   }
-
-  // Client методы
+ 
   async findClientByAuditoryId(auditoryId: string): Promise<Client | null> {
     const entity = await this.clientRepository.findOne({
       where: { auditoryId },
@@ -70,17 +65,12 @@ export class AuthRepository implements IAuthRepository {
     const saved = await this.clientRepository.save(entity);
     return this.toClientDomain(saved);
   }
-
-  /*  async updateClient(id: string, updates: Partial<Client>): Promise<boolean> {
-    const result = await this.clientRepository.update(id, updates);
-    return result.affected > 0;
-  } */
-
+ 
   async updateClient(id: string, updates: Partial<Client>): Promise<boolean> {
     return true;
   }
-
-  // Admin методы
+ 
+ 
   async findAdminByAuditoryId(auditoryId: string): Promise<Admin | null> {
     const entity = await this.adminRepository.findOne({
       where: { auditoryId },
@@ -94,27 +84,16 @@ export class AuthRepository implements IAuthRepository {
     const saved = await this.adminRepository.save(entity);
     return this.toAdminDomain(saved);
   }
-
-  /*   async updateAdmin(id: string, updates: Partial<Admin>): Promise<boolean> {
-    const result = await this.adminRepository.update(id, updates);
-    return result.affected > 0;
-  }
- */
+ 
   async updateAdmin(id: string, updates: Partial<Admin>): Promise<boolean> {
     return true;
   }
-
-  // Общие методы
+ 
   async deactivateUser(auditoryId: string): Promise<boolean> {
-    /*  const result = await this.auditoryRepository.update(auditoryId, {
-      isActive: false,
-      updatedAt: new Date(),
-    });
-    return result.affected > 0; */
+    
     return true;
   }
-
-  // Преобразования Domain ↔ ORM
+ 
   private toAuditoryDomain(entity: AuditoryOrmEntity): Auditory {
     const auditory = new Auditory(
       entity.email,

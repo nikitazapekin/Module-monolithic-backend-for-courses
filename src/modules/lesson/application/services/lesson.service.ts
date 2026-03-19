@@ -1,4 +1,4 @@
-// lesson/application/services/lesson.service.ts
+ 
 import {
   Injectable,
   Inject,
@@ -33,16 +33,15 @@ export class LessonService {
     if (existingLesson) {
       throw new ConflictException('Lesson already exists for this map element');
     }
-
-    // Auto-calculate orderIndex if not provided
+ 
     let orderIndex = dto.orderIndex;
     if (orderIndex === undefined || orderIndex === null) {
-      // Get the map element to find the courseMapId
+    
       const mapElement = await this.courseMapRepository.findElementById(
         dto.mapElementId,
       );
       if (mapElement) {
-        // Get all lessons for this course map to find the max orderIndex
+      
         const allLessons = await this.lessonRepository.findAllByCourseMapId(
           mapElement.courseMapId,
         );
@@ -129,8 +128,7 @@ export class LessonService {
     if (!lesson) {
       throw new NotFoundException('Lesson not found');
     }
-
-    // Если пытаемся изменить mapElementId, проверяем, что он уникален
+ 
     if (dto.mapElementId && dto.mapElementId !== lesson.mapElementId) {
       const existingLesson = await this.lessonRepository.findByMapElementId(
         dto.mapElementId,

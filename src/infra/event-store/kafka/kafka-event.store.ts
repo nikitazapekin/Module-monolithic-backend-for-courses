@@ -38,10 +38,7 @@ export class KafkaEventStore implements IEventStore {
     });
   }
   readEvent(streamId: string): Promise<any[]> {
-    /**
-     * Kafka is not designed for direct querying of past events like a traditional database.
-     * Instead, it uses a streaming model, where consumers subscribe to topics and receive events in real-time.
-     */
+     
     return Promise.reject(
       new Error(
         'Kafka is a write-optimized system; reading requires consumer groups.',

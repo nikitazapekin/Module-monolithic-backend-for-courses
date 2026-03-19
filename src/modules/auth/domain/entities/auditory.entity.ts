@@ -24,7 +24,7 @@ export class Auditory {
 
     this.id = this.generateId();
     this.email = email.toLowerCase().trim();
-    this.password = password; // В реальности должен быть хеш
+    this.password = password;  
     this.role = role;
     this.isActive = true;
     this.createdAt = new Date();

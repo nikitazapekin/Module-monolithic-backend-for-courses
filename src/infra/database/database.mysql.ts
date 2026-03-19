@@ -16,8 +16,8 @@ export class MySQLDatabase {
       password: this.configService.get<string>('DB_PASSWORD', 'password'),
       database: this.configService.get<string>('DB_NAME', 'database'),
       entities,
-      synchronize: false, // Set to false in production
-      logging: false, // Disable logging in production
+      synchronize: false,  
+      logging: false,  
     };
   }
 
@@ -30,14 +30,13 @@ export class MySQLDatabase {
         const fullPath = join(directoryPath, file);
         const fileStat = statSync(fullPath);
 
-        // If it's a directory, recursively look for entities
         if (fileStat.isDirectory()) {
           entities = [...entities, ...this.loadEntitiesFromDirectory(fullPath)];
         } else if (
           file.endsWith('.orm-entity.ts') ||
           file.endsWith('.orm-entity.js')
         ) {
-          // If it matches the entity file format, load it
+      
           entities.push(require(fullPath).default);
         }
       });
@@ -54,7 +53,6 @@ export class MySQLDatabase {
     console.log('Root path: ', rootPath);
     const entities: any[] = [];
 
-    // Traverse the entire directory, looking for all entities folders
     const traverseDir = (dir: string) => {
       const files = readdirSync(dir);
 
@@ -64,18 +62,17 @@ export class MySQLDatabase {
 
         if (fileStat.isDirectory()) {
           if (file.toLowerCase() === 'entities') {
-            // If it's an entities folder, load the entities inside
+         
             const entityFiles = this.loadEntitiesFromDirectory(fullPath);
 
             entities.push(...entityFiles);
           } else {
-            traverseDir(fullPath); // If it's not an entities folder, continue recursion
+            traverseDir(fullPath); 
           }
         }
       });
     };
 
-    // Start traversing the src or dist folder
     traverseDir(rootPath);
 
     console.log('Loaded Entities: ', entities);

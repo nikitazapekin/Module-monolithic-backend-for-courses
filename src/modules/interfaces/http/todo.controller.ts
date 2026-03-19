@@ -1,4 +1,4 @@
-// REST КОНТРОЛЛЕР - входная точка для HTTP запросов
+ 
 import {
   Controller,
   Get,
@@ -23,12 +23,7 @@ export class TodoController {
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
   ) {}
-
-  /*   @Get()
-  @ApiOperation({ summary: 'Get all todos' })
-  async getAllTodos() {
-    return this.queryBus.execute(new GetAllTodosQuery());
-  } */
+ 
 
   @Get(':id')
   @ApiOperation({ summary: 'Get todo by ID' })
@@ -40,12 +35,11 @@ export class TodoController {
   @ApiOperation({ summary: 'Create a new todo' })
   async createTodo(@Body() createTodoDto: CreateTodoDto) {
     console.log('DTO', createTodoDto);
-    //    return "TESST"
+ 
     return this.commandBus.execute(
       new CreateTodoCommand(createTodoDto.title, createTodoDto.description),
     );
-    /*
-     */
+  
   }
 
   @Put(':id/complete')
@@ -57,7 +51,7 @@ export class TodoController {
   @Delete(':id')
   @ApiOperation({ summary: 'Delete todo' })
   async deleteTodo(@Param('id') id: string) {
-    // Добавь команду DeleteTodoCommand
+   
     return { message: 'Todo deleted', id };
   }
 }

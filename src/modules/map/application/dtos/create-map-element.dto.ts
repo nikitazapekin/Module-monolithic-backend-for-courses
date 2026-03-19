@@ -60,7 +60,7 @@ export class CreateMapElementDto {
 
   @ApiProperty({
     description: 'Эмодзи',
-    example: '😀',
+    example: '',
     required: false,
   })
   @IsString()
@@ -191,8 +191,7 @@ export class CreateMapElementDto {
   })
   @IsOptional()
   breakpoints?: Record<string, any>;
-
-  // Дополнительные поля для уроков
+ 
   @ApiProperty({
     description: 'Содержимое урока (для type: lesson)',
     required: false,
@@ -224,8 +223,7 @@ export class CreateMapElementDto {
   @IsBoolean()
   @IsOptional()
   published?: boolean;
-
-  // Дополнительные поля для контрольных точек
+ 
   @ApiProperty({
     description: 'Тип контрольной точки (для type: checkpoint)',
     enum: CheckpointType,

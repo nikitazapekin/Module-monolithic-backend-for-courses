@@ -49,7 +49,7 @@ export class Client {
   }
 
   private normalizePhone(phone: string): string {
-    // Убираем все нецифровые символы кроме +
+ 
     return phone.replace(/[^\d+]/g, '');
   }
 

@@ -56,8 +56,7 @@ export class CheckpointOrmEntity {
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  // Связь один-к-одному с MapElement
+ 
   @OneToOne(() => MapElementOrmEntity)
   @JoinColumn({ name: 'mapElementId' })
   mapElement: MapElementOrmEntity;

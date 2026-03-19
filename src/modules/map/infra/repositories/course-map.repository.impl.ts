@@ -17,7 +17,7 @@ export class CourseMapRepository implements ICourseMapRepository {
     private readonly mapElementRepository: Repository<MapElementOrmEntity>,
   ) {}
 
-  // CourseMap methods
+  
   async create(courseMap: CourseMap): Promise<CourseMap> {
     const entity = this.toCourseMapOrmEntity(courseMap);
     const saved = await this.courseMapRepository.save(entity);
@@ -64,10 +64,7 @@ export class CourseMapRepository implements ICourseMapRepository {
   async createElement(element: MapElement): Promise<MapElement> {
     try {
       const entity = this.toMapElementOrmEntity(element);
-
-      // Если у элемента нет ID - TypeORM сгенерирует его
-      // Если ID есть - используем его
-
+ 
       console.log('Создание элемента с ID:', element.id);
 
       const saved = await this.mapElementRepository.save(entity);
@@ -133,7 +130,7 @@ export class CourseMapRepository implements ICourseMapRepository {
     });
     return result.affected! > 0;
   }
-  // Преобразования Domain ↔ ORM
+   
   private toCourseMapDomain(entity: CourseMapOrmEntity): CourseMap {
     const courseMap = new CourseMap(
       entity.courseId,
@@ -151,7 +148,7 @@ export class CourseMapRepository implements ICourseMapRepository {
       updatedAt: entity.updatedAt,
     });
 
-    // Добавляем элементы
+   
     if (entity.elements) {
       courseMap.elements = entity.elements.map((element) =>
         this.toMapElementDomain(element),
@@ -206,8 +203,7 @@ export class CourseMapRepository implements ICourseMapRepository {
 
   private toMapElementOrmEntity(element: MapElement): MapElementOrmEntity {
     const entity = new MapElementOrmEntity();
-
-    // ID обязателен, поэтому просто присваиваем
+ 
     entity.id = element.id;
 
     entity.type = element.type;

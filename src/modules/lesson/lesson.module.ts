@@ -1,4 +1,4 @@
-// lesson/lesson.module.ts
+ 
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LessonController } from './interfaces/http/lesson.controller';
@@ -24,8 +24,7 @@ import { MapModule } from '../map/map.module';
       provide: 'ILessonRepository',
       useClass: LessonRepository,
     },
-    // Добавляем экспорт IMapElementRepository из MapModule
-    // Но его нужно будет добавить в exports MapModule
+ 
   ],
   exports: [LessonService, LessonFacade],
 })

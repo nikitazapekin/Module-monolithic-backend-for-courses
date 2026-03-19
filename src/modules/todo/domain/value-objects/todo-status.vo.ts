@@ -1,4 +1,4 @@
-// VALUE OBJECT - неизменяемый объект с валидацией
+ 
 export class TodoStatus {
   private readonly value: 'pending' | 'in_progress' | 'completed';
 

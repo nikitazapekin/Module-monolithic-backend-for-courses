@@ -31,15 +31,15 @@ export class LessonCommentService {
   ): Promise<LessonCommentResponseDto> {
     let lessonDetailsIdToUse = dto.lessonDetailsId;
 
-    // Если есть parentId, проверяем существование родительского комментария
+    
     if (dto.parentId) {
       const parent = await this.commentRepo.findById(dto.parentId);
       if (!parent) {
         throw new NotFoundException('Родительский комментарий не найден');
       }
-      // Используем lessonDetailsId родительского комментария
+     
       lessonDetailsIdToUse = parent.lessonDetailsId;
-      // Убедимся, что parentId принадлежит тому же lessonDetails
+    
       if (parent.lessonDetailsId !== dto.lessonDetailsId) {
         throw new BadRequestException('Неверный parentId для данного урока');
       }
@@ -65,8 +65,7 @@ export class LessonCommentService {
     if (!comment) {
       throw new NotFoundException('Комментарий не найден');
     }
-
-    // Пользователь может редактировать только свои комментарии
+ 
     if (comment.userId !== userId) {
       throw new ForbiddenException(
         'Вы можете редактировать только свои комментарии',
@@ -87,8 +86,7 @@ export class LessonCommentService {
     if (!comment) {
       throw new NotFoundException('Комментарий не найден');
     }
-
-    // Пользователь может удалять только свои комментарии
+ 
     if (comment.userId !== userId) {
       throw new ForbiddenException('Вы можете удалять только свои комментарии');
     }
@@ -103,21 +101,18 @@ export class LessonCommentService {
   ): Promise<LessonCommentsWithMetaResponseDto> {
     const comments =
       await this.commentRepo.findAllByLessonDetailsId(lessonDetailsId);
-    // Разрешаем комментировать всем пользователям
+    
     const canComment = true;
-
-    // Строим древовидную структуру комментариев
+ 
     const rootComments = comments.filter((c) => !c.parentId);
     const commentMap = new Map<string, LessonCommentResponseDto>();
-
-    // Сначала создаем DTO для всех комментариев
+ 
     comments.forEach((comment) => {
       const dto = this.toResponseDto(comment, userId);
       dto.replies = [];
       commentMap.set(comment.id, dto);
     });
-
-    // Затем добавляем ответы к родительским комментариям
+ 
     comments.forEach((comment) => {
       if (comment.parentId && commentMap.has(comment.parentId)) {
         const parent = commentMap.get(comment.parentId)!;
@@ -127,8 +122,7 @@ export class LessonCommentService {
         parent.replies.push(commentMap.get(comment.id)!);
       }
     });
-
-    // Возвращаем только корневые комментарии с ответами
+ 
     const rootCommentsWithReplies = rootComments.map(
       (c) => commentMap.get(c.id)!,
     );

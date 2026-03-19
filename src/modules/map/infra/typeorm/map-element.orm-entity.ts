@@ -95,8 +95,7 @@ export class MapElementOrmEntity {
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  // Связь многие-к-одному с картой курса
+ 
   @ManyToOne(() => CourseMapOrmEntity, (courseMap) => courseMap.elements, {
     onDelete: 'CASCADE',
   })

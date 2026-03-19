@@ -30,7 +30,7 @@ export class Lesson {
     this.description = description;
     this.content = content;
     this.duration = duration;
-    this.orderIndex = orderIndex ?? 1; // Default to 1 if undefined or null
+    this.orderIndex = orderIndex ?? 1; 
     this.isPublished = isPublished;
     this.createdAt = new Date();
     this.updatedAt = new Date();

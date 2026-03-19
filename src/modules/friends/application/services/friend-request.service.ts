@@ -27,9 +27,7 @@ export class FriendRequestService {
     private readonly clientRepository: Repository<ClientOrmEntity>,
   ) {}
 
-  /**
-   * Get clientId from auditoryId
-   */
+ 
   private async getClientIdFromAuditoryId(auditoryId: string): Promise<string> {
     const client = await this.clientRepository.findOne({
       where: { auditoryId },
@@ -43,10 +41,7 @@ export class FriendRequestService {
 
     return client.id;
   }
-
-  /**
-   * Get client entity by auditoryId
-   */
+ 
   private async getClientByAuditoryId(
     auditoryId: string,
   ): Promise<ClientOrmEntity> {
@@ -62,10 +57,7 @@ export class FriendRequestService {
 
     return client;
   }
-
-  /**
-   * Send a friend request
-   */
+ 
   async sendFriendRequest(
     senderAuditoryId: string,
     receiverAuditoryId: string,
@@ -74,12 +66,11 @@ export class FriendRequestService {
       const sender = await this.getClientByAuditoryId(senderAuditoryId);
       const receiver = await this.getClientByAuditoryId(receiverAuditoryId);
 
-      // Cannot send request to yourself
+      
       if (sender.id === receiver.id) {
         throw new BadRequestException('Cannot send friend request to yourself');
       }
-
-      // Check if friendship already exists
+ 
       const existingFriendship =
         await this.friendRepository.findByClientIdAndFriendId(
           sender.id,
@@ -88,8 +79,7 @@ export class FriendRequestService {
       if (existingFriendship) {
         throw new ConflictException('You are already friends');
       }
-
-      // Check if request already exists
+ 
       const existingRequest =
         await this.friendRequestRepository.findBySenderIdAndReceiverId(
           sender.id,
@@ -118,10 +108,7 @@ export class FriendRequestService {
       );
     }
   }
-
-  /**
-   * Accept a friend request
-   */
+ 
   async acceptFriendRequest(requestId: string): Promise<Friend> {
     const request = await this.friendRequestRepository.findById(requestId);
 
@@ -134,21 +121,16 @@ export class FriendRequestService {
     if (request.status !== FriendRequestStatus.PENDING) {
       throw new BadRequestException('Friend request is not pending');
     }
-
-    // Accept the request
+ 
     request.accept();
     await this.friendRequestRepository.save(request);
-
-    // Create friendship
+ 
     const friendship = new Friend(request.senderId, request.receiverId);
     const savedFriendship = await this.friendRepository.save(friendship);
 
     return savedFriendship;
   }
-
-  /**
-   * Reject a friend request
-   */
+ 
   async rejectFriendRequest(requestId: string): Promise<FriendRequest> {
     const request = await this.friendRequestRepository.findById(requestId);
 
@@ -165,10 +147,7 @@ export class FriendRequestService {
     request.reject();
     return await this.friendRequestRepository.save(request);
   }
-
-  /**
-   * Get pending friend requests for a user (received)
-   */
+ 
   async getPendingFriendRequests(
     userAuditoryId: string,
   ): Promise<FriendRequest[]> {
@@ -179,10 +158,7 @@ export class FriendRequestService {
       true,
     );
   }
-
-  /**
-   * Get sent friend requests by a user
-   */
+ 
   async getSentFriendRequests(
     userAuditoryId: string,
   ): Promise<FriendRequest[]> {
@@ -193,10 +169,7 @@ export class FriendRequestService {
       false,
     );
   }
-
-  /**
-   * Cancel a sent friend request
-   */
+ 
   async cancelFriendRequest(
     senderAuditoryId: string,
     receiverAuditoryId: string,
@@ -220,10 +193,7 @@ export class FriendRequestService {
 
     return await this.friendRequestRepository.delete(request.id);
   }
-
-  /**
-   * Get friend request by ID
-   */
+ 
   async findById(id: string): Promise<FriendRequest> {
     const request = await this.friendRequestRepository.findById(id);
     if (!request) {
@@ -231,10 +201,7 @@ export class FriendRequestService {
     }
     return request;
   }
-
-  /**
-   * Check if a pending friend request exists
-   */
+ 
   async hasPendingRequest(
     senderAuditoryId: string,
     receiverAuditoryId: string,

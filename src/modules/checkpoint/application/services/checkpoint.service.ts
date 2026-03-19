@@ -21,7 +21,7 @@ export class CheckpointService {
   async createCheckpoint(
     dto: CreateCheckpointDto,
   ): Promise<CheckpointResponseDto> {
-    // Проверяем, нет ли уже контрольной точки с таким mapElementId
+    
     const existingCheckpoint =
       await this.checkpointRepository.findByMapElementId(dto.mapElementId);
     if (existingCheckpoint) {
@@ -82,8 +82,7 @@ export class CheckpointService {
     if (!checkpoint) {
       throw new NotFoundException('Checkpoint not found');
     }
-
-    // Если пытаемся изменить mapElementId, проверяем, что он уникален
+ 
     if (dto.mapElementId && dto.mapElementId !== checkpoint.mapElementId) {
       const existingCheckpoint =
         await this.checkpointRepository.findByMapElementId(dto.mapElementId);

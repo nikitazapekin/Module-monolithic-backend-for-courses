@@ -3,22 +3,21 @@ import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { join } from 'path';
 import { readdirSync, statSync } from 'fs';
 import * as dotenv from 'dotenv';
-
-// Загружаем .env файл для дебага
+ 
 dotenv.config();
 
 export class PostgresDatabase {
   constructor(private readonly configService: ConfigService) {}
 
   getConnection(): TypeOrmModuleOptions {
-    // Используем переменные окружения с дефолтными значениями
+   
     const dbConfig = {
       host: process.env.DB_HOST || 'localhost',
       port: parseInt(process.env.DB_PORT || '5432'),
       username: process.env.DB_USERNAME || 'postgres',
-      password: process.env.DB_PASSWORD || 'Belorus2010',
+      password: process.env.DB_PASSWORD || 'postgres',
       database: process.env.DB_NAME || 'platform',
-      synchronize: process.env.DB_SYNCHRONIZE !== 'false', // по умолчанию true
+      synchronize: process.env.DB_SYNCHRONIZE !== 'false', 
       logging: process.env.DB_LOGGING === 'true',
       retryAttempts: parseInt(process.env.DB_RETRY_ATTEMPTS || '3'),
       retryDelay: parseInt(process.env.DB_RETRY_DELAY || '3000'),
@@ -26,37 +25,24 @@ export class PostgresDatabase {
       migrationsRun: process.env.DB_MIGRATIONS_RUN === 'true',
       ssl: process.env.DB_SSL === 'true',
     };
-
-    console.log('🔍 POSTGRES CONFIGURATION:');
-    console.log('======================================');
-    console.log('Host:', dbConfig.host);
-    console.log('Port:', dbConfig.port);
-    console.log('Database:', dbConfig.database);
-    console.log('Username:', dbConfig.username);
-    console.log('Password:', '***' + dbConfig.password.slice(-3));
-    console.log('Synchronize:', dbConfig.synchronize);
-    console.log('Logging:', dbConfig.logging);
-    console.log('Retry Attempts:', dbConfig.retryAttempts);
-    console.log('======================================');
-
-    // Динамическая загрузка entities
+ 
     const entities = this.loadEntities();
-    console.log(`📦 Loaded ${entities.length} entities`);
+    console.log(` Loaded ${entities.length} entities`);
 
     return {
       type: 'postgres',
-      host: dbConfig.host, // ← Исправлено
-      port: dbConfig.port, // ← Исправлено
-      username: dbConfig.username, // ← Исправлено
-      password: dbConfig.password, // ← Исправлено
-      database: dbConfig.database, // ← Исправлено
+      host: dbConfig.host, 
+      port: dbConfig.port, 
+      username: dbConfig.username, 
+      password: dbConfig.password, 
+      database: dbConfig.database, 
       entities: entities,
-      synchronize: dbConfig.synchronize, // ← Исправлено
-      logging: dbConfig.logging, // ← Исправлено
-      retryAttempts: dbConfig.retryAttempts, // ← Исправлено
-      retryDelay: dbConfig.retryDelay, // ← Исправлено
-      autoLoadEntities: dbConfig.autoLoadEntities, // ← Исправлено
-      migrationsRun: dbConfig.migrationsRun, // ← Исправлено
+      synchronize: dbConfig.synchronize, 
+      logging: dbConfig.logging,  
+      retryAttempts: dbConfig.retryAttempts, 
+      retryDelay: dbConfig.retryDelay, 
+      autoLoadEntities: dbConfig.autoLoadEntities, 
+      migrationsRun: dbConfig.migrationsRun, 
       migrations: [join(__dirname, '../../database/migrations/*.{ts,js}')],
 
       extra: {
@@ -66,7 +52,7 @@ export class PostgresDatabase {
       },
       ssl: dbConfig.ssl
         ? {
-            // ← Исправлено
+         
             rejectUnauthorized: false,
           }
         : false,
@@ -74,15 +60,14 @@ export class PostgresDatabase {
   }
 
   private loadEntities(): any[] {
-    // Определяем директории для поиска entities
+  
     const searchDirs = [
       join(process.cwd(), 'src/**/*.orm-entity.{ts,js}'),
       join(process.cwd(), 'dist/**/*.orm-entity.{ts,js}'),
     ];
 
     const entities: any[] = [];
-
-    // Функция для рекурсивного поиска файлов
+ 
     const findEntities = (dir: string, pattern: RegExp): void => {
       if (!statSync(dir).isDirectory()) return;
 
@@ -96,7 +81,7 @@ export class PostgresDatabase {
           findEntities(fullPath, pattern);
         } else if (pattern.test(file)) {
           try {
-            console.log(`📄 Found entity: ${fullPath}`);
+            console.log(`Found entity: ${fullPath}`);
 
             if (
               file.endsWith('.ts') &&
@@ -121,15 +106,14 @@ export class PostgresDatabase {
             }
           } catch (error) {
             console.error(
-              `❌ Failed to load entity ${fullPath}:`,
+              `Failed to load entity ${fullPath}:`,
               error.message,
             );
           }
         }
       });
     };
-
-    // Поиск во всех директориях
+ 
     searchDirs.forEach((dirPattern) => {
       const baseDir = dirPattern.split('*')[0];
       try {
@@ -138,13 +122,12 @@ export class PostgresDatabase {
           findEntities(baseDir, pattern);
         }
       } catch (error) {
-        console.log(`ℹ️  Directory ${baseDir} not found, skipping...`);
+        console.log(`Directory ${baseDir} not found, skipping...`);
       }
     });
-
-    // Если не найдено entities, используем дефолтный путь
+ 
     if (entities.length === 0) {
-      console.log('ℹ️  No entities found with pattern, using default path...');
+      console.log('No entities found with pattern, using default path...');
 
       const defaultPath = join(process.cwd(), 'dist/**/*.entity{.ts,.js}');
       const defaultBaseDir = defaultPath.split('*')[0];
@@ -154,25 +137,18 @@ export class PostgresDatabase {
         findEntities(defaultBaseDir, pattern);
       }
     }
-
-    console.log(`✅ Successfully loaded ${entities.length} entities`);
+    console.log(`Successfully loaded ${entities.length} entities`);
     if (entities.length > 0) {
       entities.forEach((entity, index) => {
         console.log(`  ${index + 1}. ${entity.name || 'Unnamed Entity'}`);
       });
     }
-
     return entities;
   }
 
-  /**
-   * Вспомогательный метод для проверки подключения к БД
-   */
   static async testConnection(): Promise<boolean> {
     try {
-      console.log('🧪 Testing database connection...');
 
-      // Используем переменные окружения или дефолтные значения
       const testConfig = {
         host: process.env.DB_HOST || 'localhost',
         port: parseInt(process.env.DB_PORT || '5432'),
@@ -181,10 +157,7 @@ export class PostgresDatabase {
         database: process.env.DB_NAME || 'platform',
       };
 
-      console.log('📊 Test config:', {
-        ...testConfig,
-        password: '***' + testConfig.password.slice(-3),
-      });
+      
 
       const { Client } = require('pg');
       const client = new Client({
@@ -197,40 +170,28 @@ export class PostgresDatabase {
       });
 
       await client.connect();
-      console.log('✅ Database connection successful!');
+      console.log(' Database connection successful!');
 
-      // Проверяем наличие базы данных
+ 
       const result = await client.query('SELECT current_database(), version()');
-      console.log('📊 Database Info:', result.rows[0]);
+      console.log(' Database Info:', result.rows[0]);
 
       await client.end();
       return true;
     } catch (error) {
-      console.error('❌ Database connection failed:', error.message);
+      console.error(' Database connection failed:', error.message);
       console.error('Full error:', error);
 
-      // Детальная информация об ошибке
-      console.log('\n🔧 Troubleshooting steps:');
-      console.log('1. Проверьте, запущен ли PostgreSQL:');
-      console.log('   Windows: services.msc -> ищите "PostgreSQL"');
-      console.log('   Linux: sudo service postgresql status');
-      console.log('2. Проверьте параметры подключения:');
-      console.log('   Host:', process.env.DB_HOST || 'localhost');
-      console.log('   Port:', process.env.DB_PORT || '5432');
-      console.log('   Database:', process.env.DB_NAME || 'platform');
 
       return false;
     }
   }
 
-  /**
-   * Создает миграцию для базы данных
-   */
   static async createMigration(): Promise<void> {
-    console.log('📝 Creating database migration...');
+    console.log(' Creating database migration...');
 
     try {
-      // Простая SQL миграция для создания таблицы todos
+  
       const migrationSQL = `
                 -- Create todos table
                 CREATE TABLE IF NOT EXISTS todos (
@@ -263,9 +224,6 @@ export class PostgresDatabase {
                     EXECUTE FUNCTION update_updated_at_column();
             `;
 
-      console.log('✅ Migration SQL generated');
-
-      // Сохраняем в файл
       const fs = require('fs');
       const path = require('path');
       const migrationsDir = path.join(process.cwd(), 'migrations');
@@ -284,19 +242,17 @@ export class PostgresDatabase {
       );
 
       fs.writeFileSync(migrationFile, migrationSQL);
-      console.log(`📄 Migration saved to: ${migrationFile}`);
+      console.log(`Migration saved to: ${migrationFile}`);
     } catch (error) {
-      console.error('❌ Failed to create migration:', error.message);
+      console.error('Failed to create migration:', error.message);
     }
   }
 }
 
-// Экспортируем вспомогательные функции
 export const testPostgresConnection = async (): Promise<boolean> => {
   return PostgresDatabase.testConnection();
 };
 
-// Экспортируем хардкодную конфигурацию для использования в других местах
 export const getHardcodedDbConfig = (): TypeOrmModuleOptions => {
   const hardcodedConfig = {
     type: 'postgres' as const,

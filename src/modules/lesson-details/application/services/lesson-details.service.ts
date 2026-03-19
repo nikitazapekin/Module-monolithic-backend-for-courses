@@ -159,7 +159,6 @@ export class LessonDetailsService {
     return { success: ok };
   }
 
-  // ─── helpers ────────────────────────────────────────────────────────────────
 
   private async loadFull(
     details: LessonDetails,

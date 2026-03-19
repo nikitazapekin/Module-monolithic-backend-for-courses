@@ -1,4 +1,4 @@
-// DTO - объект для передачи данных между слоями
+ 
 import { Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 

@@ -23,8 +23,7 @@ export class LessonTestOrmEntity {
 
   @Column('int')
   orderIndex: number;
-
-  // JSON-поле для хранения тестовых блоков (codeTask, theoryQuestion)
+ 
   @Column('simple-json', { nullable: true })
   blocks: object[];
 
@@ -33,8 +32,7 @@ export class LessonTestOrmEntity {
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  // Связь многие-к-одному с lesson_details
+ 
   @ManyToOne(
     () => require('./lesson-details.orm-entity').LessonDetailsOrmEntity,
     (details: LessonDetailsOrmEntity) => details.tests,

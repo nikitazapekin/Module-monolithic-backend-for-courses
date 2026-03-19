@@ -4,17 +4,16 @@ export enum AchievementType {
 }
 
 export enum AchievementTier {
-  // Student Results achievements (based on countOfStars)
-  NOVICE = 'novice', // at least 1 record with countOfStars > 1
-  ADVANCED = 'advanced', // at least 10 records with countOfStars > 1
-  EXPERT = 'expert', // at least 50 records with countOfStars > 1
-  MASTER = 'master', // at least 100 records with countOfStars > 1
-
-  // Solved Tasks achievements (based on count of solved tasks)
-  BEGINNER = 'beginner', // solved 5 tasks
-  INTERMEDIATE = 'intermediate', // solved 20 tasks
-  PROFESSIONAL = 'professional', // solved 50 tasks
-  LEGENDARY = 'legendary', // solved 100 tasks
+  
+  NOVICE = 'novice', 
+  ADVANCED = 'advanced', 
+  EXPERT = 'expert', 
+  MASTER = 'master',  
+ 
+  BEGINNER = 'beginner', 
+  INTERMEDIATE = 'intermediate',  
+  PROFESSIONAL = 'professional', 
+  LEGENDARY = 'legendary',  
 }
 
 export class Achievement {
@@ -24,7 +23,7 @@ export class Achievement {
   public tier: AchievementTier;
   public title: string;
   public description: string;
-  public image: string; // TEXT field for image URL or base64
+  public image: string; 
   public earnedAt: Date;
 
   public createdAt: Date;

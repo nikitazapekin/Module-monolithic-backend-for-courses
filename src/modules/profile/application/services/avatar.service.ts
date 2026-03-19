@@ -26,22 +26,20 @@ export class AvatarService {
   ) {}
 
   async create(createAvatarDto: CreateAvatarDto): Promise<Avatar> {
-    // Validate MIME type
+ 
     if (!this.ALLOWED_MIME_TYPES.includes(createAvatarDto.mimeType)) {
       throw new BadRequestException(
         `Invalid image type. Allowed types: ${this.ALLOWED_MIME_TYPES.join(', ')}`,
       );
     }
-
-    // Calculate file size from base64
+ 
     const fileSize = Math.ceil((createAvatarDto.imageData.length * 3) / 4);
     if (fileSize > this.MAX_FILE_SIZE) {
       throw new BadRequestException(
         `Image size exceeds maximum allowed size of ${this.MAX_FILE_SIZE / 1024 / 1024}MB`,
       );
     }
-
-    // Check if avatar already exists for this user
+ 
     const existingAvatar = await this.avatarRepository.findByAuditoryId(
       createAvatarDto.auditoryId,
     );
@@ -86,8 +84,7 @@ export class AvatarService {
     if (updateAvatarDto.imageData || updateAvatarDto.mimeType) {
       const mimeType = updateAvatarDto.mimeType || avatar.mimeType;
       const imageData = updateAvatarDto.imageData || avatar.imageData;
-
-      // Validate MIME type if provided
+ 
       if (
         updateAvatarDto.mimeType &&
         !this.ALLOWED_MIME_TYPES.includes(mimeType)
@@ -96,8 +93,7 @@ export class AvatarService {
           `Invalid image type. Allowed types: ${this.ALLOWED_MIME_TYPES.join(', ')}`,
         );
       }
-
-      // Calculate and validate file size
+ 
       const fileSize = Math.ceil((imageData.length * 3) / 4);
       if (fileSize > this.MAX_FILE_SIZE) {
         throw new BadRequestException(

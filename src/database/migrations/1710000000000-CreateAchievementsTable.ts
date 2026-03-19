@@ -9,7 +9,7 @@ export class CreateAchievementsTable1710000000000
   implements MigrationInterface
 {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Create achievements table
+   
     await queryRunner.createTable(
       new Table({
         name: 'achievements',

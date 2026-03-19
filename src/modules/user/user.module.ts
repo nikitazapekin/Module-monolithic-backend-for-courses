@@ -8,7 +8,7 @@ import { UserController } from './interfaces/user.controller';
 import { CqrsModule } from '@nestjs/cqrs';
 import { QueryHandler } from './application/query-handlers';
 import { AuthController } from './interfaces/auth.controller';
-//import { AuthModule } from '@modules/autht/auth.module';
+ 
 import { UserFacade } from './application/facades/user.facades.service';
 import { TodoModule } from '@modules/todo/todo.module';
 
@@ -17,7 +17,7 @@ import { TodoModule } from '@modules/todo/todo.module';
     TypeOrmModule.forFeature([UserTypeOrmEntity]),
     CqrsModule,
     TodoModule,
-    //  forwardRef(() => AuthModule),
+    
   ],
   controllers: [UserController, AuthController],
   providers: [

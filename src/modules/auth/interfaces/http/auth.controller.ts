@@ -1,4 +1,4 @@
-// src/modules/auth/interfaces/http/auth.controller.ts
+ 
 import {
   Controller,
   Post,
@@ -51,11 +51,9 @@ export class AuthController {
     const authResponse = (await this.authService.register(
       registerDto,
     )) as AuthResponseWithRefreshDto;
-
-    // Устанавливаем refresh token в cookie
+ 
     this.setRefreshTokenCookie(response, authResponse.refreshToken);
-
-    // Создаем ответ без refresh token
+ 
     const { refreshToken, ...responseWithoutRefresh } = authResponse;
 
     return responseWithoutRefresh;
@@ -77,11 +75,9 @@ export class AuthController {
     const authResponse = (await this.authService.login(
       loginDto,
     )) as AuthResponseWithRefreshDto;
-
-    // Устанавливаем refresh token в cookie
+ 
     this.setRefreshTokenCookie(response, authResponse.refreshToken);
-
-    // Создаем ответ без refresh token
+ 
     const { refreshToken, ...responseWithoutRefresh } = authResponse;
 
     return responseWithoutRefresh;

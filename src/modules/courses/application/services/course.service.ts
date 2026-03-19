@@ -24,7 +24,7 @@ export class CourseService {
     createCourseDto: CreateCourseDto,
     adminId: string,
   ): Promise<CourseResponseDto> {
-    // Проверка на уникальность названия
+  
     const exists = await this.courseRepository.existsByTitle(
       createCourseDto.title,
     );
@@ -45,8 +45,7 @@ export class CourseService {
     );
 
     const createdCourse = await this.courseRepository.create(course);
-
-    // Создаем карту курса
+ 
     try {
       await this.courseMapService.createCourseMap({
         courseId: createdCourse.id,
@@ -58,7 +57,7 @@ export class CourseService {
       });
     } catch (error) {
       console.error('Failed to create course map:', error);
-      // Не прерываем создание курса, если не удалось создать карту
+    
     }
 
     return this.toResponseDto(createdCourse);
@@ -116,13 +115,11 @@ export class CourseService {
     if (!course) {
       throw new NotFoundException('Course not found');
     }
-
-    // Проверка прав администратора (если требуется)
+ 
     if (adminId && course.adminId !== adminId) {
       throw new ForbiddenException('You can only update your own courses');
     }
-
-    // Проверка на уникальность названия (если изменяется)
+ 
     if (updateCourseDto.title && updateCourseDto.title !== course.title) {
       const exists = await this.courseRepository.existsByTitle(
         updateCourseDto.title,
@@ -138,8 +135,7 @@ export class CourseService {
     if (!updated) {
       throw new BadRequestException('Failed to update course');
     }
-
-    // Получаем обновленный курс
+ 
     const updatedCourse = await this.courseRepository.findById(id);
     return this.toResponseDto(updatedCourse!);
   }
@@ -152,8 +148,7 @@ export class CourseService {
     if (!course) {
       throw new NotFoundException('Course not found');
     }
-
-    // Проверка прав администратора (если требуется)
+ 
     if (adminId && course.adminId !== adminId) {
       throw new ForbiddenException('You can only delete your own courses');
     }
