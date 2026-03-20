@@ -2,8 +2,9 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DataBaseModule } from '@infra/database/database.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LoggerModule } from '@infra/logger/logger.module';
+import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from '@modules/auth/auth.module';
 import { TodoModule } from '@modules/todo/todo.module';
 import { CoursesModule } from '@modules/courses/courses.module';
@@ -17,10 +18,18 @@ import { CodingTasksModule } from '@modules/coding-tasks/coding-tasks.module';
 import { AchievementsModule } from '@modules/achievements/achievement.module';
 import { FriendsModule } from '@modules/friends/friend.module';
 import { LessonCommentsModule } from '@modules/lesson-comments/lesson-comments.module';
+import { ChatModule } from '@modules/chat/chat.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get<string>('MONGO_URL') || 'mongodb://localhost:27017/eventstore',
+      }),
     }),
     LoggerModule,
     DataBaseModule,
@@ -37,6 +46,7 @@ import { LessonCommentsModule } from '@modules/lesson-comments/lesson-comments.m
     AchievementsModule,
     FriendsModule,
     LessonCommentsModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
