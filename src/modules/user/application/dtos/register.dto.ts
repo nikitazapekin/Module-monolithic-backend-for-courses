@@ -1,8 +1,8 @@
-import { Expose } from "class-transformer"
+import { Expose } from 'class-transformer';
 
 export class RegisterDto {
-    @Expose()
-    public name: string
-    @Expose()
-    public email: string
+  @Expose()
+  public name: string;
+  @Expose()
+  public email: string;
 }

@@ -2,26 +2,51 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DataBaseModule } from '@infra/database/database.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LoggerModule } from '@infra/logger/logger.module';
-import { EventStoreFactory } from '@infra/event-store/event-store.factory';
+import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from '@modules/auth/auth.module';
-import { ProductModule } from '@modules/product/product.module';
-import { UserModule } from '@modules/user/user.module';
 import { TodoModule } from '@modules/todo/todo.module';
-
+import { CoursesModule } from '@modules/courses/courses.module';
+import { LessonModule } from '@modules/lesson/lesson.module';
+import { CheckpointModule } from '@modules/checkpoint/checkpoint.module';
+import { CodeModule } from '@modules/code/code.module';
+import { LessonDetailsModule } from '@modules/lesson-details/lesson-details.module';
+import { ProfileModule } from '@modules/profile/profile.module';
+import { CertificateModule } from '@modules/certificate/certificate.module';
+import { CodingTasksModule } from '@modules/coding-tasks/coding-tasks.module';
+import { AchievementsModule } from '@modules/achievements/achievement.module';
+import { FriendsModule } from '@modules/friends/friend.module';
+import { LessonCommentsModule } from '@modules/lesson-comments/lesson-comments.module';
+import { ChatModule } from '@modules/chat/chat.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get<string>('MONGO_URL') || 'mongodb://localhost:27017/eventstore',
+      }),
+    }),
     LoggerModule,
     DataBaseModule,
- // EventStoreFactory.createEventStore('mongo'),
-  TodoModule,
+    TodoModule,
     AuthModule,
-    UserModule,
-  //  ProductModule
+    CoursesModule,
+    LessonModule,
+    CheckpointModule,
+    LessonDetailsModule,
+    CodeModule,
+    ProfileModule,
+    CertificateModule,
+    CodingTasksModule,
+    AchievementsModule,
+    FriendsModule,
+    LessonCommentsModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],

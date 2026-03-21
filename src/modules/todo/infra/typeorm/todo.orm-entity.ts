@@ -1,5 +1,11 @@
-// TypeORM СУЩНОСТЬ - представление в базе данных
-import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+ 
+import {
+  Entity,
+  PrimaryColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity('todos')
 export class TodoOrmEntity {

@@ -1,39 +1,39 @@
 import { Type } from 'class-transformer';
 import {
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
-    CreateDateColumn,
-    UpdateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('products')
 export default class ProductTypeOrmEntity {
-    @PrimaryGeneratedColumn()
-    @Type(() => Number)
-    id: number;
+  @PrimaryGeneratedColumn()
+  @Type(() => Number)
+  id: number;
 
-    @Column({ length: 255 })
-    name: string;
+  @Column({ length: 255 })
+  name: string;
 
-    @Column({ type: 'text', nullable: true })
-    description: string;
+  @Column({ type: 'text', nullable: true })
+  description: string;
 
-    @Column({ type: 'decimal', precision: 10, scale: 2 })
-    price: number;
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  price: number;
 
-    @Column({ type: 'int', default: 0 })
-    stock: number;
+  @Column({ type: 'int', default: 0 })
+  stock: number;
 
-    @Column({ length: 100, nullable: true })
-    category: string;
+  @Column({ length: 100, nullable: true })
+  category: string;
 
-    @Column({ default: true })
-    isActive: boolean;
+  @Column({ default: true })
+  isActive: boolean;
 
-    @CreateDateColumn()
-    createdAt: Date;
+  @CreateDateColumn()
+  createdAt: Date;
 
-    @UpdateDateColumn()
-    updatedAt: Date;
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

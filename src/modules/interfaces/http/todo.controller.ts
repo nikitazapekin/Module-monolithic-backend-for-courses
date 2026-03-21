@@ -1,11 +1,19 @@
-// REST КОНТРОЛЛЕР - входная точка для HTTP запросов
-import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
+ 
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+} from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { CreateTodoCommand } from '@modules/todo/application/commands/create-todo.command';
 import { CompleteTodoCommand } from '@modules/todo/application/commands/complete-todo.command';
 import { GetTodoByIdQuery } from '@modules/todo/application/queries/get-todo-by-id.query';
- 
+
 import { CreateTodoDto } from '@modules/todo/application/dtos/create-todo.dto';
 
 @ApiTags('todos')
@@ -13,14 +21,9 @@ import { CreateTodoDto } from '@modules/todo/application/dtos/create-todo.dto';
 export class TodoController {
   constructor(
     private readonly commandBus: CommandBus,
-    private readonly queryBus: QueryBus
+    private readonly queryBus: QueryBus,
   ) {}
-
-/*   @Get()
-  @ApiOperation({ summary: 'Get all todos' })
-  async getAllTodos() {
-    return this.queryBus.execute(new GetAllTodosQuery());
-  } */
+ 
 
   @Get(':id')
   @ApiOperation({ summary: 'Get todo by ID' })
@@ -31,13 +34,12 @@ export class TodoController {
   @Post()
   @ApiOperation({ summary: 'Create a new todo' })
   async createTodo(@Body() createTodoDto: CreateTodoDto) {
-console.log("DTO", createTodoDto)
-//    return "TESST"
-return this.commandBus.execute(
-  new CreateTodoCommand(createTodoDto.title, createTodoDto.description)
-  ); 
-  /*
-    */
+    console.log('DTO', createTodoDto);
+ 
+    return this.commandBus.execute(
+      new CreateTodoCommand(createTodoDto.title, createTodoDto.description),
+    );
+  
   }
 
   @Put(':id/complete')
@@ -49,7 +51,7 @@ return this.commandBus.execute(
   @Delete(':id')
   @ApiOperation({ summary: 'Delete todo' })
   async deleteTodo(@Param('id') id: string) {
-    // Добавь команду DeleteTodoCommand
+   
     return { message: 'Todo deleted', id };
   }
 }
