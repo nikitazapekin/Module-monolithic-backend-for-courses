@@ -57,7 +57,9 @@ export class ChatController {
     const clients = await this.clientRepository
       .createQueryBuilder('client')
       .where('client.auditoryId IN (:...participantIds)', { participantIds })
+      .orWhere('client.id IN (:...participantIds)', { participantIds })
       .select([
+        'client.id',
         'client.auditoryId',
         'client.firstName',
         'client.lastName',
@@ -66,10 +68,14 @@ export class ChatController {
 
     const profiles = clients.reduce(
       (acc, client) => {
-        acc[client.auditoryId] = {
+        const profile = {
           firstName: client.firstName,
           lastName: client.lastName,
         };
+
+        acc[client.auditoryId] = profile;
+        acc[client.id] = profile;
+
         return acc;
       },
       {} as Record<string, { firstName: string; lastName: string }>,
