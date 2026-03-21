@@ -1,10 +1,9 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { ChatTypeOrmRepository } from '../../infra/repositories/chat.typeorm.repository.impl';
-import { Message, Conversation } from '../../domain/entities/chat.entity';
+import { Message } from '../../domain/entities/chat.entity';
 import {
   MessageResponseDto,
   ConversationResponseDto,
-  ConversationWithProfileDto,
 } from '../dtos/chat.dto';
 
 @Injectable()
@@ -29,7 +28,6 @@ export class ChatService {
     });
 
     await this.updateConversation(senderId, receiverId, message);
-    await this.markMessagesAsRead(senderId, receiverId);
 
     return this.mapToMessageDto(message);
   }
@@ -58,43 +56,35 @@ export class ChatService {
     return this.chatRepository.getUnreadMessagesCount(userId);
   }
 
-  async getConversations(
-    userId: string,
-    profiles: Record<string, { firstName: string; lastName: string }>,
-  ): Promise<ConversationWithProfileDto[]> {
+  async getConversations(userId: string): Promise<ConversationResponseDto[]> {
     const conversations = await this.chatRepository.findConversationsByUserId(
       userId,
     );
 
-    const result: ConversationWithProfileDto[] = [];
+    return Promise.all(
+      conversations.map(async (conv) => {
+        const participantId =
+          conv.participant1Id === userId
+            ? conv.participant2Id
+            : conv.participant1Id;
 
-    for (const conv of conversations) {
-      const participantId =
-        conv.participant1Id === userId
-          ? conv.participant2Id
-          : conv.participant1Id;
+        const unreadCount =
+          await this.chatRepository.getUnreadMessagesCountByConversation(
+            participantId,
+            userId,
+          );
 
-      const profile = profiles[participantId];
-
-      const unreadCount = await this.chatRepository.getUnreadMessagesCount(
-        userId,
-      );
-
-      result.push({
-        id: conv.id,
-        participant1Id: conv.participant1Id,
-        participant2Id: conv.participant2Id,
-        lastMessage: conv.lastMessage,
-        unreadCount,
-        createdAt: conv.createdAt,
-        updatedAt: conv.updatedAt,
-        participantFirstName: profile?.firstName || 'Unknown',
-        participantLastName: profile?.lastName || 'User',
-        participantAvatar: undefined,
-      });
-    }
-
-    return result;
+        return {
+          id: conv.id,
+          participant1Id: conv.participant1Id,
+          participant2Id: conv.participant2Id,
+          lastMessage: conv.lastMessage,
+          unreadCount,
+          createdAt: conv.createdAt,
+          updatedAt: conv.updatedAt,
+        };
+      }),
+    );
   }
 
   async getConversation(

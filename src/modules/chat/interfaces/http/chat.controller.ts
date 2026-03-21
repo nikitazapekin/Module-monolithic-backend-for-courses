@@ -1,13 +1,20 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Query, ForbiddenException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { ChatService } from '../../application/services/chat.service';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { CurrentUser } from '@common/decorators/current-user.decorator';
 import { SendMessageDto } from '../../application/dtos/chat.dto';
+import { ClientOrmEntity } from '@modules/auth/infra/typeorm/client.orm-entity';
 
 @Controller('chat')
 @UseGuards(JwtAuthGuard)
 export class ChatController {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly chatService: ChatService,
+    @InjectRepository(ClientOrmEntity)
+    private readonly clientRepository: Repository<ClientOrmEntity>,
+  ) {}
 
   @Post('messages')
   async sendMessage(
@@ -30,7 +37,60 @@ export class ChatController {
     @CurrentUser() user: any,
     @Param('userId') userId: string,
   ) {
-    return { success: true, data: [] };
+    const targetUserId = userId === user.userId ? userId : user.userId;
+    const conversations = await this.chatService.getConversations(targetUserId);
+
+    if (conversations.length === 0) {
+      return { success: true, data: [] };
+    }
+
+    const participantIds = Array.from(
+      new Set(
+        conversations.map((conversation) =>
+          conversation.participant1Id === targetUserId
+            ? conversation.participant2Id
+            : conversation.participant1Id,
+        ),
+      ),
+    );
+
+    const clients = await this.clientRepository
+      .createQueryBuilder('client')
+      .where('client.auditoryId IN (:...participantIds)', { participantIds })
+      .select([
+        'client.auditoryId',
+        'client.firstName',
+        'client.lastName',
+      ])
+      .getMany();
+
+    const profiles = clients.reduce(
+      (acc, client) => {
+        acc[client.auditoryId] = {
+          firstName: client.firstName,
+          lastName: client.lastName,
+        };
+        return acc;
+      },
+      {} as Record<string, { firstName: string; lastName: string }>,
+    );
+
+    return {
+      success: true,
+      data: conversations.map((conversation) => {
+        const participantId =
+          conversation.participant1Id === targetUserId
+            ? conversation.participant2Id
+            : conversation.participant1Id;
+
+        return {
+          ...conversation,
+          participantFirstName: profiles[participantId]?.firstName || 'Unknown',
+          participantLastName: profiles[participantId]?.lastName || 'User',
+          participantAvatar: undefined,
+        };
+      }),
+    };
   }
 
   @Get('messages/:userId1/:userId2')
@@ -41,11 +101,15 @@ export class ChatController {
     @Query('limit') limit: number = 50,
     @Query('offset') offset: number = 0,
   ) {
+    if (user.userId !== userId1 && user.userId !== userId2) {
+      throw new ForbiddenException('Access to this conversation is denied');
+    }
+
     const messages = await this.chatService.getConversationMessages(
       userId1,
       userId2,
-      limit,
-      offset,
+      Number(limit) || 50,
+      Number(offset) || 0,
     );
 
     return { success: true, data: messages };

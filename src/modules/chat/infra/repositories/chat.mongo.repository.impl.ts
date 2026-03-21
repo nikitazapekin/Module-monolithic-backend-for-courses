@@ -63,6 +63,17 @@ export class ChatMongoRepository {
     });
   }
 
+  async getUnreadMessagesCountByConversation(
+    senderId: string,
+    receiverId: string,
+  ): Promise<number> {
+    return this.messageModel.countDocuments({
+      senderId,
+      receiverId,
+      read: false,
+    });
+  }
+
   async createConversation(
     conversation: Omit<ConversationEntity, 'id'>,
   ): Promise<ConversationEntity> {

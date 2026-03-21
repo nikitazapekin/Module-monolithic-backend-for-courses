@@ -18,7 +18,7 @@ export class UsersController {
     @Query('q') query: string,
     @CurrentUser() user: any,
   ) {
-    if (!query || query.trim().length < 2) {
+    if (!query || query.trim().length < 1) {
       return { success: true, data: [] };
     }
 
