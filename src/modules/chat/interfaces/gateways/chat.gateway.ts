@@ -31,6 +31,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   constructor(private readonly chatService: ChatService) {}
 
+  private getConversationRoom(userId1: string, userId2: string) {
+    return [userId1, userId2].sort().join('_');
+  }
+
   async handleConnection(client: Socket) {
     try {
       const userId = client.handshake.query.userId as string;
@@ -73,16 +77,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         receiverId,
         content,
       );
+      const roomName = this.getConversationRoom(senderId, receiverId);
 
-      const receiverSocketId = this.userSocketMap.get(receiverId);
-      
+      this.server.to(roomName).emit('newMessage', message);
       this.server.to(senderId).emit('newMessage', message);
-      
-      if (receiverSocketId) {
-        this.server.to(receiverId).emit('newMessage', message);
-      }
-
-      await this.chatService.markMessagesAsRead(senderId, receiverId);
+      this.server.to(receiverId).emit('newMessage', message);
 
       return { success: true, message };
     } catch (error) {
@@ -120,12 +119,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { senderId: string; receiverId: string },
   ) {
     const { senderId, receiverId } = data;
+    const roomName = this.getConversationRoom(senderId, receiverId);
 
     try {
       await this.chatService.markMessagesAsRead(senderId, receiverId);
-      
+
+      this.server.to(roomName).emit('messagesRead', { senderId, receiverId });
       this.server.to(senderId).emit('messagesRead', { senderId, receiverId });
-      
+      this.server.to(receiverId).emit('messagesRead', { senderId, receiverId });
+
       return { success: true };
     } catch (error) {
       console.error('Mark as read error:', error);

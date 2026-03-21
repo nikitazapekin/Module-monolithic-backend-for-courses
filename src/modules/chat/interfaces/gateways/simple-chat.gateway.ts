@@ -32,6 +32,10 @@ export class SimpleChatGateway implements OnGatewayConnection, OnGatewayDisconne
 
   constructor(private readonly chatService: ChatService) {}
 
+  private getConversationRoom(userId1: string, userId2: string) {
+    return [userId1, userId2].sort().join('_');
+  }
+
   async handleConnection(client: any, req: any) {
     try {
       const url = new URL(req.url, `http://${req.headers.host}`);
@@ -86,11 +90,10 @@ export class SimpleChatGateway implements OnGatewayConnection, OnGatewayDisconne
         receiverId,
         content,
       );
+      const roomName = this.getConversationRoom(senderId, receiverId);
 
-      this.broadcast(senderId, { event: 'newMessage', data: message });
-      this.broadcast(receiverId, { event: 'newMessage', data: message });
-
-      await this.chatService.markMessagesAsRead(senderId, receiverId);
+      this.broadcast(senderId, { event: 'newMessage', roomName, data: message });
+      this.broadcast(receiverId, { event: 'newMessage', roomName, data: message });
 
       return { success: true, message };
     } catch (error) {
@@ -118,12 +121,14 @@ export class SimpleChatGateway implements OnGatewayConnection, OnGatewayDisconne
     @MessageBody() data: { senderId: string; receiverId: string },
   ) {
     const { senderId, receiverId } = data;
+    const roomName = this.getConversationRoom(senderId, receiverId);
 
     try {
       await this.chatService.markMessagesAsRead(senderId, receiverId);
-      
-      this.broadcast(senderId, { event: 'messagesRead', data: { senderId, receiverId } });
-      
+
+      this.broadcast(senderId, { event: 'messagesRead', roomName, data: { senderId, receiverId } });
+      this.broadcast(receiverId, { event: 'messagesRead', roomName, data: { senderId, receiverId } });
+
       return { success: true };
     } catch (error) {
       console.error('Mark as read error:', error);
