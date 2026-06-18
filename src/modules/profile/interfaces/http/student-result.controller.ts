@@ -1,0 +1,334 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  HttpCode,
+  HttpStatus,
+  Query,
+  NotFoundException,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
+import { StudentResultService } from '../../application/services/student-result.service';
+import { CreateStudentResultDto } from '../../application/dtos/create-student-result.dto';
+import { UpdateStudentResultDto } from '../../application/dtos/update-student-result.dto';
+import { StudentResultResponseDto } from '../../application/dtos/student-result-response.dto';
+import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ClientOrmEntity } from '../../../auth/infra/typeorm/client.orm-entity';
+
+@ApiTags('profile/student-results')
+@Controller('profile/student-results')
+export class StudentResultController {
+  constructor(
+    private readonly studentResultService: StudentResultService,
+    @InjectRepository(ClientOrmEntity)
+    private readonly clientRepository: Repository<ClientOrmEntity>,
+  ) {}
+
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: 'Создание результата прохождения этапа обучения',
+    description:
+      'Для создания результата необходимо передать auditoryId или clientId. Контроллер автоматически определит clientId и сохранит результат урока или контрольной точки.',
+  })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Результат успешно создан',
+    type: StudentResultResponseDto,
+  })
+  @ApiBearerAuth()
+  async create(
+    @Body() createStudentResultDto: CreateStudentResultDto,
+  ): Promise<StudentResultResponseDto> {
+    const lookupId =
+      createStudentResultDto.auditoryId ?? createStudentResultDto.clientId;
+    if (!lookupId) {
+      throw new NotFoundException('auditoryId or clientId is required');
+    }
+
+    const client = await this.clientRepository.findOne({
+      where: [{ auditoryId: lookupId }, { id: lookupId }],
+    });
+
+    if (!client) {
+      throw new NotFoundException(
+        `Client ${lookupId} not found`,
+      );
+    }
+ 
+    const dtoWithClientId = {
+      clientId: client.id,
+      lessonId: createStudentResultDto.lessonId,
+      checkpointId: createStudentResultDto.checkpointId,
+      countOfStars: createStudentResultDto.countOfStars,
+    };
+
+    const result = await this.studentResultService.create(dtoWithClientId);
+    return this.mapToResponse(result);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Получение результата по ID' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Результат найден',
+    type: StudentResultResponseDto,
+  })
+  @ApiBearerAuth()
+  async findById(@Param('id') id: string): Promise<StudentResultResponseDto> {
+    const result = await this.studentResultService.findById(id);
+    return this.mapToResponse(result);
+  }
+
+  @Get('client/:clientId')
+  @ApiOperation({ summary: 'Получение всех результатов студента' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Результаты найдены',
+    type: [StudentResultResponseDto],
+  })
+  @ApiBearerAuth()
+  async findByClientId(
+    @Param('clientId') clientId: string,
+  ): Promise<StudentResultResponseDto[]> {
+    const results = await this.studentResultService.findByClientId(clientId);
+    return results.map((result) => this.mapToResponse(result));
+  }
+
+  @Get('lesson/:lessonId')
+  @ApiOperation({ summary: 'Получение всех результатов по уроку' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Результаты найдены',
+    type: [StudentResultResponseDto],
+  })
+  @ApiBearerAuth()
+  async findByLessonId(
+    @Param('lessonId') lessonId: string,
+  ): Promise<StudentResultResponseDto[]> {
+    const results = await this.studentResultService.findByLessonId(lessonId);
+    return results.map((result) => this.mapToResponse(result));
+  }
+
+  @Get('checkpoint/:checkpointId')
+  @ApiOperation({ summary: 'Получение всех результатов по контрольной точке' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Результаты найдены',
+    type: [StudentResultResponseDto],
+  })
+  @ApiBearerAuth()
+  async findByCheckpointId(
+    @Param('checkpointId') checkpointId: string,
+  ): Promise<StudentResultResponseDto[]> {
+    const results =
+      await this.studentResultService.findByCheckpointId(checkpointId);
+    return results.map((result) => this.mapToResponse(result));
+  }
+
+  @Get('client/:clientId/lesson/:lessonId/best')
+  @ApiOperation({
+    summary:
+      'Получение лучшего результата студента по уроку (с наибольшим количеством звезд)',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Лучший результат найден',
+    type: StudentResultResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Результаты не найдены',
+  })
+  @ApiBearerAuth()
+  async getBestResult(
+    @Param('clientId') clientId: string,
+    @Param('lessonId') lessonId: string,
+  ): Promise<StudentResultResponseDto | null> {
+    const result =
+      await this.studentResultService.getBestResultByClientAndLesson(
+        clientId,
+        lessonId,
+      );
+    return result ? this.mapToResponse(result) : null;
+  }
+
+  @Get('client/:clientId/checkpoint/:checkpointId/best')
+  @ApiOperation({
+    summary:
+      'Получение лучшего результата студента по контрольной точке (с наибольшим количеством звезд)',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Лучший результат найден',
+    type: StudentResultResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Результаты не найдены',
+  })
+  @ApiBearerAuth()
+  async getBestCheckpointResult(
+    @Param('clientId') clientId: string,
+    @Param('checkpointId') checkpointId: string,
+  ): Promise<StudentResultResponseDto | null> {
+    const result =
+      await this.studentResultService.getBestResultByClientAndCheckpoint(
+        clientId,
+        checkpointId,
+      );
+    return result ? this.mapToResponse(result) : null;
+  }
+
+  @Post('client/:clientId/course-progress')
+  @ApiOperation({
+    summary: 'Получение лучших результатов студента по всем этапам курса',
+    description:
+      'Возвращает лучшие результаты (с наибольшим количеством звезд) для каждого урока и checkpoint конкретного курса. Если для этапа нет результатов, возвращается null. В качестве clientId передается auditoryId (первичный ключ из таблицы auditory).',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Лучшие результаты получены',
+    schema: {
+      example: [
+        {
+          lessonId: 'lesson_1',
+          orderIndex: 1,
+          bestResult: {
+            id: '1',
+            clientId: 'client_1',
+            lessonId: 'lesson_1',
+            countOfStars: 5,
+          },
+        },
+        { lessonId: 'lesson_2', orderIndex: 2, bestResult: null },
+      ],
+    },
+  })
+  @ApiBearerAuth()
+  async getBestResultsForCourse(
+    @Param('clientId') auditoryId: string,
+    @Body('courseId') courseId: string,
+  ): Promise<
+    {
+      targetId: string;
+      targetType: 'lesson' | 'checkpoint';
+      mapElementId: string;
+      orderIndex: number;
+      bestResult: StudentResultResponseDto | null;
+    }[]
+  > {
+    const client = await this.clientRepository.findOne({
+      where: { auditoryId },
+    });
+
+    if (!client) {
+      throw new NotFoundException(
+        `Client with auditoryId ${auditoryId} not found`,
+      );
+    }
+
+    const results = await this.studentResultService.getBestResultsForCourse(
+      client.id,
+      courseId,
+    );
+    return results.map(
+      ({ targetId, targetType, mapElementId, orderIndex, bestResult }) => ({
+        targetId,
+        targetType,
+        mapElementId,
+        orderIndex,
+        bestResult: bestResult ? this.mapToResponse(bestResult) : null,
+      }),
+    );
+  }
+
+  @Get('client/:clientId/progress')
+  @ApiOperation({ summary: 'Получение прогресса студента' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Прогресс получен',
+  })
+  @ApiBearerAuth()
+  async getStudentProgress(@Param('clientId') clientId: string): Promise<{
+    totalLessons: number;
+    averageStars: number;
+    results: StudentResultResponseDto[];
+  }> {
+    const progress =
+      await this.studentResultService.getStudentProgress(clientId);
+    return {
+      ...progress,
+      results: progress.results.map((result) => this.mapToResponse(result)),
+    };
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: 'Обновление результата по ID' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Результат успешно обновлен',
+    type: StudentResultResponseDto,
+  })
+  @ApiBearerAuth()
+  async update(
+    @Param('id') id: string,
+    @Body() updateStudentResultDto: UpdateStudentResultDto,
+  ): Promise<StudentResultResponseDto> {
+    const result = await this.studentResultService.update(
+      id,
+      updateStudentResultDto,
+    );
+    return this.mapToResponse(result);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Удаление результата по ID' })
+  @ApiResponse({
+    status: HttpStatus.NO_CONTENT,
+    description: 'Результат успешно удален',
+  })
+  @ApiBearerAuth()
+  async delete(@Param('id') id: string): Promise<void> {
+    await this.studentResultService.delete(id);
+  }
+
+  @Delete('client/:clientId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Удаление всех результатов студента' })
+  @ApiResponse({
+    status: HttpStatus.NO_CONTENT,
+    description: 'Результаты успешно удалены',
+  })
+  @ApiBearerAuth()
+  async deleteByClientId(@Param('clientId') clientId: string): Promise<void> {
+    await this.studentResultService.deleteByClientId(clientId);
+  }
+
+  private mapToResponse(result: any): StudentResultResponseDto {
+    const response = new StudentResultResponseDto();
+    response.id = result.id;
+    response.clientId = result.clientId;
+    response.lessonId = result.lessonId ?? null;
+    response.checkpointId = result.checkpointId ?? null;
+    response.targetId = result.targetId;
+    response.targetType = result.targetType;
+    response.countOfStars = result.countOfStars;
+    response.completedAt = result.completedAt;
+    response.createdAt = result.createdAt;
+    response.updatedAt = result.updatedAt;
+    return response;
+  }
+}
