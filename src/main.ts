@@ -38,7 +38,8 @@ async function bootstrap() {
     next();
   });
 
-  await app.listen(3009);
-  console.log('Сервер запущен на порту 3009 (БЕЗ ФИЛЬТРОВ)');
+  const port = Number(process.env.PORT) || 3009;
+  await app.listen(port);
+  console.log(`Сервер запущен на порту ${port}`);
 }
 bootstrap(); 
